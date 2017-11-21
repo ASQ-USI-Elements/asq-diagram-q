@@ -1,0 +1,267 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../asq-base/asq-base.html">
+
+<link rel="import" href="./asq-diagram-q-shared/asq-diagram-q-shared-styles.html">
+<link rel="import" href="./asq-diagram-q-shared/asq-diagram-q-shared-libraries.html">
+
+<!--
+`asq-diagram-q-viewer` is use to show to the viewer.
+
+@element asq-diagram-q-viewer
+@demo demo/index.html
+@group ASQ Elements
+@blurb Element acting as an editor for diagram questions.
+@homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
+-->
+<dom-module id='asq-diagram-q-viewer'>
+
+    <template>
+      <style include='asq-diagram-q-shared-styles'></style>
+
+      <content></content>
+      <b>-VIEWER</b>
+      <div id='paper'></div>
+    </template>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'asq-diagram-q-viewer',
+
+      behaviors: [
+        ASQ.asqElementBehavior
+      ],
+
+      listeners: {},
+
+      hostAttributes: {
+      },
+
+      properties: {
+
+        /**
+         * Name of 'this' obj
+         *  @type {String}
+         */
+        name: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The grap object
+         *  @type {Object}
+         */
+        _graph: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The uml object
+         *  @type {Object}
+         */
+        _uml: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The object containing all created states
+         *  @type {Object}
+         */
+        _states: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The uml object
+         *  @type {Object}
+         */
+        _relations: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        }
+
+      },
+
+      attached: function () {
+
+        this.async(function () {
+          this._init();
+
+          var position1 =  { x:300  , y: 50 };
+          var size1 = { width: 240, height: 100 };
+          this._addState('interface', this._fillStateObj('', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1, size1));
+
+          var position2 =  { x:300  , y: 300 };
+          var size2 = { width: 260, height: 100 };
+          this._addState('abstract', this._fillStateObj('Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2, size2));
+
+          var keys = Object.keys(this._states);
+          var rel = this._fillRelationObj(keys[1], keys[0]);
+          console.log(rel)
+          this._addRelation('implementation', rel);
+        });
+      },
+
+      _init:function () {
+
+        this._graph = new joint.dia.Graph();
+
+        new joint.dia.Paper({
+          el: $('#paper'),
+          width: 800,
+          height: 600,
+          gridSize: 1,
+          model: this._graph
+        });
+
+        this._uml = joint.shapes.uml;
+
+        this._states = {};
+        this._relations = {};
+
+      },
+
+      _fillStateObj: function (name, attributes, methods, position, size) {
+        return { name : name, attributes : attributes, methods : methods, position : position, size : size}
+      },
+
+      _addState: function(type, state){
+
+        var s = this._createState(type, state);
+        this._graph.addCell(s);
+        this._states[s.id] = { 'type': type, 'cid': s.cid, 'state': state };
+
+        console.log(s);
+        console.log(this._states)
+      },
+
+      _createState: function(type, state){
+
+        var s = _.clone(state);
+
+        if(type === 'class'){
+          s.attrs = {
+            '.uml-class-name-rect': {
+              fill: '#ff8450',
+                stroke: '#fff',
+                'stroke-width': 0.5
+            },
+            '.uml-class-attrs-rect, .uml-class-methods-rect': {
+              fill: '#fe976a',
+              stroke: '#fff',
+                'stroke-width': 0.5
+            },
+            '.uml-class-attrs-text': {
+              ref: '.uml-class-attrs-rect',
+                'ref-y': 0.5,
+                'y-alignment': 'middle'
+            },
+            '.uml-class-methods-text': {
+              ref: '.uml-class-methods-rect',
+                'ref-y': 0.5,
+                'y-alignment': 'middle'
+            }
+          };
+          return new this._uml.Class(s)
+        }
+
+        else if(type === 'abstract'){
+          s.attrs = {
+            '.uml-class-name-rect': {
+              fill: '#68ddd5',
+              stroke: '#ffffff',
+                'stroke-width': 0.5
+            },
+            '.uml-class-attrs-rect, .uml-class-methods-rect': {
+              fill: '#9687fe',
+              stroke: '#fff',
+                'stroke-width': 0.5
+            },
+            '.uml-class-methods-text, .uml-class-attrs-text': {
+              fill: '#fff'
+            }
+          };
+          return new this._uml.Abstract(s)
+
+        }
+
+        else {
+          s.attrs = {
+            '.uml-class-name-rect': {
+              fill: '#feb662',
+              stroke: '#ffffff',
+              'stroke-width': 0.5
+            },
+            '.uml-class-attrs-rect, .uml-class-methods-rect': {
+              fill: '#fdc886',
+              stroke: '#fff',
+              'stroke-width': 0.5
+            },
+            '.uml-class-attrs-text': {
+              ref: '.uml-class-attrs-rect',
+              'ref-y': 0.5,
+              'y-alignment': 'middle'
+            },
+            '.uml-class-methods-text': {
+              ref: '.uml-class-methods-rect',
+              'ref-y': 0.5,
+              'y-alignment': 'middle'
+            }
+          };
+          return new this._uml.Interface(s);
+        }
+      },
+
+      _fillRelationObj: function (sourceId, targetId) {
+        return { source: { id: sourceId}, target: { id: targetId }}
+      },
+
+      _addRelation: function(type, relation){
+
+        var r = this._createRelation(type, relation);
+        this._graph.addCell(r);
+        this._relations[r.id] = { 'type': type, 'cid': r.cid, 'relation': relation };
+        console.log(r);
+        console.log(this._relations)
+      },
+
+      _createRelation: function(type, relation){
+        if(type === 'generalization')
+          return new this._uml.Generalization(relation);
+
+        else if(type === 'implementation')
+          return new this._uml.Implementation(relation);
+
+        else if(type === 'aggregation')
+          return new this._uml.Aggregation(relation);
+
+        else if(type === 'composition')
+          return new this._uml.Composition(relation);
+
+        else
+          return new this._uml.Association(relation);
+      },
+
+      onEvent: function (evt) {
+        console.log("event", evt);
+      },
+      onRemove: function (evt) {
+        console.log(evt, 'evt' )
+      }
+
+
+
+    });
+  </script>
+
+</dom-module>

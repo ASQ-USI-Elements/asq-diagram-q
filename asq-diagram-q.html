@@ -1,0 +1,71 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../asq-base/asq-base.html">
+
+<link rel="import" href="./elements/asq-diagram-q-viewer.html">
+<!--<link rel="import" href="./elements/asq-diagram-q-presenter.html">-->
+
+<!--
+`asq-diagram-q`is used to allow the user to draw diagrams like UML's or ER's.
+
+@element asq-diagram-q
+@demo demo/index.html
+@group ASQ Elements
+@blurb Element acting as an editor for diagram questions.
+@homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
+-->
+<dom-module id="asq-diagram-q">
+
+  <template>
+    <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}" restamp>
+      <asq-diagram-q-viewer
+        role="viewer"
+        uid="[[uid]]"
+        name="{{name}}">
+        <content></content>
+      </asq-diagram-q-viewer>
+    </template>
+
+    <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}" restamp>
+      <asq-diagram-q-presenter
+        role="presenter"
+        uid="[[uid]]"
+        name="{{name}}"
+        disabled="{{disable}}]">
+        <content></content>
+      </asq-diagram-q-presenter>
+    </template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'asq-diagram-q',
+
+      behaviors: [
+        ASQ.asqElementBehavior
+      ],
+
+      properties: {
+
+        /**
+         * Name of 'this' obj
+         *  @type {String}
+         */
+        name: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        }
+      },
+
+      attached: function () {
+        this._isReady = true;
+
+        this.async(function () {
+          this.fire('asq-diagram-q-ready');
+        });
+      }
+    });
+
+  </script>
+
+</dom-module>
