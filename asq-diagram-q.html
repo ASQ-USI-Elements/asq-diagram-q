@@ -20,7 +20,9 @@
       <asq-diagram-q-viewer
         role="viewer"
         uid="[[uid]]"
-        name="{{name}}">
+        name="{{name}}"
+        width="{{width}}"
+        height="{{height}}">
         <content></content>
       </asq-diagram-q-viewer>
     </template>
@@ -54,7 +56,31 @@
           type: String,
           notify: true,
           reflectToAttribute: true
+        },
+
+        /**
+         * width in pixels of the paper element
+         *  @type {String}
+         */
+        width: {
+          type: Number,
+          value: 800,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * height in pixels of the paper element
+         *  @type {String}
+         */
+        height: {
+          type: Number,
+          value: 600,
+          notify: true,
+          reflectToAttribute: true
         }
+
+
       },
 
       attached: function () {

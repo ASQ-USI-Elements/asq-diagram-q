@@ -4,6 +4,7 @@
 <link rel="import" href="./asq-diagram-q-shared/asq-diagram-q-shared-styles.html">
 <link rel="import" href="./asq-diagram-q-shared/asq-diagram-q-shared-libraries.html">
 
+
 <!--
 `asq-diagram-q-viewer` is use to show to the viewer.
 
@@ -33,7 +34,9 @@
         ASQ.asqElementBehavior
       ],
 
-      listeners: {},
+      listeners: {
+        'mousedown': 'onMouseDown'
+      },
 
       hostAttributes: {
       },
@@ -46,6 +49,28 @@
          */
         name: {
           type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * width in pixels of the paper element
+         *  @type {String}
+         */
+        width: {
+          type: Number,
+          value: 800,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * height in pixels of the paper element
+         *  @type {String}
+         */
+        height: {
+          type: Number,
+          value: 600,
           notify: true,
           reflectToAttribute: true
         },
@@ -96,30 +121,16 @@
 
         this.async(function () {
           this._init();
-
-          var position1 =  { x:300  , y: 50 };
-          var size1 = { width: 240, height: 100 };
-          this._addState('interface', this._fillStateObj('', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1, size1));
-
-          var position2 =  { x:300  , y: 300 };
-          var size2 = { width: 260, height: 100 };
-          this._addState('abstract', this._fillStateObj('Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2, size2));
-
-          var keys = Object.keys(this._states);
-          var rel = this._fillRelationObj(keys[1], keys[0]);
-          console.log(rel)
-          this._addRelation('implementation', rel);
         });
       },
 
       _init:function () {
 
         this._graph = new joint.dia.Graph();
-
         new joint.dia.Paper({
-          el: $('#paper'),
-          width: 800,
-          height: 600,
+          el: this.$.paper,
+          width: this.width,
+          height: this.height,
           gridSize: 1,
           model: this._graph
         });
@@ -141,8 +152,8 @@
         this._graph.addCell(s);
         this._states[s.id] = { 'type': type, 'cid': s.cid, 'state': state };
 
-        console.log(s);
-        console.log(this._states)
+//        console.log(s);
+//        console.log(this._states)
       },
 
       _createState: function(type, state){
@@ -231,8 +242,8 @@
         var r = this._createRelation(type, relation);
         this._graph.addCell(r);
         this._relations[r.id] = { 'type': type, 'cid': r.cid, 'relation': relation };
-        console.log(r);
-        console.log(this._relations)
+//        console.log(r);
+//        console.log(this._relations)
       },
 
       _createRelation: function(type, relation){
@@ -252,11 +263,15 @@
           return new this._uml.Association(relation);
       },
 
-      onEvent: function (evt) {
-        console.log("event", evt);
-      },
-      onRemove: function (evt) {
-        console.log(evt, 'evt' )
+      onMouseDown: function (evt) {
+        console.log(evt)
+
+//        if(evt.target.parentElement.attributes[1].value === 'remove') {
+////        extracting the element
+//          const element = evt.target.parentElement.parentElement.parentElement.parentElement;
+////          console.log(element, element.attributes[0].value)
+//          console.log('removed')
+//        }
       }
 
 
