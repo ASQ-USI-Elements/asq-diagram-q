@@ -22,7 +22,8 @@
         uid="[[uid]]"
         name="{{name}}"
         width="{{width}}"
-        height="{{height}}">
+        height="{{height}}"
+        type="{{type}}">
         <content></content>
       </asq-diagram-q-viewer>
     </template>
@@ -59,6 +60,18 @@
         },
 
         /**
+         * Type of diagram (default is uml)
+         * options = 'uml', 'er'
+         */
+
+        type: {
+          type: String,
+          value: 'uml',
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
          * width in pixels of the paper element
          *  @type {String}
          */
@@ -79,8 +92,6 @@
           notify: true,
           reflectToAttribute: true
         }
-
-
       },
 
       attached: function () {

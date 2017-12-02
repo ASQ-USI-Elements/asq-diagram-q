@@ -33,7 +33,7 @@
   </head>
   <body unresolved>
     <div>
-      <asq-diagram-q id="1234" uid="" name="diagram" width="600" height="600">first test for diagram element</asq-diagram-q>
+      <asq-diagram-q id="1234" uid="" name="diagram" width="600" height="600">This is the first test for a diagram question type.</asq-diagram-q>
     </div>
 
     <script>
@@ -42,19 +42,19 @@
 
         var d_viewer = Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer');
 
-        var position1 =  { x:100  , y: 50 };
-        var position2 =  { x:100  , y: 200 };
-        var position3 =  { x:100  , y: 350 };
-        var size = { width: 220, height: 100 };
+        var position1 =  { x:100  , y: 20 };
+        var position2 =  { x:150  , y: 180 };
+        var position3 =  { x:100  , y: 340 };
 
-        d_viewer._addState('interface', d_viewer._fillStateObj('Mammal', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1, size));
-        d_viewer._addState('abstract', d_viewer._fillStateObj('Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2, size));
-        d_viewer._addState('class', d_viewer._fillStateObj('Woman', [],['+ giveABrith(): Person []'], position3, size));
+        d_viewer.addState('interface', 'Mammal', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1);
+        d_viewer.addState('abstract', 'Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2);
+        d_viewer.addState('class', 'Woman', [],['+ giveABrith(): Person []'], position3);
 
         var keys = Object.keys(d_viewer._states);
-        d_viewer._addRelation('implementation', d_viewer._fillRelationObj(keys[1], keys[0]));
-        d_viewer._addRelation('generalization', d_viewer._fillRelationObj(keys[2], keys[1]));
+        d_viewer.addRelation('implementation', keys[1], keys[0]);
+        d_viewer.addRelation('generalization', keys[2], keys[1]);
 
+//        d_viewer._deleteState(keys[1]);
       });
 
     </script>
