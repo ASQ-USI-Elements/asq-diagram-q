@@ -12,22 +12,79 @@
         outline: 1px solid #383b61;
       }
 
-      #app-body > div {
+      #app-body > div, #sidebar > div{
         float:left;
       }
 
       #sidebar {
+        font-size: 12px;
+        position: absolute;
+        z-index: 1;
         color: #cfd8dc;
         background: #383b61;
+        box-shadow: 1px 0 20px black;
+      }
+      #sidebar.open {
+        width:200px;
+      }
+
+      #sidebar.closed {
+        width:15px;
+        -webkit-transition: width .5s;
+        transition: width .5s;
+      }
+
+      #sidebar.closed > #sidebar-content {
+        visibility: hidden;
+        width:15px;
+        -webkit-transition: width .5s;
+        transition: width .5s;
+      }
+
+      #sidebar > #sidebar-button > paper-icon-button {
+        visibility: hidden;
+        -webkit-transition: visibility .4s;
+        transition: visibility .4s;
+      }
+      #sidebar:hover > #sidebar-button > paper-icon-button{
+        visibility: visible;
       }
 
       #sidebar-content {
         height: 100%;
+        width:200px;
         overflow-y: scroll;
       }
 
+      #sidebar-button {
+        width: 0;
+        height: 100%;
+      }
+      #sidebar-button > paper-icon-button {
+        background: #383b61;
+        border-radius: 0 30% 30% 0;
+        top:45%;
+        left:-10px;
+        --paper-icon-button:{
+          padding: 0;
+          height: 45px;
+          width: 35px;
+        };
+        box-shadow: 10px 0 30px -10px black;
+      }
+
+      #paper-container {
+        margin-left: 10px;
+        overflow: scroll;
+      }
+
       .menu {
-        margin:5px;
+        margin: 5px 10px;
+      }
+
+      h4 {
+        font-size: 12px;
+        margin:0;
       }
 
       .expand-button > paper-button {
@@ -51,24 +108,19 @@
         border-radius: 5px;
       }
 
-      .menu-element.submit-button,
-      .menu-element.cancel-button {
-        border: 0;
-        margin: 1%;
-        padding:0;
-      }
-
       .menu-element > paper-dropdown-menu{
 
         --paper-input-container-input: {
           color: var(--paper-blue-grey-100);
           text-align: left;
           font-weight: bold;
+          font-size: 12px;
         };
         --paper-input-container-label: {
           color: var(--paper-blue-grey-100);
           text-align: left;
           font-weight: bold;
+          font-size: 12px;
         };
         --paper-input-container-focus-color: var(--paper-blue-grey-100);
         --paper-input-container-underline: {
@@ -148,8 +200,20 @@
         margin: 0;
       }
 
+      .submit-button,
+      .clone-button,
+      .cancel-button,
+      .delete-button{
+        border: 0;
+        margin: 1%;
+        padding:0;
+      }
+
       .submit-button > paper-button,
-      .cancel-button > paper-button {
+      .clone-button > paper-button,
+      .cancel-button > paper-button,
+      .delete-button > paper-button
+      {
         --paper-button: {
           @apply(--layout-horizontal);
           @apply(--layout-center-center);
@@ -158,13 +222,14 @@
       .submit-button > paper-button {
         background: green;
       }
+      .clone-button > paper-button {
+        background: var(--google-blue-700);
+      }
       .cancel-button > paper-button {
         background: var(--paper-red-800);
       }
-
-      h4 {
-        font-size: 14px;
-        margin:0;
+      .delete-button > paper-button {
+        background: var(--paper-grey-900);
       }
 
 
