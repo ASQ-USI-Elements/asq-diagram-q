@@ -22,32 +22,34 @@
         z-index: 1;
         color: #cfd8dc;
         background: #383b61;
-        box-shadow: 1px 0 20px black;
+        box-shadow: 1px 0 20px #383b61;
       }
       #sidebar.open {
         width:200px;
       }
 
       #sidebar.closed {
-        width:15px;
+        width:10px;
         -webkit-transition: width .5s;
         transition: width .5s;
       }
 
       #sidebar.closed > #sidebar-content {
         visibility: hidden;
-        width:15px;
+        width:10px;
         -webkit-transition: width .5s;
         transition: width .5s;
       }
 
       #sidebar > #sidebar-button > paper-icon-button {
         visibility: hidden;
-        -webkit-transition: visibility .4s;
-        transition: visibility .4s;
+        -webkit-transition: visibility 1.5s;
+        transition: visibility 1.5s;
       }
       #sidebar:hover > #sidebar-button > paper-icon-button{
         visibility: visible;
+        -webkit-transition: visibility 0s;
+        transition: visibility 0s;
       }
 
       #sidebar-content {
@@ -70,7 +72,7 @@
           height: 45px;
           width: 35px;
         };
-        box-shadow: 10px 0 30px -10px black;
+        box-shadow: 10px 0 30px -10px #383b61;
       }
 
       #paper-container {
@@ -163,6 +165,7 @@
           background-color: var(--paper-blue-grey-50);
           color: var(--paper-blue-grey-900);
           text-align: left;
+          font-size:12px;
         };
         --paper-input-container-focus-color: var(--paper-blue-grey-100);
         --paper-input-container-underline: {
@@ -185,10 +188,6 @@
         cursor: pointer;
       }
 
-      .menu-element > table > tbody > tr > td > paper-input > paper-input-container {
-        padding: 0;
-      }
-
       .error-message {
         visibility:hidden;
         font-size: 12px;
@@ -200,37 +199,51 @@
         margin: 0;
       }
 
-      .submit-button,
-      .clone-button,
-      .cancel-button,
-      .delete-button{
-        border: 0;
-        margin: 1%;
-        padding:0;
+      #buttons {
+        display: inline-flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        @apply(--layout-horizontal);
       }
 
-      .submit-button > paper-button,
-      .clone-button > paper-button,
-      .cancel-button > paper-button,
-      .delete-button > paper-button
-      {
-        --paper-button: {
-          @apply(--layout-horizontal);
-          @apply(--layout-center-center);
-        };
+      #buttons > paper-button{
+        width: 45%;
+        margin: 0.29em;
+        @apply(--layout-vertical);
       }
-      .submit-button > paper-button {
-        background: green;
-      }
-      .clone-button > paper-button {
-        background: var(--google-blue-700);
-      }
-      .cancel-button > paper-button {
-        background: var(--paper-red-800);
-      }
-      .delete-button > paper-button {
-        background: var(--paper-grey-900);
-      }
+
+      /*.submit-button,*/
+      /*.clone-button,*/
+      /*.cancel-button,*/
+      /*.delete-button{*/
+        /*border: 0;*/
+        /*margin: 1%;*/
+        /*padding:0;*/
+      /*}*/
+
+      /*.submit-button > paper-button,*/
+      /*.clone-button > paper-button,*/
+      /*.cancel-button > paper-button,*/
+      /*.delete-button > paper-button*/
+      /*{*/
+        /*--paper-button: {*/
+          /*@apply(--layout-horizontal);*/
+          /*@apply(--layout-center-center);*/
+        /*};*/
+      /*}*/
+
+      /*.submit-button > paper-button {*/
+        /*background: green;*/
+      /*}*/
+      /*.clone-button > paper-button {*/
+        /*background: var(--google-blue-700);*/
+      /*}*/
+      /*.cancel-button > paper-button {*/
+        /*background: var(--paper-red-800);*/
+      /*}*/
+      /*.delete-button > paper-button {*/
+        /*background: var(--paper-grey-900);*/
+      /*}*/
 
 
       /* from 'dist/joint.css' */

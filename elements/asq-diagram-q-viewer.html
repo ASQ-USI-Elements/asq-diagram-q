@@ -44,7 +44,7 @@
           <template is="dom-if" if="{{_nothingSelected(selectedCounter)}}" restamp>
             <div class="menu state">
               <div class="expand-button">
-                <paper-button raised on-click="_expandStateMenu"><iron-icon icon="{{_getIcon(_showStateContent)}}"></iron-icon><h4 class="button-label">ADD STATE</h4></paper-button>
+                <paper-button raised on-click="_expandStateMenu"><iron-icon icon="{{_getIcon(_showStateContent)}}"></iron-icon><h4 class="button-label">NEW STATE</h4></paper-button>
               </div>
               <template is="dom-if" if="{{_showStateContent}}" restamp>
                 <div class="menu-content">
@@ -79,11 +79,9 @@
                     <p>Submission not valid:</p>
                     <p id="whichError">- error message -</p>
                   </div>
-                  <div class="menu-element submit-button">
-                    <paper-button on-click="newJointJsState"><h4 class="button-label">ADD</h4></paper-button>
-                  </div>
-                  <div class="menu-element cancel-button">
-                    <paper-button on-click="_expandStateMenu"><h4 class="button-label">CANCEL</h4></paper-button>
+                  <div class="menu-element" id="buttons">
+                    <paper-button raised on-click="newJointJsState"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CREATE</h4></div></paper-button>
+                    <paper-button raised on-click="_expandStateMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                   </div>
                 </div>
               </template>
@@ -123,11 +121,9 @@
                     <p>Submission not valid:</p>
                     <p id="whichError">- error message -</p>
                   </div>
-                  <div class="menu-element submit-button">
-                    <paper-button on-click="newJointJsRelation"><h4 class="button-label">CONNECT</h4></paper-button>
-                  </div>
-                  <div class="menu-element cancel-button">
-                    <paper-button on-click="_expandRelationMenu"><h4 class="button-label">CANCEL</h4></paper-button>
+                  <div class="menu-element" id="buttons">
+                    <paper-button raised on-click="newJointJsRelation"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                    <paper-button raised on-click="_expandRelationMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                   </div>
                 </div>
               </template>
@@ -141,115 +137,119 @@
               <div class="menu-content">
                 <template is="dom-if" if="{{_showEditContent}}" restamp>
                   <template is="dom-if" if="{{_oneSelected(selectedCounter)}}" restamp>
-                      <!--Name-->
-                      <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
-                        <div class="menu-element" id="name">
-                          <iron-label>
-                            <span>Name</span>
-                          </iron-label>
-                          <paper-input value="[[selected.model.attributes.name]]" on-input="_onNameChanged"></paper-input>
-                        </div>
-                      </template>
-                      <!--Type-->
-                      <div class="menu-element" id="type">
+                    <!--Name-->
+                    <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
+                      <div class="menu-element" id="name">
+                        <iron-label>
+                          <span>Name</span>
+                        </iron-label>
+                        <paper-input value="[[selected.model.attributes.name]]" on-input="_onNameChanged"></paper-input>
+                      </div>
+                    </template>
+                    <!--Type-->
+                    <div class="menu-element" id="type">
 
-                        <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged">
+                      <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged">
 
-                          <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
-                            <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_types.states)}}">
-                              <template is="dom-repeat" items="{{_types.states}}" restamp>
-                                <paper-item>[[item]]</paper-item>
-                              </template>
-                            </paper-listbox>
+                        <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_types.states)}}">
+                            <template is="dom-repeat" items="{{_types.states}}" restamp>
+                              <paper-item>[[item]]</paper-item>
+                            </template>
+                          </paper-listbox>
+                        </template>
+
+                        <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_types.relations)}}">
+                            <template is="dom-repeat" items="{{_types.relations}}" restamp>
+                              <paper-item>[[item]]</paper-item>
+                            </template>
+                          </paper-listbox>
+                        </template>
+
+                      </paper-dropdown-menu>
+                    </div>
+                    <!--Attributes and Methods-->
+                    <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
+                      <div class="menu-element" id="attributes">
+                        <iron-label>
+                          <span>Attributes</span><paper-icon-button icon="add-circle-outline" edit="attributes" on-click="_addRow"></paper-icon-button>
+                        </iron-label>
+                        <table edit="attributes">
+                          <tbody>
+                          <template is="dom-repeat" items="{{selected.model.attributes.attributes}}">
+                            <tr>
+                              <td>{{_inc(index)}}:</td>
+                              <td><paper-input value="[[item]]" on-input="_onAttributeChanged"><iron-icon suffix icon="remove-circle" on-click="_removeRow"></iron-icon></paper-input></td>
+                            </tr>
                           </template>
-
-                          <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
-                            <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_types.relations)}}">
-                              <template is="dom-repeat" items="{{_types.relations}}" restamp>
-                                <paper-item>[[item]]</paper-item>
-                              </template>
-                            </paper-listbox>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="menu-element" id="methods">
+                        <iron-label>
+                          <span>Methods</span><paper-icon-button icon="add-circle-outline" edit="methods" on-click="_addRow"></paper-icon-button>
+                        </iron-label>
+                        <table edit="methods">
+                          <tbody>
+                          <template is="dom-repeat" items="{{selected.model.attributes.methods}}">
+                            <tr>
+                              <td>{{_inc(index)}}:</td>
+                              <td><paper-input value="[[item]]" on-input="_onMethodChanged"><iron-icon suffix icon="remove-circle" on-click="_removeRow"></iron-icon></paper-input></td>
+                            </tr>
                           </template>
+                          </tbody>
+                        </table>
+                      </div>
+                    </template>
+                    <!--Source and Target-->
+                    <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
+                      <div class="menu-element" id="relation">
+                        <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget">
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.source.id, _states)}}">
+                            <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
+                              <paper-item id="[[item.id]]">[[item.text]]</paper-item>
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
 
+                        <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget">
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.target.id, _states)}}">
+                            <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
+                              <paper-item id="[[item.id]]">[[item.text]]</paper-item>
+                            </template>
+                          </paper-listbox>
                         </paper-dropdown-menu>
                       </div>
-                      <!--Attributes and Methods-->
+                    </template>
+                    <!--error-->
+                    <div class="menu-element error-message" id="error">
+                      <p>Submission not valid:</p>
+                      <p id="whichError">- error message -</p>
+                    </div>
+                    <!--Buttons-->
+                    <div class="menu-element" id="buttons">
+                      <paper-button raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
                       <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
-                        <div class="menu-element" id="attributes">
-                          <iron-label>
-                            <span>Attributes</span><paper-icon-button icon="add-circle-outline" edit="attributes" on-click="_addRow"></paper-icon-button>
-                          </iron-label>
-                          <table edit="attributes">
-                            <tbody>
-                            <template is="dom-repeat" items="{{selected.model.attributes.attributes}}">
-                              <tr>
-                                <td>{{_inc(index)}}:</td>
-                                <td><paper-input value="[[item]]" on-input="_onAttributeChanged"><iron-icon suffix icon="remove-circle" on-click="_removeRow"></iron-icon></paper-input></td>
-                              </tr>
-                            </template>
-                            </tbody>
-                          </table>
-                        </div>
-                        <div class="menu-element" id="methods">
-                          <iron-label>
-                            <span>Methods</span><paper-icon-button icon="add-circle-outline" edit="methods" on-click="_addRow"></paper-icon-button>
-                          </iron-label>
-                          <table edit="methods">
-                            <tbody>
-                            <template is="dom-repeat" items="{{selected.model.attributes.methods}}">
-                              <tr>
-                                <td>{{_inc(index)}}:</td>
-                                <td><paper-input value="[[item]]" on-input="_onMethodChanged"><iron-icon suffix icon="remove-circle" on-click="_removeRow"></iron-icon></paper-input></td>
-                              </tr>
-                            </template>
-                            </tbody>
-                          </table>
-                        </div>
+                        <paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>
                       </template>
-                      <!--Source and Target-->
-                      <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
-                        <div class="menu-element" id="relation">
-                          <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget">
-                            <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.source.id, _states)}}">
-                              <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                                <paper-item id="[[item.id]]">[[item.text]]</paper-item>
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-
-                          <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget">
-                            <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.target.id, _states)}}">
-                              <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                                <paper-item id="[[item.id]]">[[item.text]]</paper-item>
-                              </template>
-                            </paper-listbox>
-                          </paper-dropdown-menu>
-                        </div>
-                      </template>
-                      <div class="menu-element error-message" id="error">
-                        <p>Submission not valid:</p>
-                        <p id="whichError">- error message -</p>
-                      </div>
-                      <div class="menu-element submit-button">
-                        <paper-button on-click="_saveChanges"><h4 class="button-label">SAVE</h4></paper-button>
-                      </div>
-                      <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
-                        <div class="menu-element clone-button">
-                          <paper-button on-click="_onJointjsObjDeselected"><h4 class="button-label">CLONE</h4></paper-button>
-                        </div>
-                      </template>
-                  </template>
-                  <template is="dom-if" if="{{_twoSelected(selectedCounter)}}" restamp>
-                    <div class="menu-element submit-button">
-                      <paper-button on-click="_connectSelected"><h4 class="button-label">CONNECT</h4></paper-button>
+                      <paper-button raised on-click="_deselectJointjsObj"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
-                  <div class="menu-element cancel-button">
-                  <paper-button on-click="_deselectJointjsObj"><h4 class="button-label">CANCEL</h4></paper-button>
-                </div>
-                  <div class="menu-element delete-button">
-                  <paper-button on-click="_deleteSelected"><h4 class="button-label">DELETE</h4></paper-button>
-                </div>
+                  <template is="dom-if" if="{{_twoSelected(selectedCounter)}}" restamp>
+                    <div class="menu-element" id="buttons">
+                      <paper-button raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                      <paper-button raised on-click="_deselectJointjsObj"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="{{_multipleSelected(selectedCounter)}}" restamp>
+                    <div class="menu-element" id="buttons">
+                      <paper-button raised on-click="_deselectJointjsObj"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
                 </template>
               </div>
             </div>
@@ -569,12 +569,24 @@
         this._showStateContent = !this._showStateContent
       },
 
+      _collapseStateMenu: function () {
+        this._showStateContent = false;
+      },
+
       _expandRelationMenu: function () {
         this._showLinkContent = !this._showLinkContent
       },
 
+      _collapseRelationMenu: function () {
+        this._showLinkContent = false;
+      },
+
       _expandEditMenu: function () {
         this._showEditContent = !this._showEditContent
+      },
+
+      _collapseEditMenu: function () {
+        this._showEditContent = false;
       },
 
       _nothingSelected: function (counter) {
@@ -595,15 +607,9 @@
         }.bind(this))
       },
 
-
-
-      // _isCoupleMode: function (selected, selectedElements) {
-      //   return !this.selected && this.selectedElements.length === 0;
-      // },
-      //
-      // _isMultiMode: function (selected, selectedElements) {
-      //   return !this.selected && this.selectedElements.length === 0;
-      // },
+      _multipleSelected: function(counter){
+        return counter > 1 && !this._twoSelected(counter);
+      },
 
       /**
        * State creation
@@ -616,7 +622,7 @@
         var position =  { x:this.width/2, y: this.height/2 };
         this.addState(data.type, data.name, data.attributes, data.methods, position);
 
-        this._expandStateMenu()
+        this._expandStateMenu();
       },
 
       _getStateFormData: function () {
@@ -1266,7 +1272,7 @@
       _computeSize: function () {
         var h = this.height;
         var w = this.width;
-        this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + (w + 20) + 'px;';
+        this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + (w + 10) + 'px;';
         this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
         this.$['sidebar'].style.height = h+'px';
       },

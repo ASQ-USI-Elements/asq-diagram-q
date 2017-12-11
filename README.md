@@ -3,14 +3,13 @@
 
 new feat:
 
-- new link button on cells - OK
-- font size - OK
-- hidden menu - OK
-- draggable panel - OK
-
-- neutral colors for buttons and sidebar
-- paper icon button
-- img shapes in dropdown menus
+1. new link button on cells - OK
+2. font size - OK
+3. hidden menu - OK
+4. draggable panel - OK
+5. paper icon button - OK
+6. neutral colors for buttons and sidebar
+7. img shapes in dropdown menu
 
 opt feat:
 
