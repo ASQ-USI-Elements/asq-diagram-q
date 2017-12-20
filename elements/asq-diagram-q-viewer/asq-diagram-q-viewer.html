@@ -1,8 +1,8 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../asq-base/asq-base.html">
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../asq-base/asq-base.html">
 
-<link rel="import" href="elements/asq-diagram-q-viewer/asq-diagram-q-viewer.html">
-<!--<link rel="import" href="./elements/asq-diagram-q-presenter.html">-->
+<link rel="import" href="asq-diagram-q-viewer-uml.html">
+<link rel="import" href="asq-diagram-q-viewer-erd.html">
 
 <!--
 `asq-diagram-q`is used to allow the user to draw diagrams like UML's or ER's.
@@ -13,35 +13,31 @@
 @blurb Element acting as an editor for diagram questions.
 @homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
 -->
-<dom-module id="asq-diagram-q">
+<dom-module id="asq-diagram-q-viewer">
 
   <template>
-    <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}" restamp>
-      <asq-diagram-q-viewer
-        role="viewer"
-        uid="[[uid]]"
-        name="{{name}}"
-        width="{{width}}"
-        height="{{height}}"
-        type="{{type}}">
+    <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
+      <asq-diagram-q-viewer-uml
+              width="{{width}}"
+              height="{{height}}"
+              type="{{type}}">
         <content></content>
-      </asq-diagram-q-viewer>
+      </asq-diagram-q-viewer-uml>
     </template>
 
-    <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}" restamp>
-      <asq-diagram-q-presenter
-        role="presenter"
-        uid="[[uid]]"
-        name="{{name}}"
-        disabled="{{disable}}]">
+    <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
+      <asq-diagram-q-viewer-erd
+              width="{{width}}"
+              height="{{height}}"
+              type="{{type}}">
         <content></content>
-      </asq-diagram-q-presenter>
+      </asq-diagram-q-viewer-erd>
     </template>
   </template>
 
   <script>
     Polymer({
-      is: 'asq-diagram-q',
+      is: 'asq-diagram-q-viewer',
 
       behaviors: [
         ASQ.asqElementBehavior
@@ -50,19 +46,9 @@
       properties: {
 
         /**
-         * Name of 'this' obj
-         */
-        name: {
-          type: String,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
          * Type of diagram (default is uml)
          * options = 'uml', 'er'
          */
-
         type: {
           type: String,
           value: 'uml',
@@ -91,13 +77,10 @@
         }
       },
 
-      attached: function () {
-        this._isReady = true;
-
-        this.async(function () {
-          this.fire('asq-diagram-q-ready');
-        });
+      _isType: function (type, thisType) {
+        return type === thisType;
       }
+
     });
 
   </script>

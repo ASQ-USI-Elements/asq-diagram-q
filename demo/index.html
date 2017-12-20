@@ -32,28 +32,40 @@
   </head>
   <body unresolved>
     <div>
-      <asq-diagram-q id="1234" uid="" name="diagram" width="800" height="600">This is the first test for a diagram question type.</asq-diagram-q>
+      <asq-diagram-q id="1234" uid="" name="diagram1" type="erd" width="800" height="600">This is the first test for a diagram question type.</asq-diagram-q>
+      <asq-diagram-q id="2345" uid="" name="diagram1" type="uml" width="800" height="600">This is the second test for a diagram question type.</asq-diagram-q>
     </div>
 
     <script>
       document.addEventListener("WebComponentsReady", function (evt) {
+        var diagram = document.getElementById("2345");
+
+        var uml =  Polymer.dom(Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer').root).querySelector('asq-diagram-q-viewer-uml');
+
+        var position1 =  { x:300  , y: 80 };
+        var position2 =  { x:400  , y: 300 };
+
+        uml.addState('interface', 'Mammal', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1);
+        uml.addState('abstract', 'Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2);
+
+        var keys = Object.keys(uml._states);
+        uml.addRelation('implementation', {id:keys[1]}, {id:keys[0]});
+      });
+
+
+      document.addEventListener("WebComponentsReady", function (evt) {
         var diagram = document.getElementById("1234");
 
-        var d_viewer = Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer');
+        var erd =  Polymer.dom(Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer').root).querySelector('asq-diagram-q-viewer-erd');
 
-        var position1 =  { x:200  , y: 20 };
-        var position2 =  { x:300  , y: 180 };
-        var position3 =  { x:400  , y: 340 };
+        var position1 =  { x:300  , y: 80 };
+        var position2 =  { x:400  , y: 300 };
 
-        d_viewer.addState('interface', 'Mammal', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1);
-        d_viewer.addState('abstract', 'Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2);
-        d_viewer.addState('class', 'Woman', [],['+ giveABrith(): Person []'], position3);
+        erd.addState('Entity', position1, 'MyEntity');
+        erd.addState('Key', position2, 'MyKeyAttribute');
 
-        var keys = Object.keys(d_viewer._states);
-        d_viewer.addRelation('implementation', {id:keys[1]}, {id:keys[0]});
-        d_viewer.addRelation('generalization', {id:keys[2]}, {id:keys[1]});
-
-//        d_viewer._deleteState(keys[1]);
+        var keys = Object.keys(erd._states);
+        erd.addRelation({id:keys[1]}, {id:keys[0]}, "Slabel", "tlabel");
       });
 
     </script>

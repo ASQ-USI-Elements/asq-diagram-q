@@ -1,0 +1,420 @@
+<script type="text/javascript" src="../../../jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="../../../lodash/lodash.js"></script>
+<script type="text/javascript" src="../../../backbone/backbone.js"></script>
+<script type="text/javascript" src="../../../jointjs/dist/joint.js"></script>
+
+<script>
+
+  /**
+   * Set up
+   */
+  function setKeyAndMouseEventListeners(obj) {
+      document.addEventListener('keydown',obj._keyHandler.bind(obj));
+      document.addEventListener('keyup',obj._keyHandler.bind(obj));
+      obj.$['paper-container'].addEventListener('mousemove',obj.dragPaper.bind(obj));
+    }
+
+  function setJointJsEventListeners(obj) {
+    obj._paper.on('cell:pointerclick', obj._selectJointjsObject.bind(obj));
+    obj._paper.on('link:options', obj._selectJointjsObject.bind(obj));
+    obj._paper.on('link:pointerdown', obj._deselectJointjsObj.bind(obj));
+    obj._paper.on('blank:pointerclick', obj._deselectJointjsObj.bind(obj));
+    obj._paper.on('blank:pointerdown', obj.onDragStart.bind(obj));
+    obj._paper.on('cell:pointerup blank:pointerup', obj.onDragEnd.bind(obj));
+  }
+
+  function getShapes(type) {
+    if(type === 'uml')
+      return {
+        states : ['Class','Abstract','Interface'],
+        relations: ['Generalization','Implementation', 'Aggregation','Composition','Association']
+      };
+    else if(type === 'erd')
+      return {
+        states : {
+          entities: ['Entity','Weak Entity'],
+          relationships: ['Relationship','Identifying Relationship','ISA'],
+          attributes: ['Attribute','Key','Multivalued','Derived']
+        },
+        relations: ['Line']
+      };
+  }
+
+  function setCellHighlighter(obj) {
+    obj.highlighter = {
+      highlighter: {
+        name: 'stroke',
+        options: {
+          padding: 10,
+          rx: 5,
+          ry: 5,
+          attrs: { 'stroke-width': 2, stroke: '#FF0000' }
+        }
+      }
+    }
+  }
+
+  /**
+   * Expand/collapse sidebar
+   */
+  function _expandSidebar(obj) {
+    var bar = obj.$['sidebar'];
+    var btn = obj.$['sidebar-button'].firstChild;
+    bar.className = 'open';
+    btn.icon='chevron-left';
+  }
+
+  function _collapseSidebar(obj) {
+    var bar = obj.$['sidebar'];
+    var btn = obj.$['sidebar-button'].firstChild;
+    bar.className = 'closed';
+    btn.icon='chevron-right';
+  }
+
+  /**
+   * State creation
+   */
+
+  function UMLstatePropertiesToJSONObj(name, attributes, methods, position, size) {
+    return {name: name, attributes: attributes, methods: methods, position: position, size: size}
+  }
+
+  function getUMLAttrs(type) {
+
+    var attrs = {
+      '.uml-class-name-text': {
+        fontSize: 12,
+        fontFamily: 'Courier'
+      },
+      '.uml-class-attrs-text, .uml-class-methods-text': {
+        fontSize: 10,
+        fontFamily: 'Courier'
+      }
+    };
+
+    if (type.toLowerCase() === 'class') {
+      attrs['.uml-class-name-rect'] = {
+        fill: '#ff8450',
+        stroke: '#fff',
+        'stroke-width': 0.5
+      };
+
+      attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
+        fill: '#fe976a',
+        stroke: '#fff',
+        'stroke-width': 0.5
+      };
+
+      attrs['.uml-class-attrs-text'] = {
+        ref: '.uml-class-attrs-rect',
+        'ref-y': 0.5,
+        'y-alignment': 'middle'
+      };
+
+      attrs['.uml-class-methods-text'] = {
+        ref: '.uml-class-methods-rect',
+        'ref-y': 0.5,
+        'y-alignment': 'middle'
+      };
+    }
+
+    else if (type.toLowerCase() === 'abstract') {
+      attrs['.uml-class-name-rect'] = {
+        fill: '#68ddd5',
+        stroke: '#ffffff',
+        'stroke-width': 0.5
+      };
+
+      attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
+        fill: '#9687fe',
+        stroke: '#fff',
+        'stroke-width': 0.5
+      };
+
+      attrs['.uml-class-methods-text, .uml-class-attrs-text'] = {
+        fill: '#fff'
+      };
+    }
+
+    else {
+      attrs['.uml-class-name-rect'] = {
+        fill: '#feb662',
+        stroke: '#ffffff',
+        'stroke-width': 0.5
+      };
+
+      attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
+        fill: '#fdc886',
+        stroke: '#fff',
+        'stroke-width': 0.5
+      };
+
+      attrs['.uml-class-attrs-text'] = {
+        ref: '.uml-class-attrs-rect',
+        'ref-y': 0.5,
+        'y-alignment': 'middle'
+      };
+
+      attrs['.uml-class-methods-text'] = {
+        ref: '.uml-class-methods-rect',
+        'ref-y': 0.5,
+        'y-alignment': 'middle'
+      };
+    }
+    return attrs;
+  }
+
+  function getERDAttrs(type, label, state) {
+    if (type !== 'ISA')
+      return { text: { text: label }};
+    else
+      return {};
+  }
+
+  function getNewStatePosition(obj){
+    var random = Math.random()*(25 - (-25) + (-25));
+    var scroll = obj.$['paper-container'];
+    return { x:(obj.width/2)+scroll.scrollLeft+random, y: (obj.height/2)+scroll.scrollTop+random };
+
+  }
+
+  /**
+   * Relation creation
+   */
+  function relationPropertiesToJSONObj(source, target) {
+    return {source: source, target: target}
+  }
+
+  function getNewLinkPosition(state) {
+    var pos =  state.model.get('position');
+    var size =  state.model.get('size');
+
+    // var source = { x :pos.x, y : pos.y+(size.height/2) };
+    var source = { id:state.model.get('id') };
+    var target = { x : pos.x+size.width+25, y : pos.y+(size.height/2) };
+
+    return {source:source, target:target}
+
+  }
+
+  function getNewRelAttrs() {
+    return {
+      '.connection': { visibility: 'hidden'},
+      '.marker-source': { visibility: 'hidden'},
+      '.connection-wrap':{ visibility: 'hidden'},
+      '.labels':{ visibility: 'hidden'},
+      '.marker-vertices':{ visibility: 'hidden', 'pointer-events' : 'none'},
+      '.marker-arrowhead-group.marker-arrowhead-group-source':{ visibility: 'hidden'},
+      '.link-tools':{ visibility: 'hidden'},
+      '.marker-target': { stroke: '#FF0000', fill: '#FF0000', d:'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'}
+    }
+  }
+
+  function getDefaultUMLRelAttrs() {
+    return {'.marker-target': {d: 'M 20 0 L 0 10 L 20 20 z', fill: 'white'}};
+  }
+
+  function createLabels(sLabel, tLabel) {
+    return {
+      labels: [
+        {
+          position: 20,
+          attrs: {
+            text: { dy: -8, text: sLabel, fill: '#000000' },
+            rect: { fill: '#ffffff' }
+          }
+          },
+        {
+          position: -20,
+          attrs: {
+            text: { dy: -8, text: tLabel, fill: '#000000' },
+            rect: { fill: '#ffffff' }
+          }
+        }]
+    };
+  };
+
+  /**
+   * State Edit
+   */
+
+  function getUMLModelData(model, isState) {
+    var type = getUMLModelSubType(model,isState);
+    if (isState)
+      return {
+        name: model.name,
+        type: type,
+        attributes: model.attributes,
+        methods: model.methods
+      };
+    else
+      return {
+        type: type,
+        source: model.source,
+        target: model.target
+      }
+  }
+
+  function getUMLModelSubType(model, isState) {
+    var subType, collection = isState? getShapes('uml').states : getShapes('uml').relations;
+
+    collection.forEach(function (value) {
+      subType = model.type.includes(value)? value : subType;
+    });
+    return subType;
+  }
+
+  function getERDModelData(model, isState){
+    var type = getERDModelSubType(model,isState);
+    if (isState)
+      return {
+        type: type,
+        label: type.includes('ISA')? '' : model.attrs.text.text
+      };
+    else
+      return {
+        source: model.source,
+        target: model.target,
+        sLabel: model.labels[0].attrs.text.text,
+        tLabel: model.labels[1].attrs.text.text
+      }
+  }
+
+  function getERDModelSubType(model, isState){
+    var subType, collection = isState? getShapes('erd').states : getShapes('erd').relations;
+
+    if(!Array.isArray(collection)){
+      collection = shapesObjToArray(collection);
+    }
+
+    if(model.type.includes("Normal"))
+      model.type = "Attribute";
+
+    collection.forEach(function (value) {
+      if(model.type.toLowerCase().replace(/erd./g, '') === value.toLowerCase().replace(/\s/g, ''))
+        subType = value;
+    });
+    return subType;
+  }
+
+  function shapesObjToArray(obj) {
+    var array=[];
+    Object.keys(obj).forEach(function (arr) {
+      obj[arr].forEach(function (el) {
+        array.push(el);
+      });
+    });
+    return array;
+  }
+
+  function getValuesFromTable(table) {
+    var rows = table.querySelectorAll('paper-input');
+    return Array.prototype.slice.call(rows).filter(function(el){
+      return !!el.value.trim();
+    }).map(function (x) {
+      return x.value.trim();
+    });
+  }
+
+  /**
+   * Helper functions
+   */
+  function computeSize(h,w,t) {
+    t.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + (w + 10) + 'px;';
+    t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+    t.$['sidebar'].style.height = h+'px';
+  }
+
+  function scalePaper(t) {
+    t.$['paper'].style = 'height:' + (1920*t._scale) + 'px;' + 'width:' + (1920*t._scale) + 'px;';
+  }
+
+  function showStateErrorMessage(el, type, name) {
+    var err;
+    if (!type)
+      err='- please choose a type';
+    else if (!name)
+      err='- please enter a name';
+
+    if(err) {
+      showError(el,err);
+      return true;
+    }
+    return false;
+  }
+
+  function showRelationErrorMessage(el, source, target){
+    var err;
+    if (!source)
+      err='- please choose the source';
+    else if (!target)
+      err='- please choose the target';
+    else if (source.id === target.id)
+      err='- source and target are the same';
+
+    if(err) {
+      showError(el,err);
+      return true;
+    }
+    return false;
+  }
+
+  function showERDStateErrorMessage(el, type, label) {
+    var err;
+    if (!type)
+      err='- please choose a type';
+    else if (!label && type !== 'ISA')
+      err='- please enter a label';
+
+    if(err) {
+      showError(el,err);
+      return true;
+    }
+    return false;
+  }
+
+  function showError(el, text) {
+    var err = el.querySelector('div[id=error]');
+    if(err){
+      err.style = 'visibility:visible';
+      err.querySelector('p[id=whichError]').innerHTML = text;
+      setTimeout(function(){
+        err.removeAttribute('style');
+      }, 2000);
+    }
+
+  }
+
+  function findRelations(id, relations) {
+    var rel = [];
+    Object.keys(relations).forEach(function (r) {
+      if (relations[r].relation.source.id === id || relations[r].relation.target.id === id)
+        rel.push(r);
+    });
+    return rel;
+  }
+
+  function computeJointJsStateSize(name, attributes, methods) {
+    var arr = [name].concat(attributes, methods);
+    return {
+      width: computeStateWidth(arr) + 2, // + 2 for margins
+      height: Math.max(50, 2 * 15 + (arr.length) * 12)
+    }
+  }
+
+  function computeStateWidth(arr) {
+    var w = 0;
+    for (var i = 0; i < arr.length; i++) {
+      w = Math.max(w, getWidthOfText(arr[i], (i===0)))
+    }
+    return Math.max(Math.max(w),100);
+  }
+
+  function getWidthOfText(txt, bold) {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
+    return ctx.measureText(txt).width;
+  }
+
+</script>

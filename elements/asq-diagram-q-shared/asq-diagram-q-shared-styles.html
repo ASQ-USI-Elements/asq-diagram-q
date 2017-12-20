@@ -53,10 +53,29 @@
       }
 
       #sidebar-content {
-        height: 100%;
+        height: 94%;
         width:200px;
         overflow-y: scroll;
       }
+
+      #zoom {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #383b61;
+        height: 6%;
+        width: 100%;
+      }
+
+      #scale-label {
+        width: 30px;
+        text-align: center;
+      }
+
+      #zoom > * {
+        float: right;
+      }
+
 
       #sidebar-button {
         width: 0;
@@ -78,10 +97,20 @@
       #paper-container {
         margin-left: 10px;
         overflow: scroll;
+        cursor: move;
       }
 
       .menu {
         margin: 5px 10px;
+      }
+
+      .menu-content {
+        margin-top: 5px;
+      }
+
+      h1 {
+        font-size: 8px;
+        margin:0;
       }
 
       h4 {
@@ -108,6 +137,13 @@
         margin: 2px;
         padding:2px;
         border-radius: 5px;
+      }
+
+      .inner-label {
+        width: 100%;
+        text-align: center;
+        text-decoration: underline;
+        margin: 0;
       }
 
       .menu-element > paper-dropdown-menu{
@@ -159,7 +195,7 @@
       }
 
       .menu-element > table > tbody > tr > td > paper-input,
-      .menu-element > paper-input{
+      .menu-element > paper-input, .menu-element > div > paper-input{
 
         --paper-input-container-input: {
           background-color: var(--paper-blue-grey-50);
@@ -177,6 +213,10 @@
         --paper-font-caption: {
           display: none;
         };
+      }
+
+      .menu-element > div > paper-input {
+        margin: 0 5px;
       }
 
       .menu-element > table > tbody > tr > td > paper-input > iron-icon {
