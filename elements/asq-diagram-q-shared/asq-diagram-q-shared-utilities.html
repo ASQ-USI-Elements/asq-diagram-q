@@ -23,13 +23,13 @@
     obj._paper.on('cell:pointerup blank:pointerup', obj.onDragEnd.bind(obj));
   }
 
-  function getShapes(type) {
-    if(type === 'uml')
+  function getShapes(diagramType) {
+    if(diagramType === 'uml')
       return {
         states : ['Class','Abstract','Interface'],
         relations: ['Generalization','Implementation', 'Aggregation','Composition','Association']
       };
-    else if(type === 'erd')
+    else if(diagramType === 'erd')
       return {
         states : {
           entities: ['Entity','Weak Entity'],
@@ -172,9 +172,23 @@
   }
 
   function getNewStatePosition(obj){
+
     var random = Math.random()*(25 - (-25) + (-25));
-    var scroll = obj.$['paper-container'];
-    return { x:(obj.width/2)+scroll.scrollLeft+random, y: (obj.height/2)+scroll.scrollTop+random };
+    var container = obj.$['paper-container'];
+    var paper = obj.$['paper'];
+
+    var w = obj.width,
+      h = obj.height;
+
+    if(w > paper.offsetWidth)
+      w = paper.offsetWidth;
+    if(h > paper.offsetHeight)
+      h = paper.offsetHeight;
+
+    return {
+      x: (w/(2*obj._scale))+container.scrollLeft+random,
+      y: (h/(2*obj._scale))+container.scrollTop+random
+    }
 
   }
 
@@ -323,6 +337,22 @@
     t.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + (w + 10) + 'px;';
     t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
     t.$['sidebar'].style.height = h+'px';
+  }
+
+  function findStateByName(diagramType, states, name) {
+    var ids = Object.keys(states)
+    if(diagramType === 'uml')
+      for(var i=0;i<ids.length;i++){
+        if(states[ids[i]].state.name === name)
+          return ids[i];
+      }
+    else if(diagramType === 'erd')
+      for(var i=0;i<ids.length;i++){
+        if(states[ids[i]].label === name)
+          return ids[i];
+      }
+
+    return false;
   }
 
   function scalePaper(t) {

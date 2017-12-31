@@ -21,9 +21,11 @@
         role="viewer"
         uid="[[uid]]"
         name="{{name}}"
+        value="{{value}}"
         width="{{width}}"
         height="{{height}}"
-        type="{{type}}">
+        type="{{type}}"
+        event-bus="[[eventBus]]">
         <content></content>
       </asq-diagram-q-viewer>
     </template>
@@ -33,7 +35,8 @@
         role="presenter"
         uid="[[uid]]"
         name="{{name}}"
-        disabled="{{disable}}]">
+        disabled="{{disable}}]"
+        event-bus="[[eventBus]]">
         <content></content>
       </asq-diagram-q-presenter>
     </template>
@@ -88,7 +91,29 @@
           value: 600,
           notify: true,
           reflectToAttribute: true
+        },
+
+        /**
+         * An optional initial set of states/relations.
+         */
+        value: {
+          type: Object,
+          notify: true
+        },
+
+        /**
+         * Event bus to communicate with ASQ
+         */
+        eventBus: {
+          type: Object,
+          notify: true
         }
+      },
+
+      created: function () {
+        document.addEventListener('asq-ready', function (evt) {
+          this.eventBus = evt.detail.asqEventBus
+        }.bind(this));
       },
 
       attached: function () {
@@ -97,6 +122,28 @@
         this.async(function () {
           this.fire('asq-diagram-q-ready');
         });
+      },
+
+      /**
+       * Collect answers from inner `asq-option`s and orgnize them
+       * into an object.
+       *
+
+       {
+         uid: this.uid,
+         timestamp: new Date(),
+         options: options
+       }
+
+       */
+      submit: function() {
+        if (this.role == this.roles.VIEWER) {
+          var el = this.$$('asq-diagram-q-viewer');
+          if (!el) {
+            throw new Error('submit(): expected asq-diagram-viewer element to exist');
+          }
+          return el.submit();
+        }
       }
     });
 

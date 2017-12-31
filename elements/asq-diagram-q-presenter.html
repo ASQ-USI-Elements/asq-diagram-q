@@ -50,12 +50,43 @@
           type: String,
           notify: true,
           reflectToAttribute: true
+        },
+
+        eventBus: {
+          type: Object,
+          observer: "_eventBusChanged",
+          notify: true,
         }
 
       },
 
       attached: function () {
         this._isReady = true;
+      },
+
+      _eventBusChanged: function (eventBus) {
+        if (!eventBus) return;
+        eventBus.on('asq:question_type', this._onQuestionType.bind(this));
+      },
+
+      _onQuestionType: function (evt) {
+        if (!evt || !evt.questionType) return;
+
+        console.log('_onQuestionType PRESENTER');
+        console.log(evt);
+        // // FIXME
+        // // A strange problem: it will get an event twice
+        // // with different `this`!!
+        // if (this.items.length === 0) return;
+        //
+        // if (evt.questionType == 'asq-multi-choice-other-q') {
+        //   if (evt.type == 'progress') {
+        //     this._onProgress(evt);
+        //   }
+        //   else if (evt.type == 'restorePresenter') {
+        //     this._onRestorePresenter(evt);
+        //   }
+        // }
       }
 
     });

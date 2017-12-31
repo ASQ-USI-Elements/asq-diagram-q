@@ -18,18 +18,22 @@
   <template>
     <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
       <asq-diagram-q-viewer-uml
+              role="viewer"
+              uid="[[uid]]"
+              value="{{value}}"
               width="{{width}}"
-              height="{{height}}"
-              type="{{type}}">
+              height="{{height}}">
         <content></content>
       </asq-diagram-q-viewer-uml>
     </template>
 
     <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
       <asq-diagram-q-viewer-erd
+              role="viewer"
+              uid="[[uid]]"
+              value="{{value}}"
               width="{{width}}"
-              height="{{height}}"
-              type="{{type}}">
+              height="{{height}}">
         <content></content>
       </asq-diagram-q-viewer-erd>
     </template>
@@ -74,11 +78,99 @@
           value: 600,
           notify: true,
           reflectToAttribute: true
+        },
+
+        /**
+         * An optional initial set of states/relations.
+         */
+        value: {
+          type: Object,
+          notify: true
+        },
+
+        /**
+         * Event bus to communicate with ASQ
+         */
+        eventBus: {
+          type: Object,
+          observer: '_eventBusChanged',
+          notify: true
         }
       },
 
       _isType: function (type, thisType) {
         return type === thisType;
+      },
+
+      _eventBusChanged: function (eventBus) {
+        if (!eventBus) return;
+        eventBus.on('asq:question_type', this._onQuestionType.bind(this));
+      },
+
+      _onQuestionType: function (evt) {
+        if (!evt || !evt.questionType) return;
+
+        console.log('_onQuestionType VIEWER');
+        console.log(evt);
+        // if (this.items.length === 0) return;
+        // if (evt.questionType == 'asq-multi-choice-other-q') {
+        //   if (evt.type == 'restoreViewer') {
+        //     this._onRestoreViewer(evt);
+        //   }
+        // }
+      },
+
+      /**
+       * Collect answers from inner `asq-option`s and orgnize them
+       * into an object.
+       *
+
+       {
+         uid: this.uid,
+         timestamp: new Date(),
+         options: options
+       }
+
+       */
+      submit: function () {
+        if (this.role !== this.roles.VIEWER) return;
+
+        var diagram = this.$$('asq-diagram-q-viewer-'+this.type);
+
+        if(diagram.selectedElements.length > 0)
+          diagram._deselectJointjsObj();
+
+        var statesIds = Object.keys(diagram._states), relationsIds = Object.keys(diagram._relations);
+        var states = [], relations = [];
+
+        statesIds.forEach(function (id) {
+          states.push({
+            type: diagram._states[id].type,
+            state: diagram._states[id].state
+          });
+        });
+
+        relationsIds.forEach(function (id) {
+          var relation = {};
+          if (this.type === 'uml'){
+            relation.type = diagram._relations[id].type;
+          } else if (this.type === 'erd'){
+            relation.labels = diagram._relations[id].labels;
+          }
+          relation.relation = diagram._relations[id].relation;
+          relation.vertices = diagram._graph.getCell(id).get('vertices');
+          relations.push(relation);
+        }.bind(this));
+
+        return {
+          questionUid: this.uid,
+          timestamp: new Date(),
+          diagram: {
+            type : this.type,
+            states : states,
+            relations : relations
+          }
+        }
       }
 
     });

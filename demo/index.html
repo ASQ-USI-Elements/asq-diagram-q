@@ -24,48 +24,78 @@
       }
 
       body div {
-        margin-left: 100px;
+        /*margin-left: 100px;*/
       }
 
     </style>
 
   </head>
   <body unresolved>
+
     <div>
-      <asq-diagram-q id="1234" uid="" name="diagram1" type="erd" width="800" height="600">This is the first test for a diagram question type.</asq-diagram-q>
-      <asq-diagram-q id="2345" uid="" name="diagram1" type="uml" width="800" height="600">This is the second test for a diagram question type.</asq-diagram-q>
+      <asq-diagram-q id="2345" uid="" name="diagram2" type="uml" width="800" height="600">
+        <asq-stem>This is the first demo for a UML diagram question type.</asq-stem>
+      </asq-diagram-q>
+      <asq-diagram-q id="1234" uid="" name="diagram1" type="erd" width="800" height="600">
+        <asq-stem>This is the first demo for a ER diagram question type.</asq-stem>
+      </asq-diagram-q>
     </div>
 
     <script>
       document.addEventListener("WebComponentsReady", function (evt) {
         var diagram = document.getElementById("2345");
-
-        var uml =  Polymer.dom(Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer').root).querySelector('asq-diagram-q-viewer-uml');
-
-        var position1 =  { x:300  , y: 80 };
-        var position2 =  { x:400  , y: 300 };
-
-        uml.addState('interface', 'Mammal', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1);
-        uml.addState('abstract', 'Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2);
-
-        var keys = Object.keys(uml._states);
-        uml.addRelation('implementation', {id:keys[1]}, {id:keys[0]});
+        diagram.value = {
+          states: [
+            {
+              attributes: ['dob: Date'],
+              methods: ['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'],
+              name: "Mammal",
+              position: { x:240  , y: 100 },
+              type: "interface"
+            },
+            {
+              attributes: ["firstName: String", "lastName: String"],
+              methods:["+ setName(first: String, last: String): Void", "+ getName(): String"],
+              name: "Person",
+              position: {x: 410, y: 370},
+              type: "abstract"
+            }],
+          relations: [
+            {
+              type: 'implementation',
+              source: 'Person',
+              target: 'Mammal',
+              vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
+            }
+          ]
+        };
       });
 
 
       document.addEventListener("WebComponentsReady", function (evt) {
         var diagram = document.getElementById("1234");
-
-        var erd =  Polymer.dom(Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer').root).querySelector('asq-diagram-q-viewer-erd');
-
-        var position1 =  { x:300  , y: 80 };
-        var position2 =  { x:400  , y: 300 };
-
-        erd.addState('Entity', position1, 'MyEntity');
-        erd.addState('Key', position2, 'MyKeyAttribute');
-
-        var keys = Object.keys(erd._states);
-        erd.addRelation({id:keys[1]}, {id:keys[0]}, "Slabel", "tlabel");
+        diagram.value = {
+          states: [
+            {
+              name: "MyEntity",
+              position: { x:300  , y: 80 },
+              type: "Entity"
+            },
+            {
+              name: "MyKeyAttribute",
+              position: {x: 490, y: 340},
+              type: "Key"
+            }],
+          relations: [
+            {
+              source: 'MyKeyAttribute',
+              target: 'MyEntity',
+              sLabel: 'Slabel',
+              tLabel: 'tlabel',
+              vertices: [{x: 540, y: 220}]
+            }
+          ]
+        };
       });
 
     </script>

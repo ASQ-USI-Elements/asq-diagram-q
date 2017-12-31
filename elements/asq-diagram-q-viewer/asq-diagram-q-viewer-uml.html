@@ -54,10 +54,10 @@
                     <paper-input></paper-input>
                   </div>
                   <div class="menu-element" id="type">
-                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left">
+                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_shapes.states}}" restamp>
-                          <paper-item>{{item}}</paper-item>
+                          <paper-item type="{{item}}">{{item}}</paper-item>
                         </template>
                       </paper-listbox>
                     </paper-dropdown-menu>
@@ -92,23 +92,23 @@
               <template is="dom-if" if="{{_showLinkContent}}" restamp>
                 <div class="menu-content">
                   <div class="menu-element" id="type">
-                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left">
+                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_shapes.relations}}" restamp>
-                          <paper-item>{{item}}</paper-item>
+                          <paper-item type="{{item}}">{{item}}</paper-item>
                         </template>
                       </paper-listbox>
                     </paper-dropdown-menu>
                   </div>
                   <div class="menu-element" id="relation">
-                    <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left">
+                    <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-opened-changed="setHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                           <paper-item id="{{item.id}}">{{item.text}}</paper-item>
                         </template>
                       </paper-listbox>
                     </paper-dropdown-menu>
-                    <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left">
+                    <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-opened-changed="setHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                           <paper-item id="{{item.id}}">{{item.text}}</paper-item>
@@ -147,13 +147,11 @@
                     </template>
                     <!--Type-->
                     <div class="menu-element" id="type">
-
-                      <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged">
-
+                      <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged" on-opened-changed="setHeight">
                         <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapes.states)}}">
                             <template is="dom-repeat" items="{{_shapes.states}}" restamp>
-                              <paper-item>[[item]]</paper-item>
+                              <paper-item type="[[item]]">[[item]]</paper-item>
                             </template>
                           </paper-listbox>
                         </template>
@@ -161,11 +159,10 @@
                         <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapes.relations)}}">
                             <template is="dom-repeat" items="{{_shapes.relations}}" restamp>
-                              <paper-item>[[item]]</paper-item>
+                              <paper-item type="[[item]]">[[item]]</paper-item>
                             </template>
                           </paper-listbox>
                         </template>
-
                       </paper-dropdown-menu>
                     </div>
                     <!--Attributes and Methods-->
@@ -204,7 +201,7 @@
                     <!--Source and Target-->
                     <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
                       <div class="menu-element" id="relation">
-                        <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget">
+                        <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setHeight">
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.source.id, _states)}}">
                             <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                               <paper-item id="[[item.id]]">[[item.text]]</paper-item>
@@ -212,7 +209,7 @@
                           </paper-listbox>
                         </paper-dropdown-menu>
 
-                        <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget">
+                        <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setHeight">
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.target.id, _states)}}">
                             <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                               <paper-item id="[[item.id]]">[[item.text]]</paper-item>
@@ -302,6 +299,15 @@
         },
 
         /**
+         * An optional initial set of states/relations.
+         */
+        value: {
+          type: Object,
+          notify: true,
+          observer: '_valueChanged'
+        },
+
+        /**
          * The grap object
          *  @type {Object}
          */
@@ -321,6 +327,9 @@
           reflectToAttribute: true
         },
 
+        /**
+         * The scale value
+         */
         _scale: {
           type: Number,
           value: 1,
@@ -478,6 +487,22 @@
         setKeyAndMouseEventListeners(this);
       },
 
+      _valueChanged: function (value) {
+        if(value){
+          value.states.forEach(function(state){
+            this.addState(state.type, state.name, state.attributes, state.methods, state.position);
+          }.bind(this));
+
+          value.relations.forEach(function(rel){
+            var sId = findStateByName('uml', this._states, rel.source);
+            var tId = findStateByName('uml', this._states, rel.target);
+            var id = this.addRelation( rel.type, { id: sId }, { id: tId } );
+            if(rel.vertices)
+              this._graph.getCell(id).set('vertices',rel.vertices)
+          }.bind(this));
+        }
+      },
+
       /**
        * expand/collapse sidebar
        */
@@ -525,22 +550,31 @@
 
       /**
        * State creation
+       *
+       * TODO:
+       * - clone state button
        */
 
       newUMLState: function () {
         var data = this._getStateFormData();
         if(!data) return;
 
-        var position =  { x:this.width/2, y: this.height/2 };
+        // var position =  { x:this.width/2, y: this.height/2 };
+        var position = getNewStatePosition(this);
         this.addState(data.type, data.name, data.attributes, data.methods, position);
 
         this._expandStateMenu();
       },
 
       _getStateFormData: function (typeChange) {
-        var el = Polymer.dom(this.root).querySelector('div[class="menu state"] div[class=menu-content]') ||
-          Polymer.dom(this.root).querySelector('div[class="menu edit"] div[class=menu-content]');
-        var type = el.querySelector('paper-dropdown-menu').value;
+        // var el = Polymer.dom(this.root).querySelector('div[class="menu state"] div[class=menu-content]') ||
+        //   Polymer.dom(this.root).querySelector('div[class="menu edit"] div[class=menu-content]');
+        var el = this.$$('div[class="menu state"] div[class=menu-content]') || this.$$('div[class="menu edit"] div[class=menu-content]');
+
+        var type;
+        if(el.querySelector('paper-dropdown-menu').selectedItem)
+          type = el.querySelector('paper-dropdown-menu').selectedItem.type;
+        // var type = el.querySelector('paper-dropdown-menu').value;
         var name = el.querySelector('div[id=name] paper-input').value;
 
         if(!typeChange)
@@ -587,6 +621,9 @@
 
       /**
        * Relation creation
+       *
+       * TODO:
+       * - copy vertices when replacing relation
        */
 
       newUMLRelation: function() {
@@ -598,23 +635,19 @@
       },
 
       _getRelationFormData: function (typeChange) {
+
         // var el = Polymer.dom(this.root).querySelector('div[class="menu link"] div[class=menu-content]') ||
         //   Polymer.dom(this.root).querySelector('div[class="menu edit"] div[class=menu-content]');
+
+        var el = this.$$('div[class="menu link"] div[class=menu-content]') || this.$$('div[class="menu edit"] div[class=menu-content]');
+
+        var type;
+        if(el.querySelector('div[id=type] paper-dropdown-menu').selectedItem)
+          type = el.querySelector('div[id=type] paper-dropdown-menu').selectedItem.type;
+
+
         // var type = el.querySelector('div[id=type] paper-dropdown-menu').value;
-        // var source = el.querySelector('div[id=relation] paper-dropdown-menu[id=source]').selectedItem;
-        //
-        // var target = el.querySelector('div[id=relation] paper-dropdown-menu[id=target]').selectedItem;
-        //
-        // if(!typeChange) {
-        //   if (showRelationErrorMessage(el, type, source, target))
-        //     return;
-        // }
-        // return { type:type, source: {id: source.id}, target: {id: target.id }}
 
-
-        var el = Polymer.dom(this.root).querySelector('div[class="menu link"] div[class=menu-content]') ||
-          Polymer.dom(this.root).querySelector('div[class="menu edit"] div[class=menu-content]');
-        var type = el.querySelector('div[id=type] paper-dropdown-menu').value;
         var source = el.querySelector('div[id=relation] paper-dropdown-menu[id=source]').selectedItem;
         if(source) source = { id : source.id};
         var target = el.querySelector('div[id=relation] paper-dropdown-menu[id=target]').selectedItem;
@@ -828,7 +861,8 @@
 
       /* for both states and relations */
       _saveChanges: function () {
-        var data = this._isType('state', this.selected)? this._getStateFormData(true) : this._getRelationFormData(true);
+        var data = this._isType('state', this.selected)? this._getStateFormData() : this._getRelationFormData();
+        console.log(data)
         if(!data){
           this._undoChanges();
         } else {
@@ -886,24 +920,23 @@
       },
 
       _updateNewRelTargetPosition: function () {
-        this._hideNewLinkButton();
-        this._showNewLinkButton(this.selected);
+        if(this.newRel) {
+          this._hideNewLinkButton();
+          this._showNewLinkButton(this.selected);
+        }
       },
 
       /**
        * Cells selection
        */
       _selectJointjsObject: function (cellView, evt, x, y) {
-
         var id = cellView.model.id;
         if(this._states[id] || (this._relations[id] && evt.type === 'mousedown')){ // click on state or on relation 'options' icon
           if(!this.multiModeEnabled){
             if(this.selectedElements.length > 0) {
               this._multiDeselectAll();
             }
-
             this._singleSelect(cellView);
-
           } else{
             if(!this.selected && this.selectedElements.length === 0){ // both emptys
               this._singleSelect(cellView);
@@ -937,6 +970,7 @@
         this.selected.highlight(null, this.highlighter);
         this.selectedCounter++;
         this._showNewLinkButton(cellView);
+        _expandSidebar(this)
       },
 
       _multiSelect: function(cellView){
@@ -1177,10 +1211,26 @@
         return index+1;
       },
 
+      getSrc: function(type,item){
+        return "/../../img/"+type+"/"+item.toLowerCase().replace(/\s/g, '')+".png";
+      },
+
       _keyHandler: function (evt) {
         if(evt.key === 'Meta') {
           if (evt.type === 'keydown') this.multiModeEnabled = true;
           else if (evt.type === 'keyup') this.multiModeEnabled = false;
+        }
+      },
+
+      setHeight: function(e,val){
+        if(val.value){
+          var menu = Polymer.dom(e).localTarget;
+          var relativeY = menu.getBoundingClientRect().y - this.getBoundingClientRect().y;
+          Polymer.dom(menu).querySelector('paper-listbox').style['max-height'] = (this.height/2)+'px';
+          if(this.height > relativeY+(this.height/2))
+            menu.verticalAlign = 'top';
+          else
+            menu.verticalAlign = 'bottom';
         }
       },
 
@@ -1210,7 +1260,6 @@
 
       dragPaper: function (evt) {
         if (this.dragStartPosition){
-
           this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
           this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
         }
