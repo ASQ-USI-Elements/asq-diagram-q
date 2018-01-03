@@ -18,25 +18,25 @@
   <template>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}" restamp>
       <asq-diagram-q-viewer
-        role="viewer"
-        uid="[[uid]]"
-        name="{{name}}"
-        value="{{value}}"
-        width="{{width}}"
-        height="{{height}}"
-        type="{{type}}"
-        event-bus="[[eventBus]]">
+              role="viewer"
+              uid="[[uid]]"
+              name="{{name}}"
+              value="{{value}}"
+              width="{{width}}"
+              height="{{height}}"
+              type="{{type}}"
+              event-bus="[[eventBus]]">
         <content></content>
       </asq-diagram-q-viewer>
     </template>
 
     <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}" restamp>
       <asq-diagram-q-presenter
-        role="presenter"
-        uid="[[uid]]"
-        name="{{name}}"
-        disabled="{{disable}}]"
-        event-bus="[[eventBus]]">
+              role="presenter"
+              uid="[[uid]]"
+              name="{{name}}"
+              disabled="{{disable}}]"
+              event-bus="[[eventBus]]">
         <content></content>
       </asq-diagram-q-presenter>
     </template>
@@ -47,7 +47,7 @@
       is: 'asq-diagram-q',
 
       behaviors: [
-        ASQ.asqQuestionElementBehavior,
+        ASQ.asqQuestionElementBehavior
       ],
 
       properties: {
@@ -128,7 +128,7 @@
        }
 
        */
-      submit: function() {
+      submit: function () {
         if (this.role == this.roles.VIEWER) {
           var el = this.$$('asq-diagram-q-viewer');
           if (!el) {

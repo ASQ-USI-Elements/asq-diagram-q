@@ -142,9 +142,9 @@
       submit: function () {
         if (this.role !== this.roles.VIEWER) return;
 
-        var diagram = this.$$('asq-diagram-q-viewer-'+this.type);
+        var diagram = this.$$('asq-diagram-q-viewer-' + this.type);
 
-        if(diagram.selectedElements.length > 0)
+        if (diagram.selectedElements.length > 0)
           diagram._deselectJointjsObj();
 
         var statesIds = Object.keys(diagram._states), relationsIds = Object.keys(diagram._relations);
@@ -160,9 +160,9 @@
 
         relationsIds.forEach(function (id) {
           var relation = {};
-          if (this.type === 'uml'){
+          if (this.type === 'uml') {
             relation.type = diagram._relations[id].type;
-          } else if (this.type === 'erd'){
+          } else if (this.type === 'erd') {
             relation.labels = diagram._relations[id].labels;
           }
           relation.relation = diagram._relations[id].relation;
@@ -176,9 +176,9 @@
           questionUid: this.uid,
           timestamp: new Date(),
           diagram: {
-            type : this.type,
-            states : states,
-            relations : relations
+            type: this.type,
+            states: states,
+            relations: relations
           }
         }
       }
