@@ -47,7 +47,7 @@
       is: 'asq-diagram-q',
 
       behaviors: [
-        ASQ.asqElementBehavior
+        ASQ.asqQuestionElementBehavior,
       ],
 
       properties: {
@@ -114,14 +114,6 @@
         document.addEventListener('asq-ready', function (evt) {
           this.eventBus = evt.detail.asqEventBus
         }.bind(this));
-      },
-
-      attached: function () {
-        this._isReady = true;
-
-        this.async(function () {
-          this.fire('asq-diagram-q-ready');
-        });
       },
 
       /**

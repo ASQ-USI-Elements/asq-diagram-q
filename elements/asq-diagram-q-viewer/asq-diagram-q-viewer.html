@@ -44,7 +44,7 @@
       is: 'asq-diagram-q-viewer',
 
       behaviors: [
-        ASQ.asqElementBehavior
+        ASQ.asqQuestionElementBehavior
       ],
 
       properties: {
@@ -109,15 +109,22 @@
 
       _onQuestionType: function (evt) {
         if (!evt || !evt.questionType) return;
+        if (evt.questionType === 'asq-diagram-q') {
+          if (evt.type == 'restoreViewer') {
+            this._onRestoreViewer(evt);
+          }
+        }
+      },
 
-        console.log('_onQuestionType VIEWER');
-        console.log(evt);
-        // if (this.items.length === 0) return;
-        // if (evt.questionType == 'asq-multi-choice-other-q') {
-        //   if (evt.type == 'restoreViewer') {
-        //     this._onRestoreViewer(evt);
-        //   }
-        // }
+      _onRestoreViewer: function (evt) {
+        if (!evt.questions) return;
+        console.log('_onRestoreViewer')
+        // evt.questions.forEach(function (q) {
+        //   if (q.uid != this.uid) return;
+        //   q.options.forEach(function (option) {
+        //     this._updateOption(option.uid, option.value);
+        //   }.bind(this));
+        // }.bind(this));
       },
 
       /**
@@ -146,6 +153,7 @@
         statesIds.forEach(function (id) {
           states.push({
             type: diagram._states[id].type,
+            id: id,
             state: diagram._states[id].state
           });
         });
@@ -158,6 +166,8 @@
             relation.labels = diagram._relations[id].labels;
           }
           relation.relation = diagram._relations[id].relation;
+          relation.relation.source.name = diagram._states[relation.relation.source.id].state.name;
+          relation.relation.target.name = diagram._states[relation.relation.target.id].state.name;
           relation.vertices = diagram._graph.getCell(id).get('vertices');
           relations.push(relation);
         }.bind(this));
