@@ -301,8 +301,8 @@
       collection = shapesObjToArray(collection);
     }
 
-    if(model.type.includes("Normal"))
-      model.type = "Attribute";
+    if(model.type.includes('Normal'))
+      model.type = 'Attribute';
 
     collection.forEach(function (value) {
       if(model.type.toLowerCase().replace(/erd./g, '') === value.toLowerCase().replace(/\s/g, ''))

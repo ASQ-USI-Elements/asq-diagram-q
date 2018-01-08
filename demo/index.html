@@ -33,16 +33,16 @@
   <body unresolved>
 
     <div>
-      <asq-diagram-q id="1" uid="" name="diagram1" type="uml" width="800" height="500">
+      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram1" type="uml" width="800" height="500">
         <asq-stem>UML-VIEWER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="2" uid="" name="diagram2" type="uml" role="presenter">
+      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram2" type="uml" role="presenter">
         <asq-stem>UML-PRESENTER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="3" uid="" name="diagram3" type="erd" width="800" height="500">
+      <asq-diagram-q id="erd-demo-viewer uid="" name="diagram3" type="erd" width="800" height="500">
         <asq-stem>ERD-VIEWER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="4" uid="" name="diagram4" type="erd" role="presenter">
+      <asq-diagram-q id=erd-demo-presenter" uid="" name="diagram4" type="erd" role="presenter">
         <asq-stem>ERD-PRESENTER</asq-stem>
       </asq-diagram-q>
     </div>
@@ -77,15 +77,14 @@
           {
             relation : {
               source : { name: 'Person', id: '7cb721fa-bad0-40e7-9140-03c64aa253bd' },
-              target : { name: "Mammal", id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
+              target : { name: 'Mammal', id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
             },
             type: 'implementation',
             vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
           }
         ],
-        type: "uml"
+        type: 'uml'
       };
-
       var erdDiagram = {
         states: [
           {
@@ -115,17 +114,17 @@
             vertices: [ {x: 540, y: 220} ]
           }
         ],
-        type: "erd"
+        type: 'erd'
       };
 
-      document.addEventListener("WebComponentsReady", function (evt) {
+      document.addEventListener('WebComponentsReady', function (evt) {
 
         // UML
-        var viewer1 = document.getElementById("1");
-        viewer1.value = umlDiagram;
+        var uml_viewer = document.getElementById('uml-demo-viewer');
+        uml_viewer.value = umlDiagram;
 
-        var presenter1 = document.getElementById("2");
-        presenter1.$$('asq-diagram-q-presenter').submissions = [
+        var uml_presenter = document.getElementById('uml-demo-presenter');
+        uml_presenter.$$('asq-diagram-q-presenter').submissions = [
           {
             answeree: '1',
             diagram: umlDiagram
@@ -149,11 +148,11 @@
         ];
 
         // ERD
-        var viewer2 = document.getElementById("3");
-        viewer2.value = erdDiagram;
+        var erd_viewer = document.getElementById('erd-demo-viewer');
+        erd_viewer.value = erdDiagram;
 
-        var presenter2 = document.getElementById("4");
-        presenter2.$$('asq-diagram-q-presenter').submissions = [
+        var erd_presenter = document.getElementById('erd-demo-presenter');
+        erd_presenter.$$('asq-diagram-q-presenter').submissions = [
           {
             answeree: '1',
             diagram: erdDiagram
