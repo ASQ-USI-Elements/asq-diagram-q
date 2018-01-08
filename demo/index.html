@@ -33,17 +33,17 @@
   <body unresolved>
 
     <div>
-      <asq-diagram-q id="2345" uid="" name="diagram2" type="uml" width="800" height="600">
+      <asq-diagram-q id="uml-demo" uid="" name="diagram2" type="uml" width="800" height="600">
         <asq-stem>This is the first demo for a UML diagram question type.</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="1234" uid="" name="diagram1" type="erd" width="800" height="600">
+      <asq-diagram-q id="er-demo" uid="" name="diagram1" type="erd" width="800" height="600">
         <asq-stem>This is the first demo for a ER diagram question type.</asq-stem>
       </asq-diagram-q>
     </div>
 
     <script>
       document.addEventListener("WebComponentsReady", function (evt) {
-        var diagram = document.getElementById("2345");
+        var diagram = document.getElementById("uml-demo");
         diagram.value = {
           states: [
             {
@@ -54,11 +54,11 @@
               type: "interface"
             },
             {
-              attributes: ["firstName: String", "lastName: String"],
-              methods:["+ setName(first: String, last: String): Void", "+ getName(): String"],
-              name: "Person",
+              attributes: ['firstName: String', 'lastName: String'],
+              methods:['+ setName(first: String, last: String): Void', '+ getName(): String'],
+              name: 'Person',
               position: {x: 410, y: 370},
-              type: "abstract"
+              type: 'abstract'
             }],
           relations: [
             {
@@ -72,19 +72,19 @@
       });
 
 
-      document.addEventListener("WebComponentsReady", function (evt) {
-        var diagram = document.getElementById("1234");
+      document.addEventListener('WebComponentsReady', function (evt) {
+        var diagram = document.getElementById("er-demo");
         diagram.value = {
           states: [
             {
-              name: "MyEntity",
+              name: 'MyEntity',
               position: { x:300  , y: 80 },
-              type: "Entity"
+              type: 'Entity'
             },
             {
-              name: "MyKeyAttribute",
+              name: 'MyKeyAttribute',
               position: {x: 490, y: 340},
-              type: "Key"
+              type: 'Key'
             }],
           relations: [
             {
