@@ -2,7 +2,7 @@
 <link rel="import" href="../asq-base/asq-base.html">
 
 <link rel="import" href="elements/asq-diagram-q-viewer/asq-diagram-q-viewer.html">
-<!--<link rel="import" href="./elements/asq-diagram-q-presenter.html">-->
+<link rel="import" href="elements/asq-diagram-q-presenter/asq-diagram-q-presenter.html">
 
 <!--
 `asq-diagram-q`is used to allow the user to draw diagrams like UML's or ER's.
@@ -16,17 +16,19 @@
 <dom-module id="asq-diagram-q">
 
   <template>
+    <div id="header">
+      <p><content></content></p>
+    </div>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}" restamp>
       <asq-diagram-q-viewer
               role="viewer"
               uid="[[uid]]"
-              name="{{name}}"
+              name="[[name]]"
               value="{{value}}"
-              width="{{width}}"
-              height="{{height}}"
-              type="{{type}}"
+              type="[[type]]"
+              width="[[width]]"
+              height="[[height]]"
               event-bus="[[eventBus]]">
-        <content></content>
       </asq-diagram-q-viewer>
     </template>
 
@@ -34,10 +36,11 @@
       <asq-diagram-q-presenter
               role="presenter"
               uid="[[uid]]"
-              name="{{name}}"
-              disabled="{{disable}}]"
+              name="[[name]]"
+              type="[[type]]"
+              width="[[width]]"
+              height="[[height]]"
               event-bus="[[eventBus]]">
-        <content></content>
       </asq-diagram-q-presenter>
     </template>
   </template>
@@ -74,7 +77,7 @@
         },
 
         /**
-         * width in pixels of the paper element
+         * width in pixels of the diagram
          */
         width: {
           type: Number,
@@ -84,7 +87,7 @@
         },
 
         /**
-         * height in pixels of the paper element
+         * height in pixels of the diagram
          */
         height: {
           type: Number,

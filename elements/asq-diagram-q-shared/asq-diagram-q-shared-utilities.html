@@ -334,12 +334,30 @@
    * Helper functions
    */
   function computeSize(h,w,t) {
-    t.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + (w + 10) + 'px;';
-    t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+    t.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+    t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
     t.$['sidebar'].style.height = h+'px';
   }
 
+  function computeSubmissionSize(h,w,t) {
+    // t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+    t.$['paper'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+  }
+
+  function getMax(a,b) {
+    if(a === -1 || (a !== -1 && a < b) )
+      return b;
+    return a;
+  }
+
+  function getMin(a,b) {
+    if(a === -1 || (a !== -1 && a > b) )
+      return b;
+    return a;
+  }
+
   function findStateByName(diagramType, states, name) {
+
     var ids = Object.keys(states)
     if(diagramType === 'uml')
       for(var i=0;i<ids.length;i++){

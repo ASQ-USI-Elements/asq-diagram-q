@@ -33,10 +33,6 @@
       }
     </style>
 
-    <div id="header">
-      <p><content></content></p>
-    </div>
-
     <div id="app-body">
       <div id="sidebar" class="open">
         <div id="sidebar-content">
@@ -249,7 +245,7 @@
 
       properties: {
         /**
-         * width in pixels of the paper element
+         * width in pixels of the diagram
          */
         width: {
           type: Number,
@@ -259,22 +255,13 @@
         },
 
         /**
-         * height in pixels of the paper element
+         * height in pixels of the diagram
          */
         height: {
           type: Number,
           value: 600,
           notify: true,
           reflectToAttribute: true
-        },
-
-        /**
-         * An optional initial set of states/relations.
-         */
-        value: {
-          type: Object,
-          notify: true,
-          observer: '_valueChanged'
         },
 
         /**
@@ -454,22 +441,6 @@
         setKeyAndMouseEventListeners(this);
       },
 
-      _valueChanged: function (value) {
-        if(value){
-          value.states.forEach(function(state){
-            this.addState(state.type, state.position, state.name);
-          }.bind(this));
-
-          value.relations.forEach(function(rel){
-            var sId = findStateByName('erd', this._states, rel.source);
-            var tId = findStateByName('erd', this._states, rel.target);
-            var id = this.addRelation({ id: sId }, { id: tId }, rel.sLabel, rel.tLabel );
-            if(rel.vertices)
-              this._graph.getCell(id).set('vertices',rel.vertices)
-          }.bind(this));
-        }
-      },
-
       /**
        * expand/collapse sidebar
        */
@@ -527,8 +498,6 @@
 
       newERDState: function (e) {
         var type = Polymer.dom(e).localTarget.closest('paper-button').getAttribute('create');
-
-        // var position =  { x:(this.width/2)+(Math.random()*(20 - (-20) + (-20))), y: (this.height/2)+(Math.random()* (20 - (-20) + (-20)) ) };
 
         var position = getNewStatePosition(this);
         var id = this.addState(type, position);
@@ -1002,6 +971,12 @@
 
       _deleteCellFromGraph: function (cid) {
         this._graph.getCell(cid).remove(); // works for both states and relations (also delete elements from 'svg')
+      },
+
+      clear: function() {
+        this._graph.clear();
+        this._states = [];
+        this._relations = [];
       },
 
       /**

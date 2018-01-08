@@ -21,9 +21,8 @@
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
-              width="{{width}}"
-              height="{{height}}">
-        <content></content>
+              width="[[width]]"
+              height="[[height]]">
       </asq-diagram-q-viewer-uml>
     </template>
 
@@ -32,9 +31,8 @@
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
-              width="{{width}}"
-              height="{{height}}">
-        <content></content>
+              width="[[width]]"
+              height="[[height]]">
       </asq-diagram-q-viewer-erd>
     </template>
   </template>
@@ -61,7 +59,7 @@
         },
 
         /**
-         * width in pixels of the paper element
+         * width in pixels of the diagram
          */
         width: {
           type: Number,
@@ -71,7 +69,7 @@
         },
 
         /**
-         * height in pixels of the paper element
+         * height in pixels of the diagram
          */
         height: {
           type: Number,
@@ -85,7 +83,8 @@
          */
         value: {
           type: Object,
-          notify: true
+          notify: true,
+          observer: '_valueChanged'
         },
 
         /**
@@ -102,6 +101,49 @@
         return type === thisType;
       },
 
+      _valueChanged: function (value) {
+
+        var idMap = {};
+
+        if(value){
+          var diagram = this.$$('asq-diagram-q-viewer-' + this.type);
+          diagram.clear();
+
+          value.states.forEach(function(state){
+            var sId;
+            if(this.type === 'uml')
+              sId = diagram.addState(state.type, state.state.name, state.state.attributes, state.state.methods, state.state.position);
+            else if(this.type === 'erd')
+              sId = diagram.addState(state.type, state.state.position, state.label);
+
+            if(state.id)
+              idMap[state.id] = sId;
+          }.bind(this));
+
+          value.relations.forEach(function(rel){
+            var sourceId = idMap[rel.relation.source.id] || findStateByName(this.type, diagram._states, rel.relation.source.name);
+            var targetId = idMap[rel.relation.target.id] || findStateByName(this.type, diagram._states, rel.relation.target.name);
+
+            var rId;
+            if(this.type === 'uml')
+              rId = diagram.addRelation( rel.type, { id: sourceId }, { id: targetId } );
+            else if(this.type === 'erd'){
+              var sLabel, tLabel;
+              if(rel.labels){
+                sLabel = rel.labels.sLabel;
+                tLabel = rel.labels.tLabel
+              }
+              rId = diagram.addRelation( { id: sourceId }, { id: targetId }, sLabel, tLabel );
+            }
+
+            if(rel.vertices)
+              diagram._graph.getCell(rId).set('vertices',rel.vertices)
+          }.bind(this));
+          // this.value = undefined;
+        }
+
+      },
+
       _eventBusChanged: function (eventBus) {
         if (!eventBus) return;
         eventBus.on('asq:question_type', this._onQuestionType.bind(this));
@@ -111,20 +153,18 @@
         if (!evt || !evt.questionType) return;
         if (evt.questionType === 'asq-diagram-q') {
           if (evt.type == 'restoreViewer') {
-            this._onRestoreViewer(evt);
+            if (!evt.questions) return;
+
+            evt.questions.forEach(function(q){
+              if(q.uid === this.uid)
+                this._onRestoreViewer(q.diagram)
+            }.bind(this))
           }
         }
       },
 
-      _onRestoreViewer: function (evt) {
-        if (!evt.questions) return;
-        console.log('_onRestoreViewer')
-        // evt.questions.forEach(function (q) {
-        //   if (q.uid != this.uid) return;
-        //   q.options.forEach(function (option) {
-        //     this._updateOption(option.uid, option.value);
-        //   }.bind(this));
-        // }.bind(this));
+      _onRestoreViewer: function (diagram) {
+        this.value = diagram
       },
 
       /**
@@ -144,31 +184,40 @@
 
         var diagram = this.$$('asq-diagram-q-viewer-' + this.type);
 
-        if (diagram.selectedElements.length > 0)
+        if (diagram.selectedCounter > 0)
           diagram._deselectJointjsObj();
 
         var statesIds = Object.keys(diagram._states), relationsIds = Object.keys(diagram._relations);
         var states = [], relations = [];
 
         statesIds.forEach(function (id) {
-          states.push({
+
+          var state = {
             type: diagram._states[id].type,
             id: id,
             state: diagram._states[id].state
-          });
-        });
+          };
+          if(this.type === 'erd')
+            state.label = diagram._states[id].label;
+
+          states.push(state);
+        }.bind(this));
 
         relationsIds.forEach(function (id) {
-          var relation = {};
+          var relation = {
+            relation : diagram._relations[id].relation,
+            vertices : diagram._graph.getCell(id).get('vertices') || []
+          };
+
           if (this.type === 'uml') {
             relation.type = diagram._relations[id].type;
+            relation.relation.source.name = diagram._states[relation.relation.source.id].state.name;
+            relation.relation.target.name = diagram._states[relation.relation.target.id].state.name;
           } else if (this.type === 'erd') {
             relation.labels = diagram._relations[id].labels;
+            relation.relation.source.name = diagram._states[relation.relation.source.id].label;
+            relation.relation.target.name = diagram._states[relation.relation.target.id].label;
           }
-          relation.relation = diagram._relations[id].relation;
-          relation.relation.source.name = diagram._states[relation.relation.source.id].state.name;
-          relation.relation.target.name = diagram._states[relation.relation.target.id].state.name;
-          relation.vertices = diagram._graph.getCell(id).get('vertices');
           relations.push(relation);
         }.bind(this));
 

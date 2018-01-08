@@ -1,0 +1,305 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../asq-base/asq-base.html">
+<link rel="import" href="../../../iron-icon/iron-icon.html">
+<link rel="import" href="../../../iron-icons/iron-icons.html">
+
+<link rel="import" href="../asq-diagram-q-shared/asq-diagram-q-shared-styles.html">
+<link rel="import" href="../asq-diagram-q-shared/asq-diagram-q-shared-utilities.html">
+
+
+<!--
+`asq-diagram-q-presenter-erd` is use to show to the presenter.
+
+@element asq-diagram-q-presenter-erd
+@demo demo/index.html
+@group ASQ Elements
+@blurb Element acting as an editor for diagram questions.
+@homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
+-->
+<dom-module id='asq-diagram-q-presenter-erd'>
+
+  <template>
+    <style include='asq-diagram-q-shared-styles'></style>
+
+    <div id='paper'></div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'asq-diagram-q-presenter-erd',
+
+      behaviors: [
+        ASQ.asqElementBehavior
+      ],
+
+      listeners: {},
+
+      keyBindings: {},
+
+      hostAttributes: {},
+
+      properties: {
+        /**
+         * width in pixels of the paper container element
+         */
+        width: {
+          type: Number,
+          notify: true,
+          reflectToAttribute: true,
+          observer: '_setSize'
+        },
+
+        /**
+         * height in pixels of the paper container element
+         */
+        height: {
+          type: Number,
+          notify: true,
+          reflectToAttribute: true,
+          observer: '_setSize'
+        },
+
+        /**
+         * paper width in pixels
+         */
+        paperWidth: {
+          type: Number,
+          value: 1920,
+          notify: true,
+          reflectToAttribute: true,
+        },
+
+        /**
+         * height in pixels of the paper element
+         */
+        paperHeight: {
+          type: Number,
+          value: 1920,
+          notify: true,
+          reflectToAttribute: true,
+        },
+
+        /**
+         * diagram value
+         */
+        value: {
+          type: Object,
+          notify: true,
+          // observer: '_valueChanged'
+        },
+
+        /**
+         * The grap object
+         *  @type {Object}
+         */
+        _graph: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The paper object
+         *  @type {Object}
+         */
+        _paper: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The scale value
+         */
+        _scale: {
+          type: Number,
+          value: 1,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The _erd object
+         *  @type {Object}
+         */
+        _erd: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+      },
+
+      attached: function () {
+        this.async(function () {
+          this.init();
+        });
+      },
+      /**
+       * set up phase
+       */
+      init: function () {
+        this._graph = new joint.dia.Graph();
+        this._paper = new joint.dia.Paper({
+          el: this.$.paper,
+          width: this.width,
+          height: this.height,
+          model: this._graph,
+          gridSize: 10,
+          drawGrid:true,
+          interactive: false
+        });
+        this._erd = joint.shapes.erd;
+
+        if(this.value) {
+          var offset = this.getPaperSize(this.value);
+          this.fillGraph(this.value, offset)
+        }
+        this.initialized = true;
+      },
+
+      _setSize: function (newVal,oldVal) {
+        computeSubmissionSize(this.height, this.width, this);
+
+        if(this.initialized) {
+          if(!this._scaleDone){
+            this._scale*= (newVal/oldVal)
+            this._paper.scale(this._scale, this._scale);
+            this._scaleDone = true;
+          } else{
+            this._scaleDone = false;
+          }
+        }
+      },
+
+      fillGraph: function (value, offset) {
+
+        var dict = {};
+
+        value.states.forEach(function(s){
+          var position = {
+            x: s.state.position.x - offset.offX,
+            y: s.state.position.y - offset.offY
+          };
+          dict[s.label] = this.addState(s.type, position, s.label);
+        }.bind(this));
+
+        value.relations.forEach(function(rel){
+          var sourceId = dict[rel.relation.source.name];
+          var targetId = dict[rel.relation.target.name];
+
+          var rId = this.addRelation( { id: sourceId }, { id: targetId }, rel.labels.sLabel, rel.labels.tLabel );
+          if(rel.vertices){
+            var vertices = [];
+            rel.vertices.forEach(function (v) {
+              vertices.push({
+                x : v.x - offset.offX,
+                y : v.y - offset.offY
+              });
+            });
+
+            this._graph.getCell(rId).set('vertices',vertices)
+          }
+        }.bind(this));
+
+      },
+
+      getPaperSize: function (value) {
+        var coord = {
+          x0: -1,
+          x1: -1,
+          y0: -1,
+          y1: -1
+        };
+
+        value.states.forEach(function (s) {
+          var x = s.state.position.x;
+          var y = s.state.position.y;
+
+          coord.x0 = getMin(coord.x0, x);
+          coord.x1 = getMax(coord.x1, (x + 100) );
+          coord.y0 = getMin(coord.y0, y);
+          coord.y1 = getMax(coord.y1, (y + 100) );
+        });
+
+        value.relations.forEach(function (r) {
+          if(r.vertices)
+            r.vertices.forEach(function (v) {
+              var x = v.x;
+              var y = v.y;
+
+              coord.x0 = getMin(coord.x0, x);
+              coord.x1 = getMax(coord.x1, x );
+              coord.y0 = getMin(coord.y0, y);
+              coord.y1 = getMax(coord.y1, y);
+            })
+        });
+
+        var pWidth = coord.x1 - coord.x0 + 40;
+        var pHeight = coord.y1 - coord.y0 + 40;
+
+
+        if(this._paper){
+          var p1 = this.height/pHeight;
+          var p2 = this.width/pWidth;
+
+          if(p1 < p2) {
+            this._paper.scale(p1, p1);
+            this._scale = p1
+          }
+          else {
+            this._paper.scale(p2, p2);
+            this._scale = p2
+          }
+        }
+
+        return {
+          offX: coord.x0 -20,
+          offY: coord.y0 -20,
+        };
+      },
+
+      addState: function (type, position, optionalLabel) {
+        var label = optionalLabel || "\"Label\"";
+        var state = this._createState(type, label, { position: position });
+        this._graph.addCell(state);
+        return state.id;
+      },
+
+      _createState: function (type, label, state) {
+        state.attrs = getERDAttrs(type, label, state);
+
+        if (type === 'Entity')
+          return new this._erd.Entity(state);
+        else if (type === 'Weak Entity')
+          return new this._erd.WeakEntity(state);
+        else if (type === 'Relationship')
+          return new this._erd.Relationship(state);
+        else if (type === 'Identifying Relationship')
+          return new this._erd.IdentifyingRelationship(state);
+        else if (type === 'ISA')
+          return new this._erd.ISA(state);
+        else if (type === 'Attribute')
+          return new this._erd.Normal(state);
+        else if (type === 'Key')
+          return new this._erd.Key(state);
+        else if (type === 'Multivalued')
+          return new this._erd.Multivalued(state);
+        else if (type === 'Derived')
+          return new this._erd.Derived(state);
+      },
+
+      addRelation: function (source, target, sLabel, tLabel) {
+
+        var relation = this._createRelation({source: source, target: target}).set(createLabels(sLabel,tLabel));
+        this._graph.addCell(relation);
+        return relation.id;
+      },
+
+      _createRelation: function (relation) {
+        return new this._erd.Line(relation);
+      }
+
+    });
+  </script>
+
+</dom-module>

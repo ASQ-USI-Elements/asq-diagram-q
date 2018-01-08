@@ -32,11 +32,6 @@
         display: block; /* by default is 'none' but we want to use it */
       }
     </style>
-
-    <div id="header">
-      <p><content></content></p>
-    </div>
-
     <div id="app-body">
       <div id="sidebar" class="open">
         <div id="sidebar-content">
@@ -279,7 +274,7 @@
 
       properties: {
         /**
-         * width in pixels of the paper element
+         * width in pixels of the diagram
          */
         width: {
           type: Number,
@@ -289,22 +284,13 @@
         },
 
         /**
-         * height in pixels of the paper element
+         * height in pixels of the diagram
          */
         height: {
           type: Number,
           value: 600,
           notify: true,
           reflectToAttribute: true
-        },
-
-        /**
-         * An optional initial set of states/relations.
-         */
-        value: {
-          type: Object,
-          notify: true,
-          observer: '_valueChanged'
         },
 
         /**
@@ -485,22 +471,6 @@
         setJointJsEventListeners(this);
         setCellHighlighter(this);
         setKeyAndMouseEventListeners(this);
-      },
-
-      _valueChanged: function (value) {
-        if(value){
-          value.states.forEach(function(state){
-            this.addState(state.type, state.name, state.attributes, state.methods, state.position);
-          }.bind(this));
-
-          value.relations.forEach(function(rel){
-            var sId = findStateByName('uml', this._states, rel.source);
-            var tId = findStateByName('uml', this._states, rel.target);
-            var id = this.addRelation( rel.type, { id: sId }, { id: tId } );
-            if(rel.vertices)
-              this._graph.getCell(id).set('vertices',rel.vertices)
-          }.bind(this));
-        }
       },
 
       /**
@@ -1101,6 +1071,12 @@
 
       _deleteCellFromGraph: function (cid) {
         this._graph.getCell(cid).remove(); // works for both states and relations (also delete elements from 'svg')
+      },
+
+      clear: function() {
+        this._graph.clear();
+        this._states = [];
+        this._relations = [];
       },
 
       /**

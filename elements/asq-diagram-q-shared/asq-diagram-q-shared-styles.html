@@ -9,11 +9,31 @@
 
       #app-body {
         font-family: sans-serif, Arial;
-        outline: 1px solid #383b61;
+        border: 1px solid #383b61;
       }
 
-      #app-body > div, #sidebar > div{
-        float:left;
+      #app-body > div, #sidebar > div, #submissions > .submission {
+        float: left;
+      }
+
+      #app-body > #main-container {
+        height: 100%;
+        width: 100%;
+      }
+
+      #main-container > #zoom{
+        color: #cfd8dc;
+        height: 40px;
+        background: #383b61;
+        box-shadow: 1px 0 20px #383b61;
+      }
+
+      #submissions > .submission {
+        margin:10px;
+        background: #4a4e69;
+        border-radius: 5px;
+        box-shadow: 1px 0 20px #4a4e69;
+        padding: 10px;
       }
 
       #sidebar {
@@ -52,13 +72,16 @@
         transition: visibility 0s;
       }
 
-      #sidebar-content {
-        height: 94%;
-        width:200px;
+      #sidebar-content, #submissions {
         overflow-y: scroll;
       }
 
-      #zoom {
+      #sidebar-content {
+        height: 94%;
+        width:200px;
+      }
+
+      #sidebar-content > #zoom {
         position: absolute;
         bottom: 0;
         right: 0;
@@ -94,8 +117,11 @@
         box-shadow: 10px 0 30px -10px #383b61;
       }
 
-      #paper-container {
+      #app-body > #paper-container {
         margin-left: 10px;
+      }
+
+      #paper-container {
         overflow: scroll;
         cursor: move;
       }

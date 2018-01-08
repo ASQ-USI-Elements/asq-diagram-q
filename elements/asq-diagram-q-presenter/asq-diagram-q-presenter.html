@@ -1,0 +1,241 @@
+<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../asq-base/asq-base.html">
+
+<link rel="import" href="asq-diagram-q-presenter-uml.html">
+<link rel="import" href="asq-diagram-q-presenter-erd.html">
+
+<!--
+`asq-diagram-q-presenter` is use to show to the presenter.
+
+@element asq-diagram-q-presenter
+@demo demo/index.html
+@group ASQ Elements
+@blurb Element acting as an editor for diagram questions.
+@homepage http://github.com/ASQ-USI-Elements/asq-diagram-q-presenter
+-->
+<dom-module id="asq-diagram-q-presenter">
+  <template>
+    <style include='asq-diagram-q-shared-styles'></style>
+
+    <div id="app-body">
+      <div id="main-container">
+        <div id="submissions">
+          <template is="dom-repeat" items="{{submissions}}" restamp>
+            <div class="submission" id="[[item.answeree]]" style="{{setSize(sWidth, sHeight)}}">
+              <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
+                <asq-diagram-q-presenter-uml
+                        role="presenter"
+                        uid="[[uid]]"
+                        value="[[item.diagram]]"
+                        width="{{sWidth}}"
+                        height="{{sHeight}}">
+                </asq-diagram-q-presenter-uml>
+              </template>
+              <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
+                <asq-diagram-q-presenter-erd
+                        role="presenter"
+                        uid="[[uid]]"
+                        value="[[item.diagram]]"
+                        width="{{sWidth}}"
+                        height="{{sHeight}}">
+                </asq-diagram-q-presenter-erd>
+              </template>
+            </div>
+          </template>
+        </div>
+        <div id="zoom">
+          <paper-icon-button icon="zoom-in" on-click="zoomIn" on-mousedown="onZoomInPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+          <paper-icon-button icon="zoom-out" on-click="zoomOut" on-mousedown="onZoomOutPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'asq-diagram-q-presenter',
+
+      behaviors: [
+        ASQ.asqQuestionElementBehavior
+      ],
+
+      properties: {
+
+        /**
+         * Type of diagram (default is uml)
+         * options = 'uml', 'er'
+         */
+        type: {
+          type: String,
+          value: 'uml',
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * width in pixels of the paper element
+         */
+        width: {
+          type: Number,
+          value: 800,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * height in pixels of the paper element
+         */
+        height: {
+          type: Number,
+          value: 600,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * width in pixels of each submission element
+         */
+        sWidth: {
+          type: Number,
+          value: 260,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * height in pixels of each submission element
+         */
+        sHeight: {
+          type: Number,
+          value: 200,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Event bus to communicate with ASQ
+         */
+        eventBus: {
+          type: Object,
+          observer: '_eventBusChanged',
+          notify: true
+        },
+
+        submissions:{
+          type: Array,
+          value: [],
+          notify: true,
+          reflectToAttribute: true
+        },
+      },
+
+      attached: function () {
+        this.async(function () {
+          this.init();
+        });
+      },
+
+      init: function () {
+        this.computeSize(this.height, this.width);
+      },
+
+      _eventBusChanged: function (eventBus) {
+        if (!eventBus) return;
+        eventBus.on('asq:question_type', this._onQuestionType.bind(this));
+      },
+
+      _onQuestionType: function (evt) {
+        if (!evt || !evt.questionType) return;
+
+        if (evt.questionType === 'asq-diagram-q') {
+          if (evt.type === 'progress')
+            this._onProgress(evt);
+          else if (evt.type === 'restorePresenter')
+            this._onRestorePresenter(evt);
+        }
+      },
+
+      _onRestorePresenter: function (evt) {
+        if (!evt.questions) return;
+
+        evt.questions.forEach(function (q) {
+          if(q.uid === this.uid)
+            if(q.data.submissions)
+              this.submissions = q.data.submissions
+        }.bind(this));
+      },
+
+      _onProgress: function (evt) {
+        if (!evt.question) return;
+
+        if(evt.question._id.question === this.uid)
+          if(evt.question.submission){
+            var id = evt.question._id.answeree;
+
+            for(var i=0; i<this.submissions.length; i++){
+              if(this.submissions[i].answeree === id){
+                this.submissions[i].diagram = evt.question.submission;
+                var t = this.$['submissions'].querySelector('div[id="'+id+'"] asq-diagram-q-presenter-'+this.type);
+                t.value = evt.question.submission;
+                t.init();
+                return;
+              }
+            }
+
+            var temp = [ { answeree : id, diagram : evt.question.submission } ];
+            for(var i=0; i<this.submissions.length; i++){
+              temp.push(this.submissions[i])
+            }
+            this.submissions = temp;
+          }
+      },
+
+      _isType: function (type, thisType) {
+        return type === thisType;
+      },
+
+      computeSize: function (h, w){
+        this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+        this.$['submissions'].style = 'height:' + (h-40) + 'px;' + 'width:' + w + 'px;';
+      },
+
+      setSize: function (sWidth, sHeight) {
+        return 'height:' + sHeight + 'px;' + 'width:' + (sWidth-2) + 'px;';
+      },
+
+      zoomIn: function () {
+        this.sWidth*=1.02;
+        this.sHeight*=1.02;
+      },
+
+      zoomOut: function () {
+        this.sWidth/=1.02;
+        this.sHeight/=1.02;
+      },
+
+      onZoomInPressed: function () {
+        if(!this.mousePressed)
+          this.mousePressed = setInterval(
+            function(){
+              this.zoomIn()
+            }.bind(this), 50);
+      },
+
+      onZoomOutPressed: function () {
+        if(!this.mousePressed)
+          this.mousePressed = setInterval(
+            function(){
+              this.zoomOut()
+            }.bind(this), 50);
+      },
+
+      onZoomReleased: function () {
+        if(this.mousePressed) {
+          clearInterval(this.mousePressed);
+          this.mousePressed = undefined;
+        }
+      }
+    });
+  </script>
+
+</dom-module>

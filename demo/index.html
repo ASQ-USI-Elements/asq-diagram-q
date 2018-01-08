@@ -24,7 +24,7 @@
       }
 
       body div {
-        /*margin-left: 100px;*/
+        margin-left: 100px;
       }
 
     </style>
@@ -33,71 +33,149 @@
   <body unresolved>
 
     <div>
-      <asq-diagram-q id="2345" uid="" name="diagram2" type="uml" width="800" height="600">
-        <asq-stem>This is the first demo for a UML diagram question type.</asq-stem>
+      <asq-diagram-q id="1" uid="" name="diagram1" type="uml" width="800" height="500">
+        <asq-stem>UML-VIEWER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="1234" uid="" name="diagram1" type="erd" width="800" height="600">
-        <asq-stem>This is the first demo for a ER diagram question type.</asq-stem>
+      <asq-diagram-q id="2" uid="" name="diagram2" type="uml" role="presenter">
+        <asq-stem>UML-PRESENTER</asq-stem>
+      </asq-diagram-q>
+      <asq-diagram-q id="3" uid="" name="diagram3" type="erd" width="800" height="500">
+        <asq-stem>ERD-VIEWER</asq-stem>
+      </asq-diagram-q>
+      <asq-diagram-q id="4" uid="" name="diagram4" type="erd" role="presenter">
+        <asq-stem>ERD-PRESENTER</asq-stem>
       </asq-diagram-q>
     </div>
 
     <script>
-      document.addEventListener("WebComponentsReady", function (evt) {
-        var diagram = document.getElementById("2345");
-        diagram.value = {
-          states: [
-            {
-              attributes: ['dob: Date'],
-              methods: ['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'],
-              name: "Mammal",
-              position: { x:240  , y: 100 },
-              type: "interface"
+
+      var umlDiagram = {
+        states: [
+          {
+            state: {
+              size: { height: 78, width: 207.952911376953125 },
+              position: { y: 100, x: 240 },
+              methods: [ '+ setDateOfBirth(dob: Date): Void', '+ getAgeAsDays(): Numeric' ],
+              attributes: [ 'dob: Date' ],
+              name: 'Mammal'
             },
-            {
-              attributes: ["firstName: String", "lastName: String"],
-              methods:["+ setName(first: String, last: String): Void", "+ getName(): String"],
-              name: "Person",
-              position: {x: 410, y: 370},
-              type: "abstract"
-            }],
-          relations: [
-            {
-              type: 'implementation',
-              source: 'Person',
-              target: 'Mammal',
-              vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
-            }
-          ]
-        };
-      });
+            id: '9b2210b8-8d3c-41ba-859e-41c778dac925',
+            type: 'interface'
+          },
+          {
+            state: {
+              size: { height: 90, width: 276.6038818359375 },
+              position: { y: 370, x: 410 },
+              methods: [ '+ setName(first: String, last: String): Void', '+ getName(): String' ],
+              attributes: [ 'firstName: String', 'lastName: String' ],
+              name: 'Person'
+            },
+            id: '7cb721fa-bad0-40e7-9140-03c64aa253bd',
+            type: 'abstract'
+          }],
+        relations: [
+          {
+            relation : {
+              source : { name: 'Person', id: '7cb721fa-bad0-40e7-9140-03c64aa253bd' },
+              target : { name: "Mammal", id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
+            },
+            type: 'implementation',
+            vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
+          }
+        ],
+        type: "uml"
+      };
 
+      var erdDiagram = {
+        states: [
+          {
+            label: 'MyEntity',
+            id : '16350733-7c63-4d0b-ad26-292c1c6f8206',
+            state : {
+              position: { x:300  , y: 80 }
+            },
+            type: 'Entity'
+          },
+          {
+            label: 'MyAttribute',
+            id : 'cbb50624-4572-4321-a31f-7ae3b21ce6fb',
+            state : {
+              position: { x: 490, y: 340 },
+            },
+            type: 'Key'
+          },
+        ],
+        relations: [
+          {
+            labels : { sLabel: 'sourceLabel', tLabel: 'targetLabel'},
+            relation : {
+              source : { id: 'cbb50624-4572-4321-a31f-7ae3b21ce6fb', name: 'MyAttribute' },
+              target : { id: '16350733-7c63-4d0b-ad26-292c1c6f8206', name: 'MyEntity' }
+            },
+            vertices: [ {x: 540, y: 220} ]
+          }
+        ],
+        type: "erd"
+      };
 
       document.addEventListener("WebComponentsReady", function (evt) {
-        var diagram = document.getElementById("1234");
-        diagram.value = {
-          states: [
-            {
-              name: "MyEntity",
-              position: { x:300  , y: 80 },
-              type: "Entity"
-            },
-            {
-              name: "MyKeyAttribute",
-              position: {x: 490, y: 340},
-              type: "Key"
-            }],
-          relations: [
-            {
-              source: 'MyKeyAttribute',
-              target: 'MyEntity',
-              sLabel: 'Slabel',
-              tLabel: 'tlabel',
-              vertices: [{x: 540, y: 220}]
-            }
-          ]
-        };
-      });
 
+        // UML
+        var viewer1 = document.getElementById("1");
+        viewer1.value = umlDiagram;
+
+        var presenter1 = document.getElementById("2");
+        presenter1.$$('asq-diagram-q-presenter').submissions = [
+          {
+            answeree: '1',
+            diagram: umlDiagram
+          },
+          {
+            answeree: '2',
+            diagram: umlDiagram
+          },
+          {
+            answeree: '3',
+            diagram: umlDiagram
+          },
+          {
+            answeree: '4',
+            diagram: umlDiagram
+          },
+          {
+            answeree: '5',
+            diagram: umlDiagram
+          }
+        ];
+
+        // ERD
+        var viewer2 = document.getElementById("3");
+        viewer2.value = erdDiagram;
+
+        var presenter2 = document.getElementById("4");
+        presenter2.$$('asq-diagram-q-presenter').submissions = [
+          {
+            answeree: '1',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '2',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '3',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '4',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '5',
+            diagram: erdDiagram
+          }
+        ];
+      });
     </script>
 
 
