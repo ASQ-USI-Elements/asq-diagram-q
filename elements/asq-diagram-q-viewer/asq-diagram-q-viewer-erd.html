@@ -440,9 +440,9 @@
        */
       _expandOrCollapse: function () {
         if(this.$['sidebar'].className === "open")
-          _collapseSidebar(this);
+          this._collapseSidebar();
         else
-          _expandSidebar(this);
+          this._expandSidebar();
       },
 
       /**
@@ -493,7 +493,7 @@
       newERDState: function (e) {
         var type = Polymer.dom(e).localTarget.closest('paper-button').getAttribute('create');
 
-        var position = getNewStatePosition(this);
+        var position = this._getNewStatePosition(this);
         var id = this.addState(type, position);
 
         this._singleSelect(this._graph.getCell(id).findView(this._paper));
@@ -530,7 +530,7 @@
 
       _createState: function (type, label, state) {
         var s = _.cloneDeep(state);
-        s.attrs = getERDAttrs(type, label, state);
+        s.attrs = this._getERDAttrs(type, label);
 
         if (type === 'Entity')
           return new this._erd.Entity(s);
@@ -577,9 +577,9 @@
       },
 
       addRelation: function (source, target, sLabel, tLabel) {
-        var relation = relationPropertiesToJSONObj(source, target);
+        var relation = this._relationPropertiesToJSONObj(source, target);
 
-        var r = this._createRelation(relation).set(createLabels(sLabel,tLabel));
+        var r = this._createRelation(relation).set(this._createLabels(sLabel,tLabel));
         this._graph.addCell(r);
         this._relations[r.id] = {'cid': r.cid, 'relation': relation, labels: {sLabel:sLabel, tLabel:tLabel}};
 
@@ -604,8 +604,8 @@
       _showNewLinkButton: function(state){
         if(this._isType('state', state) && !this.newRel){
 
-          var pos = getNewLinkPosition(state);
-          var attr = getNewRelAttrs();
+          var pos = this._getNewLinkPosition(state);
+          var attr = this._getNewRelAttrs();
           var id = this.addRelation(pos.source,pos.target);
 
           this.newRel = this._graph.getCell(id);
@@ -834,7 +834,7 @@
         this.selected.highlight(null, this.highlighter);
         this.selectedCounter++;
         this._showNewLinkButton(cellView);
-        _expandSidebar(this)
+        this._expandSidebar()
       },
 
       _multiSelect: function(cellView){

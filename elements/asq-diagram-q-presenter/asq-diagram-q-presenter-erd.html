@@ -261,7 +261,7 @@
       },
 
       _createState: function (type, label, state) {
-        state.attrs = getERDAttrs(type, label, state);
+        state.attrs = this._getERDAttrs(type, label);
 
         if (type === 'Entity')
           return new this._erd.Entity(state);
@@ -285,7 +285,7 @@
 
       addRelation: function (source, target, sLabel, tLabel) {
 
-        var relation = this._createRelation({source: source, target: target}).set(createLabels(sLabel,tLabel));
+        var relation = this._createRelation({source: source, target: target}).set(this._createLabels(sLabel,tLabel));
         this._graph.addCell(relation);
         return relation.id;
       },

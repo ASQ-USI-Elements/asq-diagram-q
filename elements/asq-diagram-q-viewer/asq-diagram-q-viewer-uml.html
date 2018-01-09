@@ -471,8 +471,10 @@
        * expand/collapse sidebar
        */
       _expandOrCollapse: function () {
-        if(this.$['sidebar'].className === "open") _collapseSidebar(this);
-        else _expandSidebar(this);
+        if(this.$['sidebar'].className === "open")
+          this._collapseSidebar();
+        else
+          this._expandSidebar();
       },
 
       /**
@@ -524,7 +526,7 @@
         if(!data) return;
 
         // var position =  { x:this.width/2, y: this.height/2 };
-        var position = getNewStatePosition(this);
+        var position = this._getNewStatePosition(this);
         this.addState(data.type, data.name, data.attributes, data.methods, position);
 
         this._expandStateMenu();
@@ -562,7 +564,7 @@
 
       addState: function (type, name, attributes, methods, position) {
 
-        var state = UMLstatePropertiesToJSONObj(name, attributes, methods, position, computeJointJsStateSize(name, attributes, methods));
+        var state = this._umlStatePropertiesToJSONObj(name, attributes, methods, position, computeJointJsStateSize(name, attributes, methods));
         var s = this._createState(type, state);
         this._graph.addCell(s);
         this._states[s.id] = {'type': type, 'cid': s.cid, 'state': state};
@@ -573,7 +575,7 @@
 
       _createState: function (type, state) {
         var s = _.cloneDeep(state);
-        s.attrs = getUMLAttrs(type);
+        s.attrs = this._getUMLAttrs(type);
 
         if (type.toLowerCase() === 'class')
           return new this._uml.Class(s);
@@ -628,7 +630,7 @@
       },
 
       addRelation: function (type, source, target) {
-        var relation = relationPropertiesToJSONObj(source, target);
+        var relation = this._relationPropertiesToJSONObj(source, target);
 
         var r = this._createRelation(type, relation);
         this._graph.addCell(r);
@@ -668,8 +670,8 @@
       _showNewLinkButton: function(state){
         if(this._isType('state', state) && !this.newRel){
 
-          var pos = getNewLinkPosition(state);
-          var attr = getNewRelAttrs();
+          var pos = this._getNewLinkPosition(state);
+          var attr = this._getNewRelAttrs();
           var id = this.addRelation('generalization',pos.source,pos.target);
 
           this.newRel = this._graph.getCell(id);
@@ -688,7 +690,7 @@
           var rel = this.newRel;
           this.newRel = null;
           this._deselectJointjsObj();
-          var attr = getDefaultUMLRelAttrs();
+          var attr = this._getDefaultUMLRelAttrs();
           rel.set('attrs', attr);
           rel.findView(this._paper).render();
         }
@@ -934,7 +936,7 @@
         this.selected.highlight(null, this.highlighter);
         this.selectedCounter++;
         this._showNewLinkButton(cellView);
-        _expandSidebar(this)
+        this._expandSidebar()
       },
 
       _multiSelect: function(cellView){

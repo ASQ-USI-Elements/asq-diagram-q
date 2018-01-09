@@ -241,7 +241,7 @@
       },
 
       _createState: function (type, state) {
-        state.attrs = getUMLAttrs(type);
+        state.attrs = this._getUMLAttrs(type);
 
         if (type.toLowerCase() === 'class')
           return new this._uml.Class(state);
