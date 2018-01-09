@@ -119,8 +119,8 @@
           }.bind(this));
 
           value.relations.forEach(function(rel){
-            var sourceId = idMap[rel.relation.source.id] || findStateByName(this.type, diagram._states, rel.relation.source.name);
-            var targetId = idMap[rel.relation.target.id] || findStateByName(this.type, diagram._states, rel.relation.target.name);
+            var sourceId = idMap[rel.relation.source.id] || this._findStateByName(this.type, diagram._states, rel.relation.source.name);
+            var targetId = idMap[rel.relation.target.id] || this._findStateByName(this.type, diagram._states, rel.relation.target.name);
 
             var rId;
             if(this.type === 'uml')

@@ -134,7 +134,7 @@
       },
 
       init: function () {
-        this.computeSize(this.height, this.width);
+        this._computePresenterSize(this.height, this.width);
       },
 
       _eventBusChanged: function (eventBus) {
@@ -190,11 +190,6 @@
 
       _isType: function (type, thisType) {
         return type === thisType;
-      },
-
-      computeSize: function (h, w){
-        this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-        this.$['submissions'].style = 'height:' + (h-40) + 'px;' + 'width:' + w + 'px;';
       },
 
       setSize: function (sWidth, sHeight) {

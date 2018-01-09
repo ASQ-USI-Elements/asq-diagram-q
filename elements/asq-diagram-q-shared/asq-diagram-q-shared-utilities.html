@@ -6,6 +6,7 @@
 <script>
 
   window.ASQDiagramQBehavior = window.ASQDiagramQBehavior || {};
+
   ASQDiagramQBehavior = {
 
     /** Initialization */
@@ -37,6 +38,23 @@
           }
         }
       }
+    },
+
+    _getShapes: function(diagramType) {
+      if(diagramType === 'uml')
+        return {
+          states : ['Class','Abstract','Interface'],
+          relations: ['Generalization','Implementation', 'Aggregation','Composition','Association']
+        };
+      else if(diagramType === 'erd')
+        return {
+          states : {
+            entities: ['Entity','Weak Entity'],
+            relationships: ['Relationship','Identifying Relationship','ISA'],
+            attributes: ['Attribute','Key','Multivalued','Derived']
+          },
+          relations: ['Line']
+        };
     },
 
     /** Expand/collapse sidebar */
@@ -223,254 +241,221 @@
       };
     },
 
-  };
+    /** State Edit */
 
+    _getUMLModelData: function(model, isState) {
+      var type = this._getUMLModelSubType(model,isState);
+      if (isState)
+        return {
+          name: model.name,
+          type: type,
+          attributes: model.attributes,
+          methods: model.methods
+        };
+      else
+        return {
+          type: type,
+          source: model.source,
+          target: model.target
+        }
+    },
 
+    _getUMLModelSubType: function(model, isState) {
+      var subType, collection = isState? this._getShapes('uml').states : this._getShapes('uml').relations;
 
-
-  /** Initialization */
-  function getShapes(diagramType) {
-    if(diagramType === 'uml')
-      return {
-        states : ['Class','Abstract','Interface'],
-        relations: ['Generalization','Implementation', 'Aggregation','Composition','Association']
-      };
-    else if(diagramType === 'erd')
-      return {
-        states : {
-          entities: ['Entity','Weak Entity'],
-          relationships: ['Relationship','Identifying Relationship','ISA'],
-          attributes: ['Attribute','Key','Multivalued','Derived']
-        },
-        relations: ['Line']
-      };
-  }
-
-
-
-
-
-
-
-
-
-
-
-  /**
-   * State Edit
-   */
-
-  function getUMLModelData(model, isState) {
-    var type = getUMLModelSubType(model,isState);
-    if (isState)
-      return {
-        name: model.name,
-        type: type,
-        attributes: model.attributes,
-        methods: model.methods
-      };
-    else
-      return {
-        type: type,
-        source: model.source,
-        target: model.target
-      }
-  }
-
-  function getUMLModelSubType(model, isState) {
-    var subType, collection = isState? getShapes('uml').states : getShapes('uml').relations;
-
-    collection.forEach(function (value) {
-      subType = model.type.includes(value)? value : subType;
-    });
-    return subType;
-  }
-
-  function getERDModelData(model, isState){
-    var type = getERDModelSubType(model,isState);
-    if (isState)
-      return {
-        type: type,
-        label: type.includes('ISA')? '' : model.attrs.text.text
-      };
-    else
-      return {
-        source: model.source,
-        target: model.target,
-        sLabel: model.labels[0].attrs.text.text,
-        tLabel: model.labels[1].attrs.text.text
-      }
-  }
-
-  function getERDModelSubType(model, isState){
-    var subType, collection = isState? getShapes('erd').states : getShapes('erd').relations;
-
-    if(!Array.isArray(collection)){
-      collection = shapesObjToArray(collection);
-    }
-
-    if(model.type.includes('Normal'))
-      model.type = 'Attribute';
-
-    collection.forEach(function (value) {
-      if(model.type.toLowerCase().replace(/erd./g, '') === value.toLowerCase().replace(/\s/g, ''))
-        subType = value;
-    });
-    return subType;
-  }
-
-  function shapesObjToArray(obj) {
-    var array=[];
-    Object.keys(obj).forEach(function (arr) {
-      obj[arr].forEach(function (el) {
-        array.push(el);
+      collection.forEach(function (value) {
+        subType = model.type.includes(value)? value : subType;
       });
-    });
-    return array;
-  }
+      return subType;
+    },
 
-  function getValuesFromTable(table) {
-    var rows = table.querySelectorAll('paper-input');
-    return Array.prototype.slice.call(rows).filter(function(el){
-      return !!el.value.trim();
-    }).map(function (x) {
-      return x.value.trim();
-    });
-  }
+    _getERDModelData: function(model, isState){
+      var type = this._getERDModelSubType(model,isState);
+      if (isState)
+        return {
+          type: type,
+          label: type.includes('ISA')? '' : model.attrs.text.text
+        };
+      else
+        return {
+          source: model.source,
+          target: model.target,
+          sLabel: model.labels[0].attrs.text.text,
+          tLabel: model.labels[1].attrs.text.text
+        }
+    },
 
-  /**
-   * Helper functions
-   */
-  function computeSize(h,w,t) {
-    t.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-    t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
-    t.$['sidebar'].style.height = h+'px';
-  }
+    _getERDModelSubType: function(model, isState){
+      var subType, collection = isState? this._getShapes('erd').states : this._getShapes('erd').relations;
 
-  function computeSubmissionSize(h,w,t) {
-    // t.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-    t.$['paper'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-  }
-
-  function getMax(a,b) {
-    if(a === -1 || (a !== -1 && a < b) )
-      return b;
-    return a;
-  }
-
-  function getMin(a,b) {
-    if(a === -1 || (a !== -1 && a > b) )
-      return b;
-    return a;
-  }
-
-  function findStateByName(diagramType, states, name) {
-
-    var ids = Object.keys(states)
-    if(diagramType === 'uml')
-      for(var i=0;i<ids.length;i++){
-        if(states[ids[i]].state.name === name)
-          return ids[i];
-      }
-    else if(diagramType === 'erd')
-      for(var i=0;i<ids.length;i++){
-        if(states[ids[i]].label === name)
-          return ids[i];
+      if(!Array.isArray(collection)){
+        collection = this._shapesObjToArray(collection);
       }
 
-    return false;
-  }
+      if(model.type.includes('Normal'))
+        model.type = 'Attribute';
 
-  function scalePaper(t) {
-    t.$['paper'].style = 'height:' + (1920*t._scale) + 'px;' + 'width:' + (1920*t._scale) + 'px;';
-  }
+      collection.forEach(function (value) {
+        if(model.type.toLowerCase().replace(/erd./g, '') === value.toLowerCase().replace(/\s/g, ''))
+          subType = value;
+      });
+      return subType;
+    },
 
-  function showStateErrorMessage(el, type, name) {
-    var err;
-    if (!type)
-      err='- please choose a type';
-    else if (!name)
-      err='- please enter a name';
+    _shapesObjToArray: function(obj) {
+      var array=[];
+      Object.keys(obj).forEach(function (arr) {
+        obj[arr].forEach(function (el) {
+          array.push(el);
+        });
+      });
+      return array;
+    },
 
-    if(err) {
-      showError(el,err);
-      return true;
+    _getValuesFromTable: function(table) {
+      var rows = table.querySelectorAll('paper-input');
+      return Array.prototype.slice.call(rows).filter(function(el){
+        return !!el.value.trim();
+      }).map(function (x) {
+        return x.value.trim();
+      });
+    },
+
+    /** Helper functions */
+
+    _computeViewerSize: function (h,w) {
+      this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+      this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
+      this.$['sidebar'].style.height = h+'px';
+    },
+
+    _computePresenterSize: function (h, w){
+      this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+      this.$['submissions'].style = 'height:' + (h-40) + 'px;' + 'width:' + w + 'px;';
+    },
+
+    _computeSubmissionSize: function(h,w) {
+      this.$['paper'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+    },
+
+    _getMax: function(a,b) {
+      if(a === -1 || (a !== -1 && a < b) )
+        return b;
+      return a;
+    },
+
+    _getMin: function(a,b) {
+      if(a === -1 || (a !== -1 && a > b) )
+        return b;
+      return a;
+    },
+
+    _findStateByName: function(diagramType, states, name) {
+      var ids = Object.keys(states)
+      if(diagramType === 'uml')
+        for(var i=0;i<ids.length;i++){
+          if(states[ids[i]].state.name === name)
+            return ids[i];
+        }
+      else if(diagramType === 'erd')
+        for(var i=0;i<ids.length;i++){
+          if(states[ids[i]].label === name)
+            return ids[i];
+        }
+
+      return false;
+    },
+
+    _scalePaper: function(t) {
+      this.$['paper'].style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
+    },
+
+    _showStateErrorMessage: function(el, type, name) {
+      var err;
+      if (!type)
+        err='- please choose a type';
+      else if (!name)
+        err='- please enter a name';
+
+      if(err) {
+        this._showError(el,err);
+        return true;
+      }
+      return false;
+    },
+
+    _showRelationErrorMessage: function(el, source, target){
+      var err;
+      if (!source)
+        err='- please choose the source';
+      else if (!target)
+        err='- please choose the target';
+      else if (source.id === target.id)
+        err='- source and target are the same';
+
+      if(err) {
+        this._showError(el,err);
+        return true;
+      }
+      return false;
+    },
+
+    _showERDStateErrorMessage: function(el, type, label) {
+      var err;
+      if (!type)
+        err='- please choose a type';
+      else if (!label && type !== 'ISA')
+        err='- please enter a label';
+
+      if(err) {
+        this._showError(el,err);
+        return true;
+      }
+      return false;
+    },
+
+    _showError: function(el, text) {
+      var err = el.querySelector('div[id=error]');
+      if(err){
+        err.style = 'visibility:visible';
+        err.querySelector('p[id=whichError]').innerHTML = text;
+        setTimeout(function(){
+          err.removeAttribute('style');
+        }, 2000);
+      }
+    },
+
+    _findRelations: function(id, relations) {
+      var rel = [];
+      Object.keys(relations).forEach(function (r) {
+        if (relations[r].relation.source.id === id || relations[r].relation.target.id === id)
+          rel.push(r);
+      });
+      return rel;
+    },
+
+    _computeJointJsStateSize: function(name, attributes, methods) {
+      var arr = [name].concat(attributes, methods);
+      return {
+        width: this._computeStateWidth(arr) + 2, // + 2 for margins
+        height: Math.max(50, 2 * 15 + (arr.length) * 12)
+      }
+    },
+
+    _computeStateWidth: function(arr) {
+      var w = 0;
+      for (var i = 0; i < arr.length; i++) {
+        w = Math.max(w, this._getWidthOfText(arr[i], (i===0)))
+      }
+      return Math.max(Math.max(w),100);
+    },
+
+    _getWidthOfText: function(txt, bold) {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
+      return ctx.measureText(txt).width;
     }
-    return false;
-  }
-
-  function showRelationErrorMessage(el, source, target){
-    var err;
-    if (!source)
-      err='- please choose the source';
-    else if (!target)
-      err='- please choose the target';
-    else if (source.id === target.id)
-      err='- source and target are the same';
-
-    if(err) {
-      showError(el,err);
-      return true;
-    }
-    return false;
-  }
-
-  function showERDStateErrorMessage(el, type, label) {
-    var err;
-    if (!type)
-      err='- please choose a type';
-    else if (!label && type !== 'ISA')
-      err='- please enter a label';
-
-    if(err) {
-      showError(el,err);
-      return true;
-    }
-    return false;
-  }
-
-  function showError(el, text) {
-    var err = el.querySelector('div[id=error]');
-    if(err){
-      err.style = 'visibility:visible';
-      err.querySelector('p[id=whichError]').innerHTML = text;
-      setTimeout(function(){
-        err.removeAttribute('style');
-      }, 2000);
-    }
-
-  }
-
-  function findRelations(id, relations) {
-    var rel = [];
-    Object.keys(relations).forEach(function (r) {
-      if (relations[r].relation.source.id === id || relations[r].relation.target.id === id)
-        rel.push(r);
-    });
-    return rel;
-  }
-
-  function computeJointJsStateSize(name, attributes, methods) {
-    var arr = [name].concat(attributes, methods);
-    return {
-      width: computeStateWidth(arr) + 2, // + 2 for margins
-      height: Math.max(50, 2 * 15 + (arr.length) * 12)
-    }
-  }
-
-  function computeStateWidth(arr) {
-    var w = 0;
-    for (var i = 0; i < arr.length; i++) {
-      w = Math.max(w, getWidthOfText(arr[i], (i===0)))
-    }
-    return Math.max(Math.max(w),100);
-  }
-
-  function getWidthOfText(txt, bold) {
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
-    ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
-    return ctx.measureText(txt).width;
-  }
+  };
 
 </script>

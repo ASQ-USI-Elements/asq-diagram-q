@@ -455,9 +455,9 @@
           gridSize: 10,
           drawGrid:true
         });
-        computeSize(this.height, this.width, this);
+        this._computeViewerSize(this.height, this.width);
         this._uml = joint.shapes.uml;
-        this._shapes = getShapes('uml');
+        this._shapes = this._getShapes('uml');
         this._states = {};
         this._relations = {};
         this.selectedElements = [];
@@ -544,7 +544,7 @@
         var name = el.querySelector('div[id=name] paper-input').value;
 
         if(!typeChange)
-          if (showStateErrorMessage(el, type, name))
+          if (this._showStateErrorMessage(el, type, name))
             return;
 
         var attrs = Array.prototype.slice.call(el.querySelectorAll('div[id=attributes] paper-input')).filter(function(el){
@@ -564,7 +564,7 @@
 
       addState: function (type, name, attributes, methods, position) {
 
-        var state = this._umlStatePropertiesToJSONObj(name, attributes, methods, position, computeJointJsStateSize(name, attributes, methods));
+        var state = this._umlStatePropertiesToJSONObj(name, attributes, methods, position, this._computeJointJsStateSize(name, attributes, methods));
         var s = this._createState(type, state);
         this._graph.addCell(s);
         this._states[s.id] = {'type': type, 'cid': s.cid, 'state': state};
@@ -620,7 +620,7 @@
         if(target) target = { id : target.id};
 
         if(!typeChange) {
-          if (showRelationErrorMessage(el, type, source, target))
+          if (this._showRelationErrorMessage(el, type, source, target))
             return;
         }
         if(!source) source = this.selected.model.get('source');
@@ -751,7 +751,7 @@
       },
 
       _copyRelationsAll: function (oldId, newId) {
-        var relations = findRelations(this.selected.model.get('id'), this._relations);
+        var relations = this._findRelations(this.selected.model.get('id'), this._relations);
 
         relations.forEach(function (r) {
           if(this._relations[r].relation.source.id === oldId)
@@ -763,18 +763,18 @@
 
       /* for both states and relations */
       _onAttributeChanged: function (e) {
-        var attrs = getValuesFromTable(Polymer.dom(e).localTarget.closest('table'));
+        var attrs = this._getValuesFromTable(Polymer.dom(e).localTarget.closest('table'));
         this._updateInputTable('attributes', attrs);
         this._hideNewLinkButton();
       },
 
       _onAttributeRemoved: function(table){
-        var attrs = getValuesFromTable(table);
+        var attrs = this._getValuesFromTable(table);
         this._updateInputTable('attributes', attrs);
       },
 
       _onMethodChanged: function (e) {
-        var methods = getValuesFromTable(Polymer.dom(e).localTarget.closest('table'));
+        var methods = this._getValuesFromTable(Polymer.dom(e).localTarget.closest('table'));
         methods.forEach(function (m,i) {
           if(!m.startsWith('+'))
             methods[i] = '+ '+m;
@@ -784,7 +784,7 @@
       },
 
       _onMethodRemoved: function(table){
-        var methods = getValuesFromTable(table);
+        var methods = this._getValuesFromTable(table);
         methods.forEach(function (m,i) {
           if(!m.startsWith('+'))
             methods[i] = '+ '+m;
@@ -803,7 +803,7 @@
 
         if(this._isType('state', this.selected)) {
 
-          this._editAttribute(this.selected, 'size', computeJointJsStateSize(this.selected.model.get('name'), this.selected.model.get('attributes'), this.selected.model.get('methods')));
+          this._editAttribute(this.selected, 'size', this._computeJointJsStateSize(this.selected.model.get('name'), this.selected.model.get('attributes'), this.selected.model.get('methods')));
           this.selected.render(); // render state
           // this._renderRelations(findRelations(this.selected.model.get('id'),this._relations)); // render all involved relation
         }
@@ -841,7 +841,7 @@
       /* for both states and relations */
       _undoChanges: function(){
 
-        var data = getUMLModelData(this.selectedCopy, this._isType('state', this.selected));
+        var data = this._getUMLModelData(this.selectedCopy, this._isType('state', this.selected));
 
         if (this.selected.model.get('type').includes(data['type'])){
           Object.keys(data).forEach(function (key) {
@@ -1025,7 +1025,7 @@
        * State deletion
        */
       _deleteState: function (id) {
-        var rel = findRelations(id,this._relations), t = this;
+        var rel = this._findRelations(id,this._relations), t = this;
 
         rel.forEach(function (r) {
           t._deleteFromRelationsDict(r) // remove involved relations from relations Dictionary
@@ -1209,13 +1209,13 @@
       zoomIn: function () {
         this._scale += 0.05;
         this._paper.scale(this._scale,this._scale);
-        scalePaper(this);
+        this._scalePaper();
       },
 
       zoomOut: function () {
         this._scale -= 0.05;
         this._paper.scale(this._scale,this._scale);
-        scalePaper(this);
+        this._scalePaper();
       },
 
       getScale: function (scale) {

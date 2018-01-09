@@ -423,9 +423,9 @@
           gridSize: 10,
           drawGrid:true
         });
-        computeSize(this.height, this.width, this);
+        this._computeViewerSize(this.height, this.width);
         this._erd = joint.shapes.erd;
-        this._shapes = getShapes('erd');
+        this._shapes = this._getShapes('erd');
         this._states = {};
         this._relations = {};
         this.selectedElements = [];
@@ -510,7 +510,7 @@
         }
 
         if(!typeChange) {
-          if (showERDStateErrorMessage(el, type, label))
+          if (this._showERDStateErrorMessage(el, type, label))
             return;
         }
         return { type:type, label:label}
@@ -572,7 +572,7 @@
         var target = el.querySelector('div[id=target] paper-dropdown-menu').selectedItem;
         var tLabel = el.querySelector('div[id=target] div[id=label] paper-input').value;
 
-        if (showRelationErrorMessage(el, source, target)) return;
+        if (this._showRelationErrorMessage(el, source, target)) return;
         return { source: {id: source.id}, sLabel:sLabel, target: {id: target.id }, tLabel:tLabel}
       },
 
@@ -680,7 +680,7 @@
       },
 
       _copyRelationsAll: function (oldId, newId) {
-        var relations = findRelations(this.selected.model.get('id'), this._relations);
+        var relations = this._findRelations(this.selected.model.get('id'), this._relations);
 
         relations.forEach(function (r) {
           if(this._relations[r].relation.source.id === oldId)
@@ -708,7 +708,7 @@
 
       /* for both states and relations */
       _undoChanges: function(){
-        var data = getERDModelData(this.selectedCopy, this._isType('state', this.selected));
+        var data = this._getERDModelData(this.selectedCopy, this._isType('state', this.selected));
         if(this._isType('state', this.selected)){
           var newType = this.selected.model.get('type').includes('Normal')? 'Attribute' : this.selected.model.get('type');
           if(newType.toLowerCase().replace(/erd./g, '') === (data.type.toLowerCase().replace(/\s/g, ''))){
@@ -923,7 +923,7 @@
        * State deletion
        */
       _deleteState: function (id) {
-        var rel = findRelations(id,this._relations), t = this;
+        var rel = this._findRelations(id,this._relations), t = this;
 
         rel.forEach(function (r) {
           t._deleteFromRelationsDict(r) // remove involved relations from relations Dictionary
@@ -1028,7 +1028,7 @@
 
       _getIndexOfItemType: function (type, obj) {
         if(type){
-          var array = this.shapesObjToArray(obj);
+          var array = this.customShapesObjToArray(obj);
           if(type.includes("Normal"))
             type = "Attribute";
           for(var i = 0; i < array.length; i++){
@@ -1038,7 +1038,7 @@
         }
       },
 
-      shapesObjToArray: function (obj) {
+      customShapesObjToArray: function (obj) {
         var array=[];
         this._getKeys(obj).forEach(function (arr) {
           array.push("label");
@@ -1073,12 +1073,12 @@
           }
         }
       },
-
-      _getShapes: function(type){
-        if(type === "Entity") return this._shapes.states.entities;
-        else if(type === "Relationship") return this._shapes.states.relationships;
-        else if(type === "Attribute") return this._shapes.states.attributes;
-      },
+      //
+      // _getShapes: function(type){
+      //   if(type === "Entity") return this._shapes.states.entities;
+      //   else if(type === "Relationship") return this._shapes.states.relationships;
+      //   else if(type === "Attribute") return this._shapes.states.attributes;
+      // },
 
       setHeight: function(e,val){
         if(val.value){
@@ -1102,13 +1102,13 @@
       zoomIn: function () {
         this._scale += 0.05;
         this._paper.scale(this._scale,this._scale)
-        scalePaper(this)
+        this._scalePaper()
       },
 
       zoomOut: function () {
         this._scale -= 0.05;
         this._paper.scale(this._scale,this._scale)
-        scalePaper(this)
+        this._scalePaper()
       },
 
       getScale: function (scale) {

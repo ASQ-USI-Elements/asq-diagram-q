@@ -45,33 +45,13 @@
         },
 
         /**
-         * height in pixels of the paper container element
+         * height in pixels of the paper element
          */
         height: {
           type: Number,
           notify: true,
           reflectToAttribute: true,
           observer: '_setSize'
-        },
-
-        /**
-         * paper width in pixels
-         */
-        paperWidth: {
-          type: Number,
-          value: 1920,
-          notify: true,
-          reflectToAttribute: true,
-        },
-
-        /**
-         * height in pixels of the paper element
-         */
-        paperHeight: {
-          type: Number,
-          value: 1920,
-          notify: true,
-          reflectToAttribute: true,
         },
 
         /**
@@ -153,7 +133,7 @@
       },
 
       _setSize: function (newVal,oldVal) {
-        computeSubmissionSize(this.height, this.width, this);
+        this._computeSubmissionSize(this.height, this.width);
 
         if(this.initialized) {
           if(!this._scaleDone){
@@ -182,7 +162,13 @@
           var sourceId = dict[rel.relation.source.name];
           var targetId = dict[rel.relation.target.name];
 
-          var rId = this.addRelation( { id: sourceId }, { id: targetId }, rel.labels.sLabel, rel.labels.tLabel );
+          var sLabel, tLabel;
+          if(rel.labels){
+            sLabel = rel.labels.sLabel;
+            tLabel = rel.labels.tLabel
+          }
+
+          var rId = this.addRelation( { id: sourceId }, { id: targetId }, sLabel, tLabel );
           if(rel.vertices){
             var vertices = [];
             rel.vertices.forEach(function (v) {
@@ -210,11 +196,11 @@
           var x = s.state.position.x;
           var y = s.state.position.y;
 
-          coord.x0 = getMin(coord.x0, x);
-          coord.x1 = getMax(coord.x1, (x + 100) );
-          coord.y0 = getMin(coord.y0, y);
-          coord.y1 = getMax(coord.y1, (y + 100) );
-        });
+          coord.x0 = this._getMin(coord.x0, x);
+          coord.x1 = this._getMax(coord.x1, (x + 100) );
+          coord.y0 = this._getMin(coord.y0, y);
+          coord.y1 = this._getMax(coord.y1, (y + 100) );
+        }.bind(this));
 
         value.relations.forEach(function (r) {
           if(r.vertices)
@@ -222,12 +208,12 @@
               var x = v.x;
               var y = v.y;
 
-              coord.x0 = getMin(coord.x0, x);
-              coord.x1 = getMax(coord.x1, x );
-              coord.y0 = getMin(coord.y0, y);
-              coord.y1 = getMax(coord.y1, y);
-            })
-        });
+              coord.x0 = this._getMin(coord.x0, x);
+              coord.x1 = this._getMax(coord.x1, x );
+              coord.y0 = this._getMin(coord.y0, y);
+              coord.y1 = this._getMax(coord.y1, y);
+            }.bind(this))
+        }.bind(this));
 
         var pWidth = coord.x1 - coord.x0 + 40;
         var pHeight = coord.y1 - coord.y0 + 40;
