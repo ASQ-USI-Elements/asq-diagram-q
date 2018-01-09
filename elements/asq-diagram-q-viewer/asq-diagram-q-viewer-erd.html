@@ -430,9 +430,9 @@
         this._relations = {};
         this.selectedElements = [];
 
-        setJointJsEventListeners(this);
-        setCellHighlighter(this);
-        setKeyAndMouseEventListeners(this);
+        this._setJointJsEventListeners();
+        this._setCellHighlighter();
+        this._setKeyAndMouseEventListeners();
       },
 
       /**

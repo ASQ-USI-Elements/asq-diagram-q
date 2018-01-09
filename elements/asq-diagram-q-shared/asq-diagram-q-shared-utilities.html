@@ -6,29 +6,57 @@
 <script>
 
   window.ASQDiagramQBehavior = window.ASQDiagramQBehavior || {};
-
   ASQDiagramQBehavior = {
+
+    /** Initialization */
+
+    _setKeyAndMouseEventListeners: function() {
+      document.addEventListener('keydown',this._keyHandler.bind(this));
+      document.addEventListener('keyup',this._keyHandler.bind(this));
+      this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
+    },
+
+    _setJointJsEventListeners: function() {
+      this._paper.on('cell:pointerclick', this._selectJointjsObject.bind(this));
+      this._paper.on('link:options', this._selectJointjsObject.bind(this));
+      this._paper.on('link:pointerdown', this._deselectJointjsObj.bind(this));
+      this._paper.on('blank:pointerclick', this._deselectJointjsObj.bind(this));
+      this._paper.on('blank:pointerdown', this.onDragStart.bind(this));
+      this._paper.on('cell:pointerup blank:pointerup', this.onDragEnd.bind(this));
+    },
+
+    _setCellHighlighter: function() {
+      this.highlighter = {
+        highlighter: {
+          name: 'stroke',
+          options: {
+            padding: 10,
+            rx: 5,
+            ry: 5,
+            attrs: { 'stroke-width': 2, stroke: '#FF0000' }
+          }
+        }
+      }
+    },
+
+    /** Expand/collapse sidebar */
+
+    _expandSidebar: function() {
+      var bar = this.$['sidebar'].className = 'open';
+      var btn = this.$['sidebar-button'].firstChild.icon='chevron-left';
+    },
+
+    _collapseSidebar: function() {
+      var bar = this.$['sidebar'].className = 'closed';
+      var btn = this.$['sidebar-button'].firstChild.icon='chevron-right';
+    },
 
   };
 
-  /**
-   * Set up
-   */
-  function setKeyAndMouseEventListeners(obj) {
-      document.addEventListener('keydown',obj._keyHandler.bind(obj));
-      document.addEventListener('keyup',obj._keyHandler.bind(obj));
-      obj.$['paper-container'].addEventListener('mousemove',obj.dragPaper.bind(obj));
-    }
 
-  function setJointJsEventListeners(obj) {
-    obj._paper.on('cell:pointerclick', obj._selectJointjsObject.bind(obj));
-    obj._paper.on('link:options', obj._selectJointjsObject.bind(obj));
-    obj._paper.on('link:pointerdown', obj._deselectJointjsObj.bind(obj));
-    obj._paper.on('blank:pointerclick', obj._deselectJointjsObj.bind(obj));
-    obj._paper.on('blank:pointerdown', obj.onDragStart.bind(obj));
-    obj._paper.on('cell:pointerup blank:pointerup', obj.onDragEnd.bind(obj));
-  }
 
+
+  /** Initialization */
   function getShapes(diagramType) {
     if(diagramType === 'uml')
       return {
@@ -46,36 +74,11 @@
       };
   }
 
-  function setCellHighlighter(obj) {
-    obj.highlighter = {
-      highlighter: {
-        name: 'stroke',
-        options: {
-          padding: 10,
-          rx: 5,
-          ry: 5,
-          attrs: { 'stroke-width': 2, stroke: '#FF0000' }
-        }
-      }
-    }
-  }
 
-  /**
-   * Expand/collapse sidebar
-   */
-  function _expandSidebar(obj) {
-    var bar = obj.$['sidebar'];
-    var btn = obj.$['sidebar-button'].firstChild;
-    bar.className = 'open';
-    btn.icon='chevron-left';
-  }
 
-  function _collapseSidebar(obj) {
-    var bar = obj.$['sidebar'];
-    var btn = obj.$['sidebar-button'].firstChild;
-    bar.className = 'closed';
-    btn.icon='chevron-right';
-  }
+
+
+
 
   /**
    * State creation
