@@ -229,7 +229,8 @@
       is: 'asq-diagram-q-viewer-erd',
 
       behaviors: [
-        ASQ.asqElementBehavior
+        ASQ.asqQuestionElementBehavior,
+        ASQDiagramQBehavior
       ],
 
       listeners: {},
@@ -968,8 +969,8 @@
 
       clear: function() {
         this._graph.clear();
-        this._states = [];
-        this._relations = [];
+        this._states = {};
+        this._relations = {};
       },
 
       /**
