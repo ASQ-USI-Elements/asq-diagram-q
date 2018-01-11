@@ -214,9 +214,9 @@
                     <!--Buttons-->
                     <div class="menu-element" id="buttons">
                       <paper-button raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
-                      <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
-                        <paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>
-                      </template>
+                      <!--<template is="dom-if" if="{{_isType('state', selected)}}" restamp>-->
+                        <!--<paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>-->
+                      <!--</template>-->
                       <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                       <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
@@ -743,6 +743,11 @@
           this._deleteState(this.selected.model.get('id'));
         } else{
           id = this.addRelation(data.type, data.source, data.target);
+
+          var vertices;
+          if((vertices = this.selected.model.get('vertices')))
+            this._graph.getCell(id).findView(this._paper).model.set('vertices',vertices)
+
           var temp = this.selectedCopy;
           this._deleteRelation(this.selected.model.get('id'))
           this.selectedCopy = temp
@@ -754,10 +759,20 @@
         var relations = this._findRelations(this.selected.model.get('id'), this._relations);
 
         relations.forEach(function (r) {
+          var id;
           if(this._relations[r].relation.source.id === oldId)
-            this.addRelation(this._relations[r].type, { id:newId }, this._relations[r].relation.target)
+            id = this.addRelation(this._relations[r].type, { id:newId }, this._relations[r].relation.target)
           else
-            this.addRelation(this._relations[r].type, this._relations[r].relation.source, { id:newId })
+            id = this.addRelation(this._relations[r].type, this._relations[r].relation.source, { id:newId })
+
+          if(id){
+            var vertices = this._graph.getCell(r).findView(this._paper).model.get('vertices')
+            if(vertices)
+              this._graph.getCell(id).findView(this._paper).model.set('vertices',vertices)
+          }
+          if(this._tempNextRel && r === this._tempNextRel.model.get('id')){
+            this._tempNextRel = this._graph.getCell(id).findView(this._paper);
+          }
         }.bind(this))
       },
 
@@ -828,7 +843,6 @@
       /* for both states and relations */
       _saveChanges: function () {
         var data = this._isType('state', this.selected)? this._getStateFormData() : this._getRelationFormData();
-        console.log(data)
         if(!data){
           this._undoChanges();
         } else {
@@ -896,6 +910,7 @@
        * Cells selection
        */
       _selectJointjsObject: function (cellView, evt, x, y) {
+
         var id = cellView.model.id;
         if(this._states[id] || (this._relations[id] && evt.type === 'mousedown')){ // click on state or on relation 'options' icon
           if(!this.multiModeEnabled){
@@ -926,10 +941,19 @@
 
       _singleSelect: function(cellView){
         if(this.selected){
-          if(this.selected.model.id === cellView.model.get('id'))
-            return;
-          else
+          if(this.selected.model.id === cellView.model.get('id')){
+            return
+          }
+          else{
+            if(cellView){
+              this._tempNextRel = cellView;
+            }
             this._onJointjsObjDeselected();
+            if(this._tempNextRel){
+              cellView = this._tempNextRel
+              this._tempNextRel = null;
+            }
+          }
         }
         this.selected = cellView;
         this.selectedCopy = _.cloneDeep(this.selected.model.attributes) // keep a copy in case of 'undo' operation
