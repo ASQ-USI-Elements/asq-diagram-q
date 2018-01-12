@@ -24,7 +24,7 @@
       }
 
       body div {
-        /*margin-left: 100px;*/
+        margin-left: 100px;
       }
 
     </style>
@@ -33,16 +33,16 @@
   <body unresolved>
 
     <div>
-      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram1" type="uml" width="800" height="500">
+      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram1" type="uml" width="600" height="500">
         <asq-stem>UML-VIEWER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram2" type="uml" role="presenter" width="800" height="500">
+      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram2" type="uml" role="presenter" width="600" height="500">
         <asq-stem>UML-PRESENTER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram3" type="erd" width="800" height="500">
+      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram3" type="erd" width="600" height="500">
         <asq-stem>ERD-VIEWER</asq-stem>
       </asq-diagram-q>
-      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram4" type="erd" role="presenter" width="800" height="500">
+      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram4" type="erd" role="presenter" width="600" height="500">
         <asq-stem>ERD-PRESENTER</asq-stem>
       </asq-diagram-q>
     </div>
@@ -81,6 +81,42 @@
             },
             type: 'implementation',
             vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
+          }
+        ],
+        type: 'uml'
+      };
+      var umlDiagram2 = {
+        states: [
+          {
+            state: {
+              size: { height: 78, width: 207.952911376953125 },
+              position: { y: 30, x: 140 },
+              methods: [ '+ setDateOfBirth(dob: Date): Void', '+ getAgeAsDays(): Numeric','+ getsomething(): string' ],
+              attributes: [ 'dob: Date','dob: Date2','dob: Date3' ],
+              name: 'Mammal1'
+            },
+            id: '9b2210b8-8d3c-41ba-859e-41c778dac925',
+            type: 'interface'
+          },
+          {
+            state: {
+              size: { height: 90, width: 280 },
+              position: { y: 270, x: 310 },
+              methods: [ '+ setName(first: String, last: String): Void', '+ getName(): String' ],
+              attributes: [ 'firstName: String', 'lastName: String', 'middleName: String' ],
+              name: 'Abstract'
+            },
+            id: '7cb721fa-bad0-40e7-9140-03c64aa253bd',
+            type: 'abstract'
+          }],
+        relations: [
+          {
+            relation : {
+              source : { name: 'Abstract', id: '7cb721fa-bad0-40e7-9140-03c64aa253bd' },
+              target : { name: 'Mammal1', id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
+            },
+            type: 'implementation',
+            vertices: [{x: 320, y: 240}, {x: 450, y: 220}]
           }
         ],
         type: 'uml'
@@ -124,14 +160,14 @@
         uml_viewer.value = umlDiagram;
 
         var uml_presenter = document.getElementById('uml-demo-presenter');
-        uml_presenter.$$('asq-diagram-q-presenter').submissions = [
+        uml_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
             answeree: '1',
             diagram: umlDiagram
           },
           {
             answeree: '2',
-            diagram: umlDiagram
+            diagram: umlDiagram2
           },
           {
             answeree: '3',
@@ -139,7 +175,7 @@
           },
           {
             answeree: '4',
-            diagram: umlDiagram
+            diagram: umlDiagram2
           },
           {
             answeree: '5',
@@ -152,7 +188,7 @@
         erd_viewer.value = erdDiagram;
 
         var erd_presenter = document.getElementById('erd-demo-presenter');
-        erd_presenter.$$('asq-diagram-q-presenter').submissions = [
+        erd_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
             answeree: '1',
             diagram: erdDiagram

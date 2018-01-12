@@ -1,3 +1,13 @@
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../iron-list/iron-list.html">
+<link rel="import" href="../../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../paper-input/paper-input.html">
+<link rel="import" href="../../../paper-item/paper-item.html">
+<link rel="import" href="../../../paper-tabs/paper-tab.html">
+<link rel="import" href="../../../paper-tabs/paper-tabs.html">
+
+
 <link rel="import" href="asq-diagram-q-presenter-uml.html">
 <link rel="import" href="asq-diagram-q-presenter-erd.html">
 
@@ -12,37 +22,56 @@
 -->
 <dom-module id="asq-diagram-q-presenter">
   <template>
-    <style include='asq-diagram-q-shared-styles'></style>
+    <!--<style>-->
+    <style include='asq-diagram-q-shared-styles'>
+      :host{
+        --paper-tabs-selection-bar-color: #333;
+      }
+    </style>
 
-    <div id="app-body">
-      <div id="main-container">
-        <div id="submissions">
-          <template is="dom-repeat" items="{{submissions}}" restamp>
-            <div class="submission" id="[[item.answeree]]" style="{{setSize(sWidth, sHeight)}}">
+    <div id="container">
+      <div id="main">
+        <div id="app-body">
+          <div id="main-container">
+            <div id="submission">
               <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
                 <asq-diagram-q-presenter-uml
                         role="presenter"
                         uid="[[uid]]"
-                        value="[[item.diagram]]"
-                        width="{{sWidth}}"
-                        height="{{sHeight}}">
+                        value="[[value]]"
+                        width="{{width}}"
+                        height="{{_computePaperHeight(height)}}">
                 </asq-diagram-q-presenter-uml>
               </template>
               <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
                 <asq-diagram-q-presenter-erd
                         role="presenter"
                         uid="[[uid]]"
-                        value="[[item.diagram]]"
-                        width="{{sWidth}}"
-                        height="{{sHeight}}">
+                        value="[[value]]"
+                        width="{{width}}"
+                        height="{{_computePaperHeight(height)}}">
                 </asq-diagram-q-presenter-erd>
               </template>
             </div>
-          </template>
+            <div id="zoom">
+              <paper-icon-button icon="zoom-in" on-click="zoomIn" on-mousedown="onZoomInPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+              <paper-icon-button icon="zoom-out" on-click="zoomOut" on-mousedown="onZoomOutPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+            </div>
+          </div>
         </div>
-        <div id="zoom">
-          <paper-icon-button icon="zoom-in" on-click="zoomIn" on-mousedown="onZoomInPressed" on-mouseup="onZoomReleased"></paper-icon-button>
-          <paper-icon-button icon="zoom-out" on-click="zoomOut" on-mousedown="onZoomOutPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+      </div>
+
+      <div id="list-container">
+        <paper-tabs selected="{{_selectedTab}}" selected="0" selected-attribute="active" noink role="tablist">
+          <paper-tab role="tab" on-click="toggleSubmissionList">Submissions</paper-tab>
+        </paper-tabs>
+        <div id="submissionListWrapper" >
+          <iron-list id="submissionList" items="[[_submissions]]" as="submission" selection-enabled selected-item="{{_selectedSubmissionItem}}">
+            <template>
+              <paper-item>#<span>[[indexPlusOne(index)]]</span>&nbsp;&nbsp;<span>ID:&nbsp;[[submission.answeree]]</span>
+              </paper-item>
+            </template>
+          </iron-list>
         </div>
       </div>
     </div>
@@ -91,26 +120,6 @@
         },
 
         /**
-         * width in pixels of each submission element
-         */
-        sWidth: {
-          type: Number,
-          value: 260,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of each submission element
-         */
-        sHeight: {
-          type: Number,
-          value: 200,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
          * Event bus to communicate with ASQ
          */
         eventBus: {
@@ -119,12 +128,36 @@
           notify: true
         },
 
-        submissions:{
+        _submissions:{
           type: Array,
           value: [],
           notify: true,
           reflectToAttribute: true
         },
+
+        _selectedSubmissionItem: {
+          observer: '_selectedSubmissionItemChanged'
+        },
+
+        _selectedTab:{
+          notify: true
+        },
+
+        /**
+         * Get or set the current input value.
+         *
+         * @attribute value
+         * @type string
+         * @default ''
+         */
+        value: {
+          observer: '_valueChanged'
+        },
+
+        _api : {
+          notify: true
+        }
+
       },
 
       attached: function () {
@@ -135,6 +168,27 @@
 
       init: function () {
         this._computePresenterSize(this.height, this.width);
+      },
+
+      _computePaperHeight: function(height){
+        return height-40;
+      },
+
+      toggleSubmissionList: function(evt, detail){
+        var current = this.$.submissionListWrapper.style.display;
+        this.$.submissionListWrapper.style.display = (current == 'block') ? 'none': 'block';
+        this.$.submissionList.notifyResize();
+      },
+
+      _selectedSubmissionItemChanged: function(newItem, old){
+        if(! newItem) return;
+        this.value = newItem;
+      },
+
+      _valueChanged: function (newVal, oldVal) {
+        if(newVal){
+          this._api = this.$$('asq-diagram-q-presenter-'+this.type)
+        }
       },
 
       _eventBusChanged: function (eventBus) {
@@ -159,7 +213,7 @@
         evt.questions.forEach(function (q) {
           if(q.uid === this.uid)
             if(q.data.submissions)
-              this.submissions = q.data.submissions
+              this._submissions = q.data.submissions
         }.bind(this));
       },
 
@@ -168,23 +222,25 @@
 
         if(evt.question._id.question === this.uid)
           if(evt.question.submission){
+
             var id = evt.question._id.answeree;
 
-            for(var i=0; i<this.submissions.length; i++){
-              if(this.submissions[i].answeree === id){
-                this.submissions[i].diagram = evt.question.submission;
-                var t = this.$['submissions'].querySelector('div[id="'+id+'"] asq-diagram-q-presenter-'+this.type);
-                t.value = evt.question.submission;
-                t.init();
+            for(var i=0; i<this._submissions.length; i++){
+
+              if(this._submissions[i].answeree === id){
+                this._submissions[i].diagram = evt.question.submission;
+                if(this.value && this.value.answeree === id){
+                  this._api.reload()
+                }
                 return;
               }
             }
 
             var temp = [ { answeree : id, diagram : evt.question.submission } ];
-            for(var i=0; i<this.submissions.length; i++){
-              temp.push(this.submissions[i])
+            for(var i=0; i<this._submissions.length; i++){
+              temp.push(this._submissions[i])
             }
-            this.submissions = temp;
+            this._submissions = temp;
           }
       },
 
@@ -196,14 +252,21 @@
         return 'height:' + sHeight + 'px;' + 'width:' + (sWidth-2) + 'px;';
       },
 
+      indexPlusOne: function(index){
+        return ++index;
+      },
+
       zoomIn: function () {
-        this.sWidth*=1.02;
-        this.sHeight*=1.02;
+        if(this._api){
+          this._api.scale(1.01);
+        }
       },
 
       zoomOut: function () {
-        this.sWidth/=1.02;
-        this.sHeight/=1.02;
+
+        if(this._api){
+          this._api.scale(0.99);
+        }
       },
 
       onZoomInPressed: function () {
@@ -211,7 +274,7 @@
           this.mousePressed = setInterval(
             function(){
               this.zoomIn()
-            }.bind(this), 50);
+            }.bind(this), 25);
       },
 
       onZoomOutPressed: function () {
@@ -219,13 +282,20 @@
           this.mousePressed = setInterval(
             function(){
               this.zoomOut()
-            }.bind(this), 50);
+            }.bind(this), 25);
       },
 
       onZoomReleased: function () {
         if(this.mousePressed) {
           clearInterval(this.mousePressed);
           this.mousePressed = undefined;
+        }
+      },
+
+      clear: function () {
+        if(this._api) {
+          this.value = null;
+          this._api = null;
         }
       }
     });

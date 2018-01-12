@@ -69,6 +69,18 @@
       var btn = this.$['sidebar-button'].firstChild.icon='chevron-right';
     },
 
+    /** presenter init graph */
+
+    _valueChanged: function (newVal,oldVal) {
+      this._clear();
+      if(newVal){
+        this.width = this._defaultWidth;
+        this.height = this._defaultHeight;
+        var offset = this._setPaperSize(this.value.diagram);
+        this._fillGraph(this.value.diagram, offset)
+      }
+    },
+
     /** State creation */
 
     _umlStatePropertiesToJSONObj: function(name, attributes, methods, position, size) {
@@ -331,11 +343,71 @@
 
     _computePresenterSize: function (h, w){
       this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-      this.$['submissions'].style = 'height:' + (h-40) + 'px;' + 'width:' + w + 'px;';
+      this.$['submission'].style = 'height:' + (h-40) + 'px;' + 'width:' + w + 'px;';
     },
 
     _computeSubmissionSize: function(h,w) {
       this.$['paper'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+    },
+
+    _setPaperSize: function (value) {
+      var coord = {
+        x0: -1,
+        x1: -1,
+        y0: -1,
+        y1: -1
+      };
+
+      value.states.forEach(function (s) {
+        var x = s.state.position.x;
+        var y = s.state.position.y;
+
+        var sW, sH;
+        if(s.state.size) {
+          sW = s.state.size.width;
+          sH = s.state.size.height;
+        }
+        else{
+          sW = 150;
+          sH = 80;
+        }
+
+        coord.x0 = this._getMin(coord.x0, x);
+        coord.x1 = this._getMax(coord.x1, (x + sW) );
+        coord.y0 = this._getMin(coord.y0, y);
+        coord.y1 = this._getMax(coord.y1, (y + sH) );
+      }.bind(this));
+
+      value.relations.forEach(function (r) {
+        if(r.vertices)
+          r.vertices.forEach(function (v) {
+            var x = v.x;
+            var y = v.y;
+
+            coord.x0 = this._getMin(coord.x0, x);
+            coord.x1 = this._getMax(coord.x1, x );
+            coord.y0 = this._getMin(coord.y0, y);
+            coord.y1 = this._getMax(coord.y1, y);
+          }.bind(this))
+      }.bind(this));
+
+      var pWidth = coord.x1 - coord.x0 + 40;
+      var pHeight = coord.y1 - coord.y0 + 40;
+
+
+      if(this._paper){
+
+        var p = Math.min(this.height/pHeight,this.width/pWidth);
+
+        this._paper.scale(p, p);
+        this._scale = p;
+        this._minScale = p;
+      }
+
+      return {
+        offX: coord.x0 -20,
+        offY: coord.y0 -20,
+      };
     },
 
     _getMax: function(a,b) {
@@ -455,6 +527,30 @@
       var ctx = canvas.getContext('2d');
       ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
       return ctx.measureText(txt).width;
+    },
+
+    scale: function (value) {
+      var s = Math.round((this._scale*value)* 1000)/1000;
+      if(s>=this._minScale){
+        this._scale=s;
+        this._paper.scale(s, s);
+        this.height*=value;
+        this.width*=value;
+      } else {
+        this._resetSize();
+      }
+    },
+
+    _resetSize: function () {
+      this._scale=this._minScale;
+      this._paper.scale(this._scale, this._scale);
+      this.height=this._defaultHeight;
+      this.width=this._defaultWidth;
+    },
+
+    _clear: function(){
+      this._resetSize();
+      this._graph.clear();
     }
 
   };

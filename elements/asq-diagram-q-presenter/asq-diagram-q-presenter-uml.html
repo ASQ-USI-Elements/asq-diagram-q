@@ -35,7 +35,7 @@
 
       properties: {
         /**
-         * width in pixels of the paper element
+         * default width in pixels of the paper element
          */
         width: {
           type: Number,
@@ -45,7 +45,7 @@
         },
 
         /**
-         * height in pixels of the paper element
+         * default height in pixels of the paper element
          */
         height: {
           type: Number,
@@ -60,7 +60,7 @@
         value: {
           type: Object,
           notify: true,
-          // observer: '_valueChanged'
+          observer: '_valueChanged'
         },
 
         /**
@@ -106,13 +106,13 @@
 
       attached: function () {
         this.async(function () {
-          this.init();
+          this._init();
         });
       },
       /**
        * set up phase
        */
-      init: function () {
+      _init: function () {
         this._graph = new joint.dia.Graph();
         this._paper = new joint.dia.Paper({
           el: this.$.paper,
@@ -125,28 +125,16 @@
         });
         this._uml = joint.shapes.uml;
 
-        if(this.value) {
-          var offset = this.getPaperSize(this.value);
-          this.fillGraph(this.value, offset)
-        }
-        this.initialized = true;
+        this._defaultWidth = this.width;
+        this._defaultHeight = this.height;
+
       },
 
-      _setSize: function (newVal,oldVal) {
+      _setSize: function () {
         this._computeSubmissionSize(this.height, this.width);
-
-        if(this.initialized) {
-          if(!this._scaleDone){
-            this._scale*= (newVal/oldVal)
-            this._paper.scale(this._scale, this._scale);
-            this._scaleDone = true;
-          } else{
-            this._scaleDone = false;
-          }
-        }
       },
 
-      fillGraph: function (value, offset) {
+      _fillGraph: function (value, offset) {
 
         var dict = {};
 
@@ -155,7 +143,7 @@
             x: s.state.position.x - offset.offX,
             y: s.state.position.y - offset.offY
           };
-          dict[s.state.name] = this.addState(s.type, s.state.name, s.state.attributes, s.state.methods, position, s.state.size);
+          dict[s.state.name] = this._addState(s.type, s.state.name, s.state.attributes, s.state.methods, position, s.state.size);
         }.bind(this));
 
         value.relations.forEach(function(rel){
@@ -178,62 +166,7 @@
 
       },
 
-      getPaperSize: function (value) {
-        var coord = {
-          x0: -1,
-          x1: -1,
-          y0: -1,
-          y1: -1
-        };
-
-        value.states.forEach(function (s) {
-          var x = s.state.position.x;
-          var y = s.state.position.y;
-
-          coord.x0 = this._getMin(coord.x0, x);
-          coord.x1 = this._getMax(coord.x1, (x + s.state.size.width) );
-          coord.y0 = this._getMin(coord.y0, y);
-          coord.y1 = this._getMax(coord.y1, (y + s.state.size.height) );
-        }.bind(this));
-
-        value.relations.forEach(function (r) {
-          if(r.vertices)
-            r.vertices.forEach(function (v) {
-              var x = v.x;
-              var y = v.y;
-
-              coord.x0 = this._getMin(coord.x0, x);
-              coord.x1 = this._getMax(coord.x1, x );
-              coord.y0 = this._getMin(coord.y0, y);
-              coord.y1 = this._getMax(coord.y1, y);
-            }.bind(this))
-        }.bind(this));
-
-        var pWidth = coord.x1 - coord.x0 + 40;
-        var pHeight = coord.y1 - coord.y0 + 40;
-
-
-        if(this._paper){
-          var p1 = this.height/pHeight;
-          var p2 = this.width/pWidth;
-
-          if(p1 < p2) {
-            this._paper.scale(p1, p1);
-            this._scale = p1
-          }
-          else {
-            this._paper.scale(p2, p2);
-            this._scale = p2
-          }
-        }
-
-        return {
-          offX: coord.x0 -20,
-          offY: coord.y0 -20,
-        };
-      },
-
-      addState: function (type, name, attributes, methods, position, size) {
+      _addState: function (type, name, attributes, methods, position, size) {
         var state = this._createState(type, {name: name, attributes: attributes, methods: methods, position:position, size:size});
         this._graph.addCell(state)
 
@@ -274,8 +207,45 @@
 
         else
           return new this._uml.Association(relation);
+      },
+
+      reload: function(){
+        this._valueChanged(this.value)
       }
 
+      // _valueChanged: function (newVal,oldVal) {
+      //   this.clear();
+      //   if(newVal){
+      //     this.width = this._defaultWidth;
+      //     this.height = this._defaultHeight;
+      //     var offset = this._setPaperSize(this.value.diagram);
+      //     this.fillGraph(this.value.diagram, offset)
+      //   }
+      // },
+
+      // scale: function (value) {
+      //   var s = Math.round((this._scale*value)* 1000)/1000;
+      //   if(s>=this._minScale){
+      //     this._scale=s;
+      //     this._paper.scale(s, s);
+      //     this.height*=value;
+      //     this.width*=value;
+      //   } else {
+      //     this._resetSize();
+      //   }
+      // },
+      //
+      // _resetSize: function () {
+      //   this._scale=this._minScale;
+      //   this._paper.scale(this._scale, this._scale);
+      //   this.height=this._defaultHeight;
+      //   this.width=this._defaultWidth;
+      // },
+      //
+      // clear: function(){
+      //   this._resetSize();
+      //   this._graph.clear();
+      // }
     });
   </script>
 

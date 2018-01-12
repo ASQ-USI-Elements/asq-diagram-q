@@ -12,7 +12,7 @@
         border: 1px solid #383b61;
       }
 
-      #app-body > div, #sidebar > div, #submissions > .submission {
+      #app-body > div, #sidebar > div{
         float: left;
       }
 
@@ -28,12 +28,37 @@
         box-shadow: 1px 0 20px #383b61;
       }
 
-      #submissions > .submission {
-        margin:10px;
-        background: #4a4e69;
-        border-radius: 5px;
-        box-shadow: 1px 0 20px #4a4e69;
-        padding: 10px;
+      #container{
+        @apply(--layout-horizontal);
+      }
+      #main{
+        @apply(--layout-flex-3);
+      }
+      #list-container{
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+      }
+      #list-container iron-pages{
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+      }
+      #submissionListWrapper{
+        @apply(--layout-flex);
+        display: none;
+      }
+      #submissionList {
+        @apply(--layout-flex);
+      }
+      #submissionList paper-item{
+        overflow:hidden;
+        padding: 12px 5px 0;
+        background-color: white;
+        cursor: pointer;
+        font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+        @apply(--shadow-elevation-2dp);
+      }
+      #submissionList paper-item[focused]{
+        background-color: var(--google-grey-300);
       }
 
       #sidebar {
@@ -72,7 +97,7 @@
         transition: visibility 0s;
       }
 
-      #sidebar-content, #submissions {
+      #sidebar-content, #submission {
         overflow-y: scroll;
       }
 
