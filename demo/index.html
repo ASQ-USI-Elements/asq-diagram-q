@@ -31,31 +31,186 @@
 
   </head>
   <body unresolved>
+
     <div>
-      <asq-diagram-q id="1234" uid="" name="diagram" width="800" height="600">This is the first test for a diagram question type.</asq-diagram-q>
+      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram1" type="uml" width="600" height="500">
+        <asq-stem>UML-VIEWER</asq-stem>
+      </asq-diagram-q>
+      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram2" type="uml" role="presenter" width="600" height="500">
+        <asq-stem>UML-PRESENTER</asq-stem>
+      </asq-diagram-q>
+      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram3" type="erd" width="600" height="500">
+        <asq-stem>ERD-VIEWER</asq-stem>
+      </asq-diagram-q>
+      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram4" type="erd" role="presenter" width="600" height="500">
+        <asq-stem>ERD-PRESENTER</asq-stem>
+      </asq-diagram-q>
     </div>
 
     <script>
-      document.addEventListener("WebComponentsReady", function (evt) {
-        var diagram = document.getElementById("1234");
 
-        var d_viewer = Polymer.dom(diagram.root).querySelector('asq-diagram-q-viewer');
+      var umlDiagram = {
+        states: [
+          {
+            state: {
+              size: { height: 78, width: 207.952911376953125 },
+              position: { y: 100, x: 240 },
+              methods: [ '+ setDateOfBirth(dob: Date): Void', '+ getAgeAsDays(): Numeric' ],
+              attributes: [ 'dob: Date' ],
+              name: 'Mammal'
+            },
+            id: '9b2210b8-8d3c-41ba-859e-41c778dac925',
+            type: 'interface'
+          },
+          {
+            state: {
+              size: { height: 90, width: 276.6038818359375 },
+              position: { y: 370, x: 410 },
+              methods: [ '+ setName(first: String, last: String): Void', '+ getName(): String' ],
+              attributes: [ 'firstName: String', 'lastName: String' ],
+              name: 'Person'
+            },
+            id: '7cb721fa-bad0-40e7-9140-03c64aa253bd',
+            type: 'abstract'
+          }],
+        relations: [
+          {
+            relation : {
+              source : { name: 'Person', id: '7cb721fa-bad0-40e7-9140-03c64aa253bd' },
+              target : { name: 'Mammal', id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
+            },
+            type: 'implementation',
+            vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
+          }
+        ],
+        type: 'uml'
+      };
+      var umlDiagram2 = {
+        states: [
+          {
+            state: {
+              size: { height: 78, width: 207.952911376953125 },
+              position: { y: 30, x: 140 },
+              methods: [ '+ setDateOfBirth(dob: Date): Void', '+ getAgeAsDays(): Numeric','+ getsomething(): string' ],
+              attributes: [ 'dob: Date','dob: Date2','dob: Date3' ],
+              name: 'Mammal1'
+            },
+            id: '9b2210b8-8d3c-41ba-859e-41c778dac925',
+            type: 'interface'
+          },
+          {
+            state: {
+              size: { height: 90, width: 280 },
+              position: { y: 270, x: 310 },
+              methods: [ '+ setName(first: String, last: String): Void', '+ getName(): String' ],
+              attributes: [ 'firstName: String', 'lastName: String', 'middleName: String' ],
+              name: 'Abstract'
+            },
+            id: '7cb721fa-bad0-40e7-9140-03c64aa253bd',
+            type: 'abstract'
+          }],
+        relations: [
+          {
+            relation : {
+              source : { name: 'Abstract', id: '7cb721fa-bad0-40e7-9140-03c64aa253bd' },
+              target : { name: 'Mammal1', id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
+            },
+            type: 'implementation',
+            vertices: [{x: 320, y: 240}, {x: 450, y: 220}]
+          }
+        ],
+        type: 'uml'
+      };
+      var erdDiagram = {
+        states: [
+          {
+            label: 'MyEntity',
+            id : '16350733-7c63-4d0b-ad26-292c1c6f8206',
+            state : {
+              position: { x:300  , y: 80 }
+            },
+            type: 'Entity'
+          },
+          {
+            label: 'MyAttribute',
+            id : 'cbb50624-4572-4321-a31f-7ae3b21ce6fb',
+            state : {
+              position: { x: 490, y: 340 },
+            },
+            type: 'Key'
+          },
+        ],
+        relations: [
+          {
+            labels : { sLabel: 'sourceLabel', tLabel: 'targetLabel'},
+            relation : {
+              source : { id: 'cbb50624-4572-4321-a31f-7ae3b21ce6fb', name: 'MyAttribute' },
+              target : { id: '16350733-7c63-4d0b-ad26-292c1c6f8206', name: 'MyEntity' }
+            },
+            vertices: [ {x: 540, y: 220} ]
+          }
+        ],
+        type: 'erd'
+      };
 
-        var position1 =  { x:200  , y: 20 };
-        var position2 =  { x:300  , y: 180 };
-        var position3 =  { x:400  , y: 340 };
+      document.addEventListener('WebComponentsReady', function (evt) {
 
-        d_viewer.addState('interface', 'Mammal', ['dob: Date'],['+ setDateOfBirth(dob: Date): Void','+ getAgeAsDays(): Numeric'], position1);
-        d_viewer.addState('abstract', 'Person', ['firstName: String','lastName: String'],['+ setName(first: String, last: String): Void','+ getName(): String'], position2);
-        d_viewer.addState('class', 'Woman', [],['+ giveABrith(): Person []'], position3);
+        // UML
+        var uml_viewer = document.getElementById('uml-demo-viewer');
+        uml_viewer.value = umlDiagram;
 
-        var keys = Object.keys(d_viewer._states);
-        d_viewer.addRelation('implementation', {id:keys[1]}, {id:keys[0]});
-        d_viewer.addRelation('generalization', {id:keys[2]}, {id:keys[1]});
+        var uml_presenter = document.getElementById('uml-demo-presenter');
+        uml_presenter.$$('asq-diagram-q-presenter')._submissions = [
+          {
+            answeree: '1',
+            diagram: umlDiagram
+          },
+          {
+            answeree: '2',
+            diagram: umlDiagram2
+          },
+          {
+            answeree: '3',
+            diagram: umlDiagram
+          },
+          {
+            answeree: '4',
+            diagram: umlDiagram2
+          },
+          {
+            answeree: '5',
+            diagram: umlDiagram
+          }
+        ];
 
-//        d_viewer._deleteState(keys[1]);
+        // ERD
+        var erd_viewer = document.getElementById('erd-demo-viewer');
+        erd_viewer.value = erdDiagram;
+
+        var erd_presenter = document.getElementById('erd-demo-presenter');
+        erd_presenter.$$('asq-diagram-q-presenter')._submissions = [
+          {
+            answeree: '1',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '2',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '3',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '4',
+            diagram: erdDiagram
+          },
+          {
+            answeree: '5',
+            diagram: erdDiagram
+          }
+        ];
       });
-
     </script>
 
 

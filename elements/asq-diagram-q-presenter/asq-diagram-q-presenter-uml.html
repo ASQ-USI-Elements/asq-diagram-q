@@ -1,0 +1,252 @@
+<link rel="import" href="../../../iron-icon/iron-icon.html">
+<link rel="import" href="../../../iron-icons/iron-icons.html">
+
+<!--
+`asq-diagram-q-presenter-uml` is used to show to the presenter.
+
+@element asq-diagram-q-presenter-uml
+@demo demo/index.html
+@group ASQ Elements
+@blurb Element acting as an editor for diagram questions.
+@homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
+-->
+<dom-module id='asq-diagram-q-presenter-uml'>
+
+  <template>
+    <style include='asq-diagram-q-shared-styles'></style>
+
+    <div id='paper'></div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'asq-diagram-q-presenter-uml',
+
+      behaviors: [
+        ASQ.asqQuestionElementBehavior,
+        ASQDiagramQBehavior
+      ],
+
+      listeners: {},
+
+      keyBindings: {},
+
+      hostAttributes: {},
+
+      properties: {
+        /**
+         * default width in pixels of the paper element
+         */
+        width: {
+          type: Number,
+          notify: true,
+          reflectToAttribute: true,
+          observer: '_setSize'
+        },
+
+        /**
+         * default height in pixels of the paper element
+         */
+        height: {
+          type: Number,
+          notify: true,
+          reflectToAttribute: true,
+          observer: '_setSize'
+        },
+
+        /**
+         * diagram value
+         */
+        value: {
+          type: Object,
+          notify: true,
+          observer: '_valueChanged'
+        },
+
+        /**
+         * The grap object
+         *  @type {Object}
+         */
+        _graph: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The paper object
+         *  @type {Object}
+         */
+        _paper: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The scale value
+         */
+        _scale: {
+          type: Number,
+          value: 1,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The uml object
+         *  @type {Object}
+         */
+        _uml: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+      },
+
+      attached: function () {
+        this.async(function () {
+          this._init();
+        });
+      },
+      /**
+       * set up phase
+       */
+      _init: function () {
+        this._graph = new joint.dia.Graph();
+        this._paper = new joint.dia.Paper({
+          el: this.$.paper,
+          width: this.width,
+          height: this.height,
+          model: this._graph,
+          gridSize: 10,
+          drawGrid:true,
+          interactive: false
+        });
+        this._uml = joint.shapes.uml;
+
+        this._defaultWidth = this.width;
+        this._defaultHeight = this.height;
+
+      },
+
+      _setSize: function () {
+        this._computeSubmissionSize(this.height, this.width);
+      },
+
+      _fillGraph: function (value, offset) {
+
+        var dict = {};
+
+        value.states.forEach(function(s){
+          var position = {
+            x: s.state.position.x - offset.offX,
+            y: s.state.position.y - offset.offY
+          };
+          dict[s.state.name] = this._addState(s.type, s.state.name, s.state.attributes, s.state.methods, position, s.state.size);
+        }.bind(this));
+
+        value.relations.forEach(function(rel){
+          var sourceId = dict[rel.relation.source.name];
+          var targetId = dict[rel.relation.target.name];
+
+          var rId = this.addRelation( rel.type, { id: sourceId }, { id: targetId } );
+          if(rel.vertices){
+            var vertices = [];
+            rel.vertices.forEach(function (v) {
+              vertices.push({
+                x : v.x - offset.offX,
+                y : v.y - offset.offY
+              });
+            });
+
+            this._graph.getCell(rId).set('vertices',vertices)
+          }
+        }.bind(this));
+
+      },
+
+      _addState: function (type, name, attributes, methods, position, size) {
+        var state = this._createState(type, {name: name, attributes: attributes, methods: methods, position:position, size:size});
+        this._graph.addCell(state)
+
+        return state.id;
+      },
+
+      _createState: function (type, state) {
+        state.attrs = this._getUMLAttrs(type);
+
+        if (type.toLowerCase() === 'class')
+          return new this._uml.Class(state);
+        else if (type.toLowerCase() === 'abstract')
+          return new this._uml.Abstract(state);
+        else
+          return new this._uml.Interface(state);
+      },
+
+      addRelation: function (type, source, target) {
+
+        var rel = this._createRelation(type, {source: source, target: target});
+        this._graph.addCell(rel);
+
+        return rel.id;
+      },
+
+      _createRelation: function (type, relation) {
+        if (type.toLowerCase() === 'generalization')
+          return new this._uml.Generalization(relation);
+
+        else if (type.toLowerCase() === 'implementation')
+          return new this._uml.Implementation(relation);
+
+        else if (type.toLowerCase() === 'aggregation')
+          return new this._uml.Aggregation(relation);
+
+        else if (type.toLowerCase() === 'composition')
+          return new this._uml.Composition(relation);
+
+        else
+          return new this._uml.Association(relation);
+      },
+
+      reload: function(){
+        this._valueChanged(this.value)
+      }
+
+      // _valueChanged: function (newVal,oldVal) {
+      //   this.clear();
+      //   if(newVal){
+      //     this.width = this._defaultWidth;
+      //     this.height = this._defaultHeight;
+      //     var offset = this._setPaperSize(this.value.diagram);
+      //     this.fillGraph(this.value.diagram, offset)
+      //   }
+      // },
+
+      // scale: function (value) {
+      //   var s = Math.round((this._scale*value)* 1000)/1000;
+      //   if(s>=this._minScale){
+      //     this._scale=s;
+      //     this._paper.scale(s, s);
+      //     this.height*=value;
+      //     this.width*=value;
+      //   } else {
+      //     this._resetSize();
+      //   }
+      // },
+      //
+      // _resetSize: function () {
+      //   this._scale=this._minScale;
+      //   this._paper.scale(this._scale, this._scale);
+      //   this.height=this._defaultHeight;
+      //   this.width=this._defaultWidth;
+      // },
+      //
+      // clear: function(){
+      //   this._resetSize();
+      //   this._graph.clear();
+      // }
+    });
+  </script>
+
+</dom-module>

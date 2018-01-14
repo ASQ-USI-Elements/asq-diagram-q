@@ -1,8 +1,11 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../asq-base/asq-base.html">
 
-<link rel="import" href="./elements/asq-diagram-q-viewer.html">
-<!--<link rel="import" href="./elements/asq-diagram-q-presenter.html">-->
+<link rel="import" href="elements/asq-diagram-q-shared/asq-diagram-q-shared-styles.html">
+<link rel="import" href="elements/asq-diagram-q-shared/asq-diagram-q-shared-utilities.html">
+
+<link rel="import" href="elements/asq-diagram-q-viewer/asq-diagram-q-viewer.html">
+<link rel="import" href="elements/asq-diagram-q-presenter/asq-diagram-q-presenter.html">
 
 <!--
 `asq-diagram-q`is used to allow the user to draw diagrams like UML's or ER's.
@@ -16,25 +19,31 @@
 <dom-module id="asq-diagram-q">
 
   <template>
+    <div id="header">
+      <p><content></content></p>
+    </div>
     <template is="dom-if" if="{{hasRole(role, roles.VIEWER)}}" restamp>
       <asq-diagram-q-viewer
-        role="viewer"
-        uid="[[uid]]"
-        name="{{name}}"
-        width="{{width}}"
-        height="{{height}}"
-        type="{{type}}">
-        <content></content>
+              role="viewer"
+              uid="[[uid]]"
+              name="[[name]]"
+              value="{{value}}"
+              type="[[type]]"
+              width="[[width]]"
+              height="[[height]]"
+              event-bus="[[eventBus]]">
       </asq-diagram-q-viewer>
     </template>
 
     <template is="dom-if" if="{{hasRole(role, roles.PRESENTER)}}" restamp>
       <asq-diagram-q-presenter
-        role="presenter"
-        uid="[[uid]]"
-        name="{{name}}"
-        disabled="{{disable}}]">
-        <content></content>
+              role="presenter"
+              uid="[[uid]]"
+              name="[[name]]"
+              type="[[type]]"
+              width="[[width]]"
+              height="[[height]]"
+              event-bus="[[eventBus]]">
       </asq-diagram-q-presenter>
     </template>
   </template>
@@ -44,14 +53,14 @@
       is: 'asq-diagram-q',
 
       behaviors: [
-        ASQ.asqElementBehavior
+        ASQ.asqQuestionElementBehavior,
+        ASQDiagramQBehavior
       ],
 
       properties: {
 
         /**
          * Name of 'this' obj
-         *  @type {String}
          */
         name: {
           type: String,
@@ -72,8 +81,7 @@
         },
 
         /**
-         * width in pixels of the paper element
-         *  @type {String}
+         * width in pixels of the diagram
          */
         width: {
           type: Number,
@@ -83,23 +91,58 @@
         },
 
         /**
-         * height in pixels of the paper element
-         *  @type {String}
+         * height in pixels of the diagram
          */
         height: {
           type: Number,
           value: 600,
           notify: true,
           reflectToAttribute: true
+        },
+
+        /**
+         * An optional initial set of states/relations.
+         */
+        value: {
+          type: Object,
+          notify: true
+        },
+
+        /**
+         * Event bus to communicate with ASQ
+         */
+        eventBus: {
+          type: Object,
+          notify: true
         }
       },
 
-      attached: function () {
-        this._isReady = true;
+      created: function () {
+        document.addEventListener('asq-ready', function (evt) {
+          this.eventBus = evt.detail.asqEventBus
+        }.bind(this));
+      },
 
-        this.async(function () {
-          this.fire('asq-diagram-q-ready');
-        });
+      /**
+       * Collect answers from inner `asq-option`s and orgnize them
+       * into an object.
+       *
+
+       {
+         uid: this.uid,
+         timestamp: new Date(),
+         options: options
+       }
+
+       */
+      submit: function () {
+        if (this.role == this.roles.VIEWER) {
+          var el = this.$$('asq-diagram-q-viewer');
+          if (!el) {
+            throw new Error('submit(): expected asq-diagram-viewer element to exist');
+          }
+          return el.submit();
+        }
       }
     });
 

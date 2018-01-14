@@ -9,11 +9,56 @@
 
       #app-body {
         font-family: sans-serif, Arial;
-        outline: 1px solid #383b61;
+        border: 1px solid #383b61;
       }
 
       #app-body > div, #sidebar > div{
-        float:left;
+        float: left;
+      }
+
+      #app-body > #main-container {
+        height: 100%;
+        width: 100%;
+      }
+
+      #main-container > #zoom{
+        color: #cfd8dc;
+        height: 40px;
+        background: #383b61;
+        box-shadow: 1px 0 20px #383b61;
+      }
+
+      #container{
+        @apply(--layout-horizontal);
+      }
+      #main{
+        @apply(--layout-flex-3);
+      }
+      #list-container{
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+      }
+      #list-container iron-pages{
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+      }
+      #submissionListWrapper{
+        @apply(--layout-flex);
+        display: none;
+      }
+      #submissionList {
+        @apply(--layout-flex);
+      }
+      #submissionList paper-item{
+        overflow:hidden;
+        padding: 12px 5px 0;
+        background-color: white;
+        cursor: pointer;
+        font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+        @apply(--shadow-elevation-2dp);
+      }
+      #submissionList paper-item[focused]{
+        background-color: var(--google-grey-300);
       }
 
       #sidebar {
@@ -52,11 +97,33 @@
         transition: visibility 0s;
       }
 
-      #sidebar-content {
-        height: 100%;
-        width:200px;
+      #sidebar-content, #submission {
         overflow-y: scroll;
       }
+
+      #sidebar-content {
+        height: 94%;
+        width:200px;
+      }
+
+      #sidebar-content > #zoom {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: #383b61;
+        height: 6%;
+        width: 100%;
+      }
+
+      #scale-label {
+        width: 30px;
+        text-align: center;
+      }
+
+      #zoom > * {
+        float: right;
+      }
+
 
       #sidebar-button {
         width: 0;
@@ -75,13 +142,26 @@
         box-shadow: 10px 0 30px -10px #383b61;
       }
 
-      #paper-container {
+      #app-body > #paper-container {
         margin-left: 10px;
+      }
+
+      #paper-container {
         overflow: scroll;
+        cursor: move;
       }
 
       .menu {
         margin: 5px 10px;
+      }
+
+      .menu-content {
+        margin-top: 5px;
+      }
+
+      h1 {
+        font-size: 8px;
+        margin:0;
       }
 
       h4 {
@@ -108,6 +188,13 @@
         margin: 2px;
         padding:2px;
         border-radius: 5px;
+      }
+
+      .inner-label {
+        width: 100%;
+        text-align: center;
+        text-decoration: underline;
+        margin: 0;
       }
 
       .menu-element > paper-dropdown-menu{
@@ -140,6 +227,24 @@
         };
       }
 
+      .img {
+        width: 100%;
+      }
+
+      .img > .state {
+        height: 60px;
+      }
+
+      .img > .rel {
+        height: 30px;
+      }
+
+      .img > img {
+        display: block;
+        margin: 5px auto;
+      }
+
+
       .menu-element > paper-dropdown-menu > paper-listbox > paper-item {
         --paper-item: {
           min-height: 24px;
@@ -159,7 +264,7 @@
       }
 
       .menu-element > table > tbody > tr > td > paper-input,
-      .menu-element > paper-input{
+      .menu-element > paper-input, .menu-element > div > paper-input{
 
         --paper-input-container-input: {
           background-color: var(--paper-blue-grey-50);
@@ -177,6 +282,10 @@
         --paper-font-caption: {
           display: none;
         };
+      }
+
+      .menu-element > div > paper-input {
+        margin: 0 5px;
       }
 
       .menu-element > table > tbody > tr > td > paper-input > iron-icon {
