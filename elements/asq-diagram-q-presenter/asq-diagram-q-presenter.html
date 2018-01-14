@@ -1,5 +1,6 @@
 <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../iron-icons/av-icons.html">
 <link rel="import" href="../../../iron-list/iron-list.html">
 <link rel="import" href="../../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../../paper-input/paper-input.html">
@@ -54,8 +55,9 @@
               </template>
             </div>
             <div id="zoom">
-              <paper-icon-button icon="zoom-in" on-click="zoomIn" on-mousedown="onZoomInPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+              <paper-icon-button id="clearBtn" icon="av:not-interested" on-tap="_onClearBtnTap" title="Clear Ranges"></paper-icon-button>
               <paper-icon-button icon="zoom-out" on-click="zoomOut" on-mousedown="onZoomOutPressed" on-mouseup="onZoomReleased"></paper-icon-button>
+              <paper-icon-button icon="zoom-in" on-click="zoomIn" on-mousedown="onZoomInPressed" on-mouseup="onZoomReleased"></paper-icon-button>
             </div>
           </div>
         </div>
@@ -290,6 +292,10 @@
           clearInterval(this.mousePressed);
           this.mousePressed = undefined;
         }
+      },
+
+      _onClearBtnTap: function () {
+        this.clear()
       },
 
       clear: function () {
