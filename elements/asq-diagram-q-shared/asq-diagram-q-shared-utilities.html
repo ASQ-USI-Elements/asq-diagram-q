@@ -551,6 +551,41 @@
     _clear: function(){
       this._resetSize();
       this._graph.clear();
+    },
+
+    _onDisabled: function(val){
+      if(val){
+        if(this.selectedCounter && this.selectedCounter > 0)
+          this._deselectJointjsObj();
+        this._collapseSidebar();
+        this._disableAll();
+      }
+      else if(!val){
+        this._expandSidebar();
+        this._enableAll();
+      }
+    },
+
+    _disableAll: function(){
+      this.$.paper.setAttribute('is-disabled','true');
+      this.$.sidebar.querySelector('div[id="sidebar-button"]').style = "display: none !important;";
+      if(this._graph){
+        this._graph.getCells().forEach(function (cell) {
+          console.log(cell.findView(this._paper).options.interactive);
+          cell.findView(this._paper).options.interactive = false;
+        }.bind(this))
+      }
+    },
+
+    _enableAll: function(){
+      this.$.paper.setAttribute('is-disabled','false');
+      this.$.sidebar.querySelector('div[id="sidebar-button"]').removeAttribute('style');
+      if(this._graph){
+        this._graph.getCells().forEach(function (cell) {
+          console.log(cell.findView(this._paper).options.interactive);
+          cell.findView(this._paper).options.interactive = {labelMove: false};
+        }.bind(this))
+      }
     }
 
   };

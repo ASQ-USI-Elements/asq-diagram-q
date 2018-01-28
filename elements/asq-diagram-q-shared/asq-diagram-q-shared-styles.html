@@ -7,6 +7,19 @@
         stroke: #4a4e69;
       }
 
+      #paper[is-disabled=false] .link-tools .tool-options {
+        display: block; /* by default is 'none' but we want to use it */
+      }
+
+      #paper[is-disabled=true] .link-tools .tool-options,
+      #paper[is-disabled=true] .link-tools .tool-remove,
+      #paper[is-disabled=true] .marker-vertices,
+      #paper[is-disabled=true] .marker-arrowheads,
+      #paper[is-disabled=true] .connection-wrap
+      {
+        display: none;
+      }
+
       #app-body {
         font-family: sans-serif, Arial;
         border: 1px solid #383b61;
@@ -102,7 +115,7 @@
       }
 
       #sidebar-content {
-        height: 94%;
+        height: calc(100% - 30px);
         width:200px;
       }
 
@@ -111,7 +124,7 @@
         bottom: 0;
         right: 0;
         background: #383b61;
-        height: 6%;
+        height: 30px;
         width: 100%;
       }
 

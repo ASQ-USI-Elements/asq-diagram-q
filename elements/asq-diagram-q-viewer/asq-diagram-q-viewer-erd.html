@@ -17,15 +17,10 @@
 @blurb Element acting as an editor for diagram questions.
 @homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
 -->
-<dom-module id='asq-diagram-q-viewer-erd'>
+<dom-module id="asq-diagram-q-viewer-erd">
 
   <template>
-    <style include='asq-diagram-q-shared-styles'>
-      .link-tools .tool-options {
-        display: block; /* by default is 'none' but we want to use it */
-      }
-    </style>
-
+    <style include="asq-diagram-q-shared-styles"></style>
     <div id="app-body">
       <div id="sidebar" class="open">
         <div id="sidebar-content">
@@ -216,9 +211,8 @@
         </div>
         <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>
       </div>
-      <div id='paper-container'>
-        <div id='paper'></div>
-      </div>
+      <!--<div id="paper-container"><div id="paper" is-disabled="false"></div></div>-->
+      <div id="paper-container"><div id="paper" is-disabled="{{disabled}}"></div></div>
 
     </div>
 
@@ -256,6 +250,18 @@
           value: 600,
           notify: true,
           reflectToAttribute: true
+        },
+
+        /**
+         * Disable or enable the element. Changes will be also
+         * propagated to inner propagated elements.
+         */
+        disabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true,
+          observer: "_onDisabled"
         },
 
         /**
@@ -639,7 +645,8 @@
       _onStatePositionChanged: function (state, pos) {
         this._states[state.id].state.position = pos;
         if(this.selected && this.selected.model.get('id')===state.id){
-         this._updateNewRelTargetPosition();
+          // this._updateNewRelTargetPosition();
+          this._hideNewLinkButton();
         }
         else if(this.selected && this.selected.model.attributes.source)
           this._onJointjsObjDeselected();
@@ -807,30 +814,31 @@
        * Cells selection
        */
       _selectJointjsObject: function (cellView, evt, x, y) {
-        var id = cellView.model.id;
-        if(this._states[id] || (this._relations[id] && evt.type === 'mousedown')){ // click on state or on relation 'options' icon
-          if(!this.multiModeEnabled){
-            if(this.selectedElements.length > 0) {
-              this._multiDeselectAll();
-            }
-            this._singleSelect(cellView);
-
-          } else{
-            if(!this.selected && this.selectedElements.length === 0){ // null and empty
-              this._singleSelect(cellView);
-            }
-            else if(this.selected && this.selectedElements.length === 0){ // not null and empty
-              if(this.selected.model.id === cellView.model.get('id')){
-                this._onJointjsObjDeselected();
+        if(!this.disabled) {
+          var id = cellView.model.id;
+          if (this._states[id] || (this._relations[id] && evt.type === 'mousedown')) { // click on state or on relation 'options' icon
+            if (!this.multiModeEnabled) {
+              if (this.selectedElements.length > 0) {
+                this._multiDeselectAll();
               }
-              else{
-                var s = this.selected;
-                this._onJointjsObjDeselected();
-                this._multiSelect(s);
+              this._singleSelect(cellView);
+            } else {
+              if (!this.selected && this.selectedElements.length === 0) { // null and empty
+                this._singleSelect(cellView);
+              }
+              else if (this.selected && this.selectedElements.length === 0) { // not null and empty
+                if (this.selected.model.id === cellView.model.get('id')) {
+                  this._onJointjsObjDeselected();
+                }
+                else {
+                  var s = this.selected;
+                  this._onJointjsObjDeselected();
+                  this._multiSelect(s);
+                  this._multiSelect(cellView);
+                }
+              } else if (!this.selected && this.selectedElements.length > 0) { // null and not empty
                 this._multiSelect(cellView);
               }
-            } else if(!this.selected && this.selectedElements.length > 0){ // null and not empty
-              this._multiSelect(cellView);
             }
           }
         }

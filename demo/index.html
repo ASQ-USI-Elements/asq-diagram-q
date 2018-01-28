@@ -34,17 +34,23 @@
 
     <div>
       <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram1" type="uml" width="600" height="500">
-        <asq-stem>UML-VIEWER</asq-stem>
+        <asq-stem>This is a UML Exercise</asq-stem>
       </asq-diagram-q>
+
+
+
       <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram2" type="uml" role="presenter" width="600" height="500">
-        <asq-stem>UML-PRESENTER</asq-stem>
+        <asq-stem>This is a UML Exercise</asq-stem>
       </asq-diagram-q>
+
       <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram3" type="erd" width="600" height="500">
-        <asq-stem>ERD-VIEWER</asq-stem>
+        <asq-stem>This is a ERD Exercise</asq-stem>
       </asq-diagram-q>
+
       <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram4" type="erd" role="presenter" width="600" height="500">
-        <asq-stem>ERD-PRESENTER</asq-stem>
+        <asq-stem>This is a ERD Exercise</asq-stem>
       </asq-diagram-q>
+
     </div>
 
     <script>
@@ -53,8 +59,8 @@
         states: [
           {
             state: {
-              size: { height: 78, width: 207.952911376953125 },
-              position: { y: 100, x: 240 },
+              size: { height: 78, width: 210 },
+              position: { y: 100, x: 220 },
               methods: [ '+ setDateOfBirth(dob: Date): Void', '+ getAgeAsDays(): Numeric' ],
               attributes: [ 'dob: Date' ],
               name: 'Mammal'
@@ -65,7 +71,7 @@
           {
             state: {
               size: { height: 90, width: 276.6038818359375 },
-              position: { y: 370, x: 410 },
+              position: { y: 300, x: 280 },
               methods: [ '+ setName(first: String, last: String): Void', '+ getName(): String' ],
               attributes: [ 'firstName: String', 'lastName: String' ],
               name: 'Person'
@@ -80,7 +86,7 @@
               target : { name: 'Mammal', id: '9b2210b8-8d3c-41ba-859e-41c778dac925' }
             },
             type: 'implementation',
-            vertices: [{x: 550, y: 240}, {x: 420, y: 240}]
+            vertices: [{x: 420, y: 240}]
           }
         ],
         type: 'uml'
@@ -162,23 +168,23 @@
         var uml_presenter = document.getElementById('uml-demo-presenter');
         uml_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
-            answeree: '1',
+            answeree: '1234314156',
             diagram: umlDiagram
           },
           {
-            answeree: '2',
+            answeree: '1234314223',
             diagram: umlDiagram2
           },
           {
-            answeree: '3',
+            answeree: '1234314324',
             diagram: umlDiagram
           },
           {
-            answeree: '4',
+            answeree: '1234314571',
             diagram: umlDiagram2
           },
           {
-            answeree: '5',
+            answeree: '1234314987',
             diagram: umlDiagram
           }
         ];
@@ -190,23 +196,23 @@
         var erd_presenter = document.getElementById('erd-demo-presenter');
         erd_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
-            answeree: '1',
+            answeree: '1234314156',
             diagram: erdDiagram
           },
           {
-            answeree: '2',
+            answeree: '1234314223',
             diagram: erdDiagram
           },
           {
-            answeree: '3',
+            answeree: '1234314324',
             diagram: erdDiagram
           },
           {
-            answeree: '4',
+            answeree: '1234314571',
             diagram: erdDiagram
           },
           {
-            answeree: '5',
+            answeree: '1234314987',
             diagram: erdDiagram
           }
         ];

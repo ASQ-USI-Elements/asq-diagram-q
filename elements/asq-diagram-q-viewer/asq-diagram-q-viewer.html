@@ -18,6 +18,7 @@
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
+              disabled="{{disabled}}"
               width="[[width]]"
               height="[[height]]">
       </asq-diagram-q-viewer-uml>
@@ -28,6 +29,7 @@
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
+              disabled="{{disabled}}"
               width="[[width]]"
               height="[[height]]">
       </asq-diagram-q-viewer-erd>
@@ -83,6 +85,17 @@
           type: Object,
           notify: true,
           observer: '_valueChanged'
+        },
+
+        /**
+         * Disable or enable the element. Changes will be also
+         * propagated to inner propagated elements.
+         */
+        disabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true
         },
 
         /**

@@ -28,6 +28,7 @@
               uid="[[uid]]"
               name="[[name]]"
               value="{{value}}"
+              disabled="{{disabled}}"
               type="[[type]]"
               width="[[width]]"
               height="[[height]]"
@@ -106,6 +107,17 @@
         value: {
           type: Object,
           notify: true
+        },
+
+        /**
+         * Disable or enable the element. Changes will be also
+         * propagated to inner propagated elements.
+         */
+        disabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true
         },
 
         /**
