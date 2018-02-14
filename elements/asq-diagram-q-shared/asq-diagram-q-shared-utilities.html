@@ -5,17 +5,53 @@
 
 <script>
 
-  window.ASQDiagramQBehavior = window.ASQDiagramQBehavior || {};
+  var ASQ = window.ASQ || {};
 
-  ASQDiagramQBehavior = {
+  var diagramQViewerBehaviour = ASQ.diagramQViewerBehaviour = {
 
     /** Initialization */
+
+    initialize: function () {
+      this._graph = new joint.dia.Graph();
+      this._paper = new joint.dia.Paper({
+        el: this.$.paper,
+        width: 1920,
+        height: 1920,
+        model: this._graph,
+        gridSize: 10,
+        drawGrid:true
+      });
+      this._computeViewerSize(this.height, this.width);
+      this._setJointJsShapes(this.type);
+      this._shapes = this._getShapes(this.type);
+      this._states = {};
+      this._relations = {};
+      this.selectedElements = [];
+
+      this._setJointJsEventListeners();
+      this._setCellHighlighter();
+      this._setKeyAndMouseEventListeners();
+    },
+
+    _setJointJsShapes: function (type) {
+      if( type === 'uml' )
+        this._uml = joint.shapes.uml;
+      else if( type === 'erd' )
+        this._erd = joint.shapes.erd;
+    },
 
     _setKeyAndMouseEventListeners: function() {
       document.addEventListener('keydown',this._keyHandler.bind(this));
       document.addEventListener('keyup',this._keyHandler.bind(this));
       this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
     },
+
+    _keyHandler: function (evt) {
+        if(evt.key === 'Meta') {
+          if (evt.type === 'keydown') this.multiModeEnabled = true;
+          else if (evt.type === 'keyup') this.multiModeEnabled = false;
+        }
+      },
 
     _setJointJsEventListeners: function() {
       this._paper.on('cell:pointerclick', this._selectJointjsObject.bind(this));
@@ -24,6 +60,7 @@
       this._paper.on('blank:pointerclick', this._deselectJointjsObj.bind(this));
       this._paper.on('blank:pointerdown', this.onDragStart.bind(this));
       this._paper.on('cell:pointerup blank:pointerup', this.onDragEnd.bind(this));
+      this._paper.on('cell:pointerup', this.onSelectedPositionChanged.bind(this));
     },
 
     _setCellHighlighter: function() {
@@ -59,6 +96,13 @@
 
     /** Expand/collapse sidebar */
 
+    _expandOrCollapse: function () {
+      if(this.$['sidebar'].className === "open")
+        this._collapseSidebar();
+      else
+        this._expandSidebar();
+    },
+
     _expandSidebar: function() {
       var bar = this.$['sidebar'].className = 'open';
       var btn = this.$['sidebar-button'].firstChild.icon='chevron-left';
@@ -69,114 +113,48 @@
       var btn = this.$['sidebar-button'].firstChild.icon='chevron-right';
     },
 
-    /** presenter init graph */
+    /**
+     * expand/collapse menu
+     */
 
-    _valueChanged: function (newVal,oldVal) {
-      this._clear();
-      if(newVal){
-        this.width = this._defaultWidth;
-        this.height = this._defaultHeight;
-        var offset = this._setPaperSize(this.value.diagram);
-        this._fillGraph(this.value.diagram, offset)
-      }
+    _expandStateMenu: function () {
+      this._showStateContent = !this._showStateContent
+    },
+
+    _expandRelationMenu: function () {
+      this._showLinkContent = !this._showLinkContent
+    },
+
+    _expandEditMenu: function () {
+      this._showEditContent = !this._showEditContent
+    },
+
+    _nothingSelected: function (counter) {
+      return counter === 0;
+    },
+
+    _somethingSelected: function (counter) {
+      return counter > 0;
+    },
+
+    _oneSelected: function(counter){
+      return counter === 1;
+    },
+
+    _twoSelected: function(counter){
+      return counter === 2 && this.selectedElements.every(function (el) {
+        return this._isType('state',el);
+      }.bind(this))
+    },
+
+    _multipleSelected: function(counter){
+      return counter > 1 && !this._twoSelected(counter);
     },
 
     /** State creation */
 
     _umlStatePropertiesToJSONObj: function(name, attributes, methods, position, size) {
       return {name: name, attributes: attributes, methods: methods, position: position, size: size}
-    },
-
-    _getUMLAttrs: function(type) {
-
-    var attrs = {
-      '.uml-class-name-text': {
-        fontSize: 12,
-        fontFamily: 'Courier'
-      },
-      '.uml-class-attrs-text, .uml-class-methods-text': {
-        fontSize: 10,
-        fontFamily: 'Courier'
-      }
-    };
-
-    if (type.toLowerCase() === 'class') {
-      attrs['.uml-class-name-rect'] = {
-        fill: '#ff8450',
-        stroke: '#fff',
-        'stroke-width': 0.5
-      };
-
-      attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
-        fill: '#fe976a',
-        stroke: '#fff',
-        'stroke-width': 0.5
-      };
-
-      attrs['.uml-class-attrs-text'] = {
-        ref: '.uml-class-attrs-rect',
-        'ref-y': 0.5,
-        'y-alignment': 'middle'
-      };
-
-      attrs['.uml-class-methods-text'] = {
-        ref: '.uml-class-methods-rect',
-        'ref-y': 0.5,
-        'y-alignment': 'middle'
-      };
-    }
-
-    else if (type.toLowerCase() === 'abstract') {
-      attrs['.uml-class-name-rect'] = {
-        fill: '#68ddd5',
-        stroke: '#ffffff',
-        'stroke-width': 0.5
-      };
-
-      attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
-        fill: '#9687fe',
-        stroke: '#fff',
-        'stroke-width': 0.5
-      };
-
-      attrs['.uml-class-methods-text, .uml-class-attrs-text'] = {
-        fill: '#fff'
-      };
-    }
-
-    else {
-      attrs['.uml-class-name-rect'] = {
-        fill: '#feb662',
-        stroke: '#ffffff',
-        'stroke-width': 0.5
-      };
-
-      attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
-        fill: '#fdc886',
-        stroke: '#fff',
-        'stroke-width': 0.5
-      };
-
-      attrs['.uml-class-attrs-text'] = {
-        ref: '.uml-class-attrs-rect',
-        'ref-y': 0.5,
-        'y-alignment': 'middle'
-      };
-
-      attrs['.uml-class-methods-text'] = {
-        ref: '.uml-class-methods-rect',
-        'ref-y': 0.5,
-        'y-alignment': 'middle'
-      };
-    }
-    return attrs;
-  },
-
-    _getERDAttrs: function(type, label) {
-      if (type !== 'ISA')
-        return { text: { text: label }};
-      else
-        return {};
     },
 
     _getNewStatePosition: function(){
@@ -201,6 +179,14 @@
 
     /** Relation creation */
 
+    newRelation: function() {
+      var data = this._getRelationFormData();
+      if(!data) return;
+
+      this.addRelation(data);
+      this._expandRelationMenu();
+    },
+
     _relationPropertiesToJSONObj: function(source, target) {
       return {source: source, target: target}
     },
@@ -209,7 +195,6 @@
       var pos =  state.model.get('position');
       var size =  state.model.get('size');
 
-      // var source = { x :pos.x, y : pos.y+(size.height/2) };
       var source = { id:state.model.get('id') };
       var target = { x : pos.x+size.width+25, y : pos.y+(size.height/2) };
 
@@ -233,27 +218,154 @@
       return {'.marker-target': {d: 'M 20 0 L 0 10 L 20 20 z', fill: 'white'}};
     },
 
-    _createLabels: function(sLabel, tLabel) {
-      return {
-        labels: [
-          {
-            position: 20,
-            attrs: {
-              text: { dy: -8, text: sLabel, fill: '#000000' },
-              rect: { fill: '#ffffff' }
-            }
-          },
-          {
-            position: -20,
-            attrs: {
-              text: { dy: -8, text: tLabel, fill: '#000000' },
-              rect: { fill: '#ffffff' }
-            }
-          }]
-      };
+    _connectSelected: function () {
+      var source = this.selectedElements[0].model.get('id')
+      var target = this.selectedElements[1].model.get('id')
+      this._multiDeselectAll();
+      var id = this._connect({id : source}, {id : target})
+      this._singleSelect(this._graph.getCell(id).findView(this._paper));
     },
 
-    /** State Edit */
+    _showNewLinkButton: function(state){
+      if(this._isType('state', state) && !this.newRel){
+
+        var pos = this._getNewLinkPosition(state);
+        var attr = this._getNewRelAttrs();
+        var id = this._connect(pos.source,pos.target);
+
+        this.newRel = this._graph.getCell(id);
+        this.newRel.attr(attr);
+        this.newRel.on('change:target', this._saveNewLink.bind(this));
+        this._restyleArrowHead(id);
+      }
+    },
+
+    _restyleArrowHead: function(id){
+      var arrowHead = this.$.paper.querySelector('g[model-id="'+id+'"] g[class="marker-arrowhead-group marker-arrowhead-group-target"]')
+      if(arrowHead){
+        var transform = arrowHead.getAttribute('transform').split(' ');
+
+        var translate = this.getVal(transform, 'translate')
+
+        arrowHead.setAttribute('transform','translate('+(Number(translate[0])+7.5)+','+(Number(translate[1])+10.5)+') scale(1.3,1.3) rotate(-180)');
+      }
+    },
+
+    getVal: function (t, match) {
+      for(var i = 0; i<t.length;i++){
+        if(t[i].startsWith(match)){
+          return t[i].replace(match+'(', '').replace(')','').split(',');
+        }
+      }
+    },
+
+    _hideNewLinkButton: function(){
+      if(this.newRel)
+        this._deleteRelation(this.newRel.get('id'),true);
+    },
+
+    _saveNewLink: function (cell,val) {
+      if(this.newRel) {
+        var rel = this.newRel;
+        this.newRel = null;
+        this._deselectJointjsObj();
+        this._resetNewLinkAttr(rel);
+        rel.findView(this._paper).render();
+      }
+      if(val.id){
+        this._singleSelect(cell.findView(this._paper));
+      }
+    },
+
+    /** State and relation Edit */
+
+    _onStatePositionChanged: function (state, pos) {
+      this._states[state.id].state.position = pos;
+      if(this.selected && this.selected.model.get('id')===state.id){
+        this._hideNewLinkButton();
+      }
+      else if(this.selected && this.selected.model.attributes.source)
+        this._onJointjsObjDeselected();
+    },
+
+    onSelectedPositionChanged: function (cell) {
+      if(this.selected) {
+        if(cell.model.get('id') === this.selected.model.get('id')){
+          this._showNewLinkButton(this.selected)
+        }
+      }
+    },
+
+    _changeCellType: function () {
+      console.log(this.type)
+      this._hideNewLinkButton();
+      var data = this._isType('state', this.selected)? this._getStateFormData(true) : this._getRelationFormData(true);
+      var id = this._updateType(data);
+      this.selected = this._graph.getCell(id).findView(this._paper);
+      this.selected.highlight(null, this.highlighter);
+    },
+
+    _saveChanges: function () {
+      var data = this._isType('state', this.selected)? this._getStateFormData() : this._getRelationFormData();
+      if(data){
+        this.selectedCopy = null;
+        this._showNewLinkButton(this.selected);
+      }
+      this._deselectJointjsObj()
+    },
+
+    _updateType: function (data) {
+      var id;
+
+      if(this._isType('state', this.selected)){
+        data.position = this.selected.model.get('position');
+        id = this.addState(data);
+        this._copyRelationsAll(this.selected.model.get('id'), id);
+        this._deleteState(this.selected.model.get('id'));
+      } else{
+        id = this.addRelation(data);
+
+        this._copyVertices(this.selected.model.get('id'), id);
+
+        var temp = this.selectedCopy;
+        this._deleteRelation(this.selected.model.get('id'));
+        this.selectedCopy = temp
+      }
+      return id;
+    },
+
+    _editAttribute: function (cell, key, value) {
+      cell.model.set(key, value);
+
+      if(this._isType('state', cell))
+        this._states[cell.model.id].state[key] = value;
+      else
+        this._relations[cell.model.id].relation[key] = value;
+    },
+
+    _copyVertices: function (idFrom, idTo) {
+      var vertices;
+      if((vertices = this._graph.getCell(idFrom).findView(this._paper).model.get('vertices') ))
+        this._graph.getCell(idTo).findView(this._paper).model.set('vertices',vertices)
+    },
+
+    // _onRelationTargetOrSourceChanged: function (rel) {
+    //   console.log('_onRelationTargetOrSourceChanged')
+    //   this._relations[rel.id].relation.source = rel.attributes.source;
+    //   this._relations[rel.id].relation.target = rel.attributes.target;
+    // },
+
+    _changeRelationSourceAndTarget: function (evt, el) {
+      var type = evt.target.id || evt.target.parentElement.id;
+      console.log(type)
+      if(el.value){
+        if(this.selected.model.get(type).id !== el.value.id){
+          this._editAttribute(this.selected, type, { id:el.value.id });
+          this._renderAfterChange();
+          console.log(this._relations[this.selected.model.get('id')].relation.source, this._relations[this.selected.model.get('id')].relation.target)
+        }
+      }
+    },
 
     _getUMLModelData: function(model, isState) {
       var type = this._getUMLModelSubType(model,isState);
@@ -333,13 +445,553 @@
       });
     },
 
+    /**
+     * Cells selection
+     */
+    _selectJointjsObject: function (cellView, evt, x, y) {
+      if(!this.disabled) {
+        var id = cellView.model.id;
+        if (this._states[id] || (this._relations[id] && evt.type === 'mousedown')) { // click on state or on relation 'options' icon
+          if (!this.multiModeEnabled) {
+            if (this.selectedElements.length > 0) {
+              this._multiDeselectAll();
+            }
+            this._singleSelect(cellView);
+          } else {
+            if (!this.selected && this.selectedElements.length === 0) { // null and empty
+              this._singleSelect(cellView);
+            }
+            else if (this.selected && this.selectedElements.length === 0) { // not null and empty
+              if (this.selected.model.id === cellView.model.get('id')) {
+                this._onJointjsObjDeselected();
+              }
+              else {
+                var s = this.selected;
+                this._onJointjsObjDeselected();
+                this._multiSelect(s);
+                this._multiSelect(cellView);
+              }
+            } else if (!this.selected && this.selectedElements.length > 0) { // null and not empty
+              this._multiSelect(cellView);
+            }
+          }
+        }
+      }
+    },
+
+    _singleSelect: function(cellView){
+      if(this.selected){
+        if(this.selected.model.id === cellView.model.get('id'))
+          return;
+        else{
+          if(cellView)
+            this._tempNextRel = cellView;
+          this._onJointjsObjDeselected();
+          if(this._tempNextRel){
+            cellView = this._tempNextRel;
+            this._tempNextRel = null;
+          }
+        }
+      }
+      this.selected = cellView;
+      this.selectedCopy = _.cloneDeep(this.selected.model.attributes) // keep a copy in case of 'undo' operation
+      this.selected.highlight(null, this.highlighter);
+      this.selectedCounter++;
+      this._showNewLinkButton(cellView);
+      this._expandSidebar()
+    },
+
+    _multiSelect: function(cellView){
+      if(this._isSelected(cellView)){
+        this._multiDeselect(cellView);
+        if(this.selectedCounter === 1){ // only one element, switch to single mode
+          this._singleSelect(this.selectedElements[0]);
+          this.selectedCounter=1;
+          this.selectedElements = [];
+        }
+      }
+      else {
+        this.selectedElements.push(cellView);
+        cellView.highlight(null, this.highlighter);
+        this.selectedCounter++;
+      }
+    },
+
+    _isSelected: function (cellView) {
+      for(var i=0;i<this.selectedElements.length;i++){
+        if(this.selectedElements[i].model.get('id') === cellView.model.get('id'))
+          return true;
+      }
+      return false;
+    },
+
+    /**
+     * Cells de-selection
+     */
+    _onClearButtonClicked: function (evt) {
+      this._deselectJointjsObj();
+    },
+
+    _deselectJointjsObj: function (cell) {
+      if(this.selectedCounter !== 0){
+        if(cell && cell.model && this.selected && this.newRel){
+          if(this._isNewRelation(cell.model))
+            return;
+        }
+        this._onJointjsObjDeselected();
+        this._multiDeselectAll();
+      }
+    },
+
+    _isNewRelation: function (model) {
+      return model.get('id') === this.newRel.get('id');
+    },
+
+    _onJointjsObjDeselected: function () {
+      var cell = this.selected;
+      if(cell) {
+        this._hideNewLinkButton();
+        if(this.selectedCopy){
+          this._undoChanges();
+        }
+        this.selected.unhighlight(null, this.highlighter);
+        this.selected = null;
+        this._showStateContent = false;
+        this._showLinkContent = false;
+        this._showEditContent = true;
+        this.selectedCounter--;
+      }
+      return cell;
+    },
+
+    _multiDeselect:function (cellView) {
+      for(var i=0;i<this.selectedElements.length;i++){
+        if(this.selectedElements[i].model.get('id') === cellView.model.get('id')) {
+          this.selectedElements[i].unhighlight(null, this.highlighter);
+          this.selectedElements.splice(i, 1);
+          this.selectedCounter--;
+          return;
+        }
+      }
+    },
+
+    _multiDeselectAll:function () {
+      for(var i=0;i<this.selectedElements.length;i++){
+        this.selectedElements[i].unhighlight(null, this.highlighter);
+      }
+      this.selectedElements = [];
+      this.selectedCounter=0;
+    },
+
+    /**
+     * State deletion
+     */
+    _deleteState: function (id) {
+      var rel = this._findRelations(id,this._relations), t = this;
+
+      rel.forEach(function (r) {
+        t._deleteFromRelationsDict(r) // remove involved relations from relations Dictionary
+      });
+
+      this._deleteCellFromGraph(this._states[id].cid); // remove state from graph (and also involved relations)
+      this._deleteFromStatesDict(id); // remove state from states Dictionary
+    },
+
+    /* for both states and relations */
+    _deleteSelected: function (){
+      if(this.selected) {
+        var sel = this._onJointjsObjDeselected();
+        this._singleDelete(sel);
+
+      } else if(this.selectedCounter > 1){
+        this._multiDelete();
+      }
+    },
+
+    _singleDelete:function (cell) {
+      if (this._isType('state', cell))
+        this._deleteState(cell.model.get('id'))
+      else
+        this._deleteRelation(cell.model.get('id'))
+    },
+
+    _multiDelete: function () {
+      this.selectedElements.forEach(function(el){
+        this._singleDelete(el);
+      }.bind(this))
+      this.selectedElements = [];
+      this.selectedCounter = 0;
+    },
+
+    _deleteFromStatesDict: function (id) {
+      delete this._states[id];
+    },
+
+    _deleteCellFromGraph: function (cid) {
+      this._graph.getCell(cid).remove(); // works for both states and relations (also delete elements from 'svg')
+    },
+
+    clear: function() {
+      this._graph.clear();
+      this._states = {};
+      this._relations = {};
+    },
+
+    /**
+     * Relation deletion
+     */
+    _deleteRelation: function (id, isNewRel) {
+      if (this._relations[id]) {
+        this._deleteCellFromGraph(this._relations[id].cid); // remove cell from graph
+        this._deleteFromRelationsDict(id);
+        if(isNewRel)
+          this.newRel = null;
+      }
+    },
+
+    /* Called when a link is deleted (after 'remove' event in 'joint.dia') */
+    _onRelationDeleted: function (rel) {
+      if(this.selected && rel.id === this.selected.model.get('id')){
+        this.selectedCopy = null;
+      }
+      // this._onJointjsObjDeselected();
+      this._deleteFromRelationsDict(rel.id);
+    },
+
+    _deleteFromRelationsDict: function (id) {
+      delete this._relations[id];
+    },
+
     /** Helper functions */
+
+    _isType: function(type, selected){
+      if(selected){
+        if(this._states[selected.model.id])
+          return type === 'state';
+        else
+          return type === 'relation';
+      }
+      return false;
+    },
+
+    _getIcon: function (show) {
+      return show ? 'remove-circle' : 'add-circle';
+    },
+
+    _inc: function(index){
+      return index+1;
+    },
+
+    setDropdownMenuHeight: function(e,val){
+      if(val.value){
+        var menu = Polymer.dom(e).localTarget;
+        var relativeY = menu.getBoundingClientRect().y - this.getBoundingClientRect().y
+        Polymer.dom(menu).querySelector('paper-listbox').style['max-height'] = (this.height/2)+'px';
+        if(this.height > relativeY+(this.height/2))
+          menu.verticalAlign = 'top';
+        else
+          menu.verticalAlign = 'bottom';
+      }
+    },
 
     _computeViewerSize: function (h,w) {
       this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
       this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
       this.$['sidebar'].style.height = h+'px';
     },
+
+    _findStateByName: function(diagramType, states, name) {
+      var ids = Object.keys(states)
+      if(diagramType === 'uml')
+        for(var i=0;i<ids.length;i++){
+          if(states[ids[i]].state.name === name)
+            return ids[i];
+        }
+      else if(diagramType === 'erd')
+        for(var i=0;i<ids.length;i++){
+          if(states[ids[i]].label === name)
+            return ids[i];
+        }
+
+      return false;
+    },
+
+    _scalePaper: function(t) {
+      this.$['paper'].style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
+    },
+
+    _showStateErrorMessage: function(el, required) {
+      var err, keys = Object.keys(required);
+      for( var i=0 ; i<keys.length ; i++) {
+        if(!required[keys[i]]){
+          err = '- ' + keys[i] + ' missing';
+          break;
+        }
+      }
+
+      if(err) {
+        this._showError(el,err);
+        return true;
+      }
+      return false;
+    },
+
+    _showRelationErrorMessage: function(el, required){
+      var err, keys = Object.keys(required);
+      for( var i=0 ; i<keys.length ; i++) {
+        if(!required[keys[i]]){
+          err = '- ' + keys[i] + ' missing';
+          break;
+        }
+      }
+      if(!err && required.source.id === required.target.id)
+        err='- source and target are the same';
+
+      if(err) {
+        this._showError(el,err);
+        return true;
+      }
+      return false;
+    },
+
+    _showError: function(el, text) {
+      var err = el.querySelector('div[id=error]');
+      if(err){
+        err.style = 'visibility:visible';
+        err.querySelector('p[id=whichError]').innerHTML = text;
+        setTimeout(function(){
+          err.removeAttribute('style');
+        }, 2000);
+      }
+    },
+
+    _findRelations: function(id, relations) {
+      var rel = [];
+      Object.keys(relations).forEach(function (r) {
+        if (relations[r].relation.source.id === id || relations[r].relation.target.id === id)
+          rel.push(r);
+      });
+      return rel;
+    },
+
+    _computeJointJsStateSize: function(name, attributes, methods) {
+      var arr = [name].concat(attributes, methods);
+      return {
+        width: this._computeStateWidth(arr) + 2, // + 2 for margins
+        height: Math.max(50, 2 * 15 + (arr.length) * 12)
+      }
+    },
+
+    _computeStateWidth: function(arr) {
+      var w = 0;
+      for (var i = 0; i < arr.length; i++) {
+        w = Math.max(w, this._getWidthOfText(arr[i], (i===0)))
+      }
+      return Math.max(Math.max(w),100);
+    },
+
+    _getWidthOfText: function(txt, bold) {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
+      return ctx.measureText(txt).width;
+    },
+
+    _onDisabled: function(val){
+      if(val){
+        if(this.selectedCounter && this.selectedCounter > 0)
+          this._deselectJointjsObj();
+        this._collapseSidebar();
+        this._disableAll();
+      }
+      else if(!val){
+        this._expandSidebar();
+        this._enableAll();
+      }
+    },
+
+    _disableAll: function(){
+      this.$.paper.setAttribute('is-disabled','true');
+      this.$.sidebar.querySelector('div[id="sidebar-button"]').style = "display: none !important;";
+      if(this._graph){
+        this._graph.getCells().forEach(function (cell) {
+          cell.findView(this._paper).options.interactive = false;
+        }.bind(this))
+      }
+    },
+
+    _enableAll: function(){
+      this.$.paper.setAttribute('is-disabled','false');
+      this.$.sidebar.querySelector('div[id="sidebar-button"]').removeAttribute('style');
+      if(this._graph){
+        this._graph.getCells().forEach(function (cell) {
+          cell.findView(this._paper).options.interactive = {labelMove: false};
+        }.bind(this))
+      }
+    },
+
+    zoomIn: function () {
+      this._scale += 0.05;
+      this._paper.scale(this._scale,this._scale);
+      this._scalePaper();
+    },
+
+    zoomOut: function () {
+      this._scale -= 0.05;
+      this._paper.scale(this._scale,this._scale);
+      this._scalePaper();
+    },
+
+    getScale: function (scale) {
+      return (Math.round(this._scale*100))+'%';
+    },
+
+    onDragStart: function(event, x, y) {
+      this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
+    },
+
+    onDragEnd: function(event, x, y) {
+      delete this.dragStartPosition;
+    },
+
+    dragPaper: function (evt) {
+      if (this.dragStartPosition){
+        this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
+        this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
+      }
+    }
+
+  };
+
+  var diagramQCommonBehaviour = ASQ.diagramQCommonBehaviour ={
+
+    _getUMLAttrs: function(type) {
+
+      var attrs = {
+        '.uml-class-name-text': {
+          fontSize: 12,
+          fontFamily: 'Courier'
+        },
+        '.uml-class-attrs-text, .uml-class-methods-text': {
+          fontSize: 10,
+          fontFamily: 'Courier'
+        }
+      };
+
+      if (type.toLowerCase() === 'class') {
+        attrs['.uml-class-name-rect'] = {
+          fill: '#ff8450',
+          stroke: '#fff',
+          'stroke-width': 0.5
+        };
+
+        attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
+          fill: '#fe976a',
+          stroke: '#fff',
+          'stroke-width': 0.5
+        };
+
+        attrs['.uml-class-attrs-text'] = {
+          ref: '.uml-class-attrs-rect',
+          'ref-y': 0.5,
+          'y-alignment': 'middle'
+        };
+
+        attrs['.uml-class-methods-text'] = {
+          ref: '.uml-class-methods-rect',
+          'ref-y': 0.5,
+          'y-alignment': 'middle'
+        };
+      }
+
+      else if (type.toLowerCase() === 'abstract') {
+        attrs['.uml-class-name-rect'] = {
+          fill: '#68ddd5',
+          stroke: '#ffffff',
+          'stroke-width': 0.5
+        };
+
+        attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
+          fill: '#9687fe',
+          stroke: '#fff',
+          'stroke-width': 0.5
+        };
+
+        attrs['.uml-class-methods-text, .uml-class-attrs-text'] = {
+          fill: '#fff'
+        };
+      }
+
+      else {
+        attrs['.uml-class-name-rect'] = {
+          fill: '#feb662',
+          stroke: '#ffffff',
+          'stroke-width': 0.5
+        };
+
+        attrs['.uml-class-attrs-rect, .uml-class-methods-rect'] = {
+          fill: '#fdc886',
+          stroke: '#fff',
+          'stroke-width': 0.5
+        };
+
+        attrs['.uml-class-attrs-text'] = {
+          ref: '.uml-class-attrs-rect',
+          'ref-y': 0.5,
+          'y-alignment': 'middle'
+        };
+
+        attrs['.uml-class-methods-text'] = {
+          ref: '.uml-class-methods-rect',
+          'ref-y': 0.5,
+          'y-alignment': 'middle'
+        };
+      }
+      return attrs;
+    },
+
+    _getERDAttrs: function(type, label) {
+      if (type !== 'ISA')
+        return { text: { text: label }};
+      else
+        return {};
+    },
+
+    _createLabels: function(sLabel, tLabel) {
+      return {
+        labels: [
+          {
+            position: 20,
+            attrs: {
+              text: { dy: -8, text: sLabel, fill: '#000000' },
+              rect: { fill: '#ffffff' }
+            }
+          },
+          {
+            position: -20,
+            attrs: {
+              text: { dy: -8, text: tLabel, fill: '#000000' },
+              rect: { fill: '#ffffff' }
+            }
+          }]
+      };
+    },
+  };
+
+  var diagramQPresenterBehaviour = ASQ.diagramQPresenterBehaviour = {
+
+    /** presenter init graph */
+    _valueChanged: function (newVal,oldVal) {
+      this._clear();
+      if(newVal){
+        this.width = this._defaultWidth;
+        this.height = this._defaultHeight;
+        var offset = this._setPaperSize(this.value.diagram);
+        this._fillGraph(this.value.diagram, offset)
+      }
+    },
+
+    /** Helper functions */
 
     _computePresenterSize: function (h, w){
       this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
@@ -422,113 +1074,6 @@
       return a;
     },
 
-    _findStateByName: function(diagramType, states, name) {
-      var ids = Object.keys(states)
-      if(diagramType === 'uml')
-        for(var i=0;i<ids.length;i++){
-          if(states[ids[i]].state.name === name)
-            return ids[i];
-        }
-      else if(diagramType === 'erd')
-        for(var i=0;i<ids.length;i++){
-          if(states[ids[i]].label === name)
-            return ids[i];
-        }
-
-      return false;
-    },
-
-    _scalePaper: function(t) {
-      this.$['paper'].style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
-    },
-
-    _showStateErrorMessage: function(el, type, name) {
-      var err;
-      if (!type)
-        err='- please choose a type';
-      else if (!name)
-        err='- please enter a name';
-
-      if(err) {
-        this._showError(el,err);
-        return true;
-      }
-      return false;
-    },
-
-    _showRelationErrorMessage: function(el, source, target){
-      var err;
-      if (!source)
-        err='- please choose the source';
-      else if (!target)
-        err='- please choose the target';
-      else if (source.id === target.id)
-        err='- source and target are the same';
-
-      if(err) {
-        this._showError(el,err);
-        return true;
-      }
-      return false;
-    },
-
-    _showERDStateErrorMessage: function(el, type, label) {
-      var err;
-      if (!type)
-        err='- please choose a type';
-      else if (!label && type !== 'ISA')
-        err='- please enter a label';
-
-      if(err) {
-        this._showError(el,err);
-        return true;
-      }
-      return false;
-    },
-
-    _showError: function(el, text) {
-      var err = el.querySelector('div[id=error]');
-      if(err){
-        err.style = 'visibility:visible';
-        err.querySelector('p[id=whichError]').innerHTML = text;
-        setTimeout(function(){
-          err.removeAttribute('style');
-        }, 2000);
-      }
-    },
-
-    _findRelations: function(id, relations) {
-      var rel = [];
-      Object.keys(relations).forEach(function (r) {
-        if (relations[r].relation.source.id === id || relations[r].relation.target.id === id)
-          rel.push(r);
-      });
-      return rel;
-    },
-
-    _computeJointJsStateSize: function(name, attributes, methods) {
-      var arr = [name].concat(attributes, methods);
-      return {
-        width: this._computeStateWidth(arr) + 2, // + 2 for margins
-        height: Math.max(50, 2 * 15 + (arr.length) * 12)
-      }
-    },
-
-    _computeStateWidth: function(arr) {
-      var w = 0;
-      for (var i = 0; i < arr.length; i++) {
-        w = Math.max(w, this._getWidthOfText(arr[i], (i===0)))
-      }
-      return Math.max(Math.max(w),100);
-    },
-
-    _getWidthOfText: function(txt, bold) {
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext('2d');
-      ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
-      return ctx.measureText(txt).width;
-    },
-
     scale: function (value) {
       var s = Math.round((this._scale*value)* 1000)/1000;
       if(s>=this._minScale){
@@ -552,42 +1097,7 @@
       this._resetSize();
       this._graph.clear();
     },
-
-    _onDisabled: function(val){
-      if(val){
-        if(this.selectedCounter && this.selectedCounter > 0)
-          this._deselectJointjsObj();
-        this._collapseSidebar();
-        this._disableAll();
-      }
-      else if(!val){
-        this._expandSidebar();
-        this._enableAll();
-      }
-    },
-
-    _disableAll: function(){
-      this.$.paper.setAttribute('is-disabled','true');
-      this.$.sidebar.querySelector('div[id="sidebar-button"]').style = "display: none !important;";
-      if(this._graph){
-        this._graph.getCells().forEach(function (cell) {
-          console.log(cell.findView(this._paper).options.interactive);
-          cell.findView(this._paper).options.interactive = false;
-        }.bind(this))
-      }
-    },
-
-    _enableAll: function(){
-      this.$.paper.setAttribute('is-disabled','false');
-      this.$.sidebar.querySelector('div[id="sidebar-button"]').removeAttribute('style');
-      if(this._graph){
-        this._graph.getCells().forEach(function (cell) {
-          console.log(cell.findView(this._paper).options.interactive);
-          cell.findView(this._paper).options.interactive = {labelMove: false};
-        }.bind(this))
-      }
-    }
-
   };
 
+  ASQ.diagramQBehavior = [diagramQViewerBehaviour, diagramQCommonBehaviour, diagramQPresenterBehaviour]
 </script>

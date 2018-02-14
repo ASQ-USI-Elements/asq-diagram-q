@@ -38,7 +38,7 @@
                     <paper-input></paper-input>
                   </div>
                   <div class="menu-element" id="type">
-                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setHeight">
+                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_shapes.states}}" restamp>
                           <paper-item type="{{item}}">{{item}}</paper-item>
@@ -63,7 +63,7 @@
                     <p id="whichError">- error message -</p>
                   </div>
                   <div class="menu-element" id="buttons">
-                    <paper-button raised on-click="newUMLState"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CREATE</h4></div></paper-button>
+                    <paper-button raised on-click="newState"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CREATE</h4></div></paper-button>
                     <paper-button raised on-click="_expandStateMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
               <template is="dom-if" if="{{_showLinkContent}}" restamp>
                 <div class="menu-content">
                   <div class="menu-element" id="type">
-                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setHeight">
+                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_shapes.relations}}" restamp>
                           <paper-item type="{{item}}">{{item}}</paper-item>
@@ -85,14 +85,14 @@
                     </paper-dropdown-menu>
                   </div>
                   <div class="menu-element" id="relation">
-                    <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-opened-changed="setHeight">
+                    <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                           <paper-item id="{{item.id}}">{{item.text}}</paper-item>
                         </template>
                       </paper-listbox>
                     </paper-dropdown-menu>
-                    <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-opened-changed="setHeight">
+                    <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
                       <paper-listbox class="dropdown-content">
                         <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                           <paper-item id="{{item.id}}">{{item.text}}</paper-item>
@@ -105,7 +105,7 @@
                     <p id="whichError">- error message -</p>
                   </div>
                   <div class="menu-element" id="buttons">
-                    <paper-button raised on-click="newUMLRelation"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                    <paper-button raised on-click="newRelation"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
                     <paper-button raised on-click="_expandRelationMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                   </div>
                 </div>
@@ -131,7 +131,7 @@
                     </template>
                     <!--Type-->
                     <div class="menu-element" id="type">
-                      <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged" on-opened-changed="setHeight">
+                      <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged" on-opened-changed="setDropdownMenuHeight">
                         <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapes.states)}}">
                             <template is="dom-repeat" items="{{_shapes.states}}" restamp>
@@ -185,7 +185,7 @@
                     <!--Source and Target-->
                     <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
                       <div class="menu-element" id="relation">
-                        <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setHeight">
+                        <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setDropdownMenuHeight">
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.source.id, _states)}}">
                             <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                               <paper-item id="[[item.id]]">[[item.text]]</paper-item>
@@ -193,7 +193,7 @@
                           </paper-listbox>
                         </paper-dropdown-menu>
 
-                        <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setHeight">
+                        <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setDropdownMenuHeight">
                           <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.target.id, _states)}}">
                             <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
                               <paper-item id="[[item.id]]">[[item.text]]</paper-item>
@@ -242,8 +242,7 @@
         </div>
         <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>
       </div>
-      <!--<div id="paper-container"><div id="paper" is-disabled="false"></div></div>-->
-      <div id="paper-container"><div id="paper" is-disabled="{{disabled}}"></div></div>
+      <div id="paper-container"><div id="paper" disabled="{{disabled}}"></div></div>
     </div>
 
   </template>
@@ -254,16 +253,17 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQDiagramQBehavior
+        ASQ.diagramQViewerBehaviour,
+        ASQ.diagramQCommonBehaviour
       ],
 
-      listeners: {},
-
-      keyBindings: {},
-
-      hostAttributes: {},
-
       properties: {
+
+        type: {
+          type: String,
+          value: 'uml',
+        },
+
         /**
          * width in pixels of the diagram
          */
@@ -448,112 +448,37 @@
 
       attached: function () {
         this.async(function () {
-          this.init();
+          this.initialize()
         });
-      },
-      /**
-       * set up phase
-       */
-      init: function () {
-        this._graph = new joint.dia.Graph();
-        this._paper = new joint.dia.Paper({
-          el: this.$.paper,
-          width: 1920,
-          height: 1920,
-          model: this._graph,
-          gridSize: 10,
-          drawGrid:true
-        });
-        this._computeViewerSize(this.height, this.width);
-        this._uml = joint.shapes.uml;
-        this._shapes = this._getShapes('uml');
-        this._states = {};
-        this._relations = {};
-        this.selectedElements = [];
-
-        this._setJointJsEventListeners();
-        this._setCellHighlighter();
-        this._setKeyAndMouseEventListeners();
-      },
-
-      /**
-       * expand/collapse sidebar
-       */
-      _expandOrCollapse: function () {
-        if(this.$['sidebar'].className === "open")
-          this._collapseSidebar();
-        else
-          this._expandSidebar();
-      },
-
-      /**
-       * expand/collapse menu
-       */
-      _expandStateMenu: function () {
-        this._showStateContent = !this._showStateContent
-      },
-
-      _expandRelationMenu: function () {
-        this._showLinkContent = !this._showLinkContent
-      },
-
-      _expandEditMenu: function () {
-        this._showEditContent = !this._showEditContent
-      },
-
-      _nothingSelected: function (counter) {
-        return counter === 0;
-      },
-
-      _somethingSelected: function (counter) {
-        return counter > 0;
-      },
-
-      _oneSelected: function(counter){
-        return counter === 1;
-      },
-
-      _twoSelected: function(counter){
-        return counter === 2 && this.selectedElements.every(function (el) {
-          return this._isType('state',el);
-        }.bind(this))
-      },
-
-      _multipleSelected: function(counter){
-        return counter > 1 && !this._twoSelected(counter);
       },
 
       /**
        * State creation
        *
-       * TODO:
-       * - clone state button
+       * TODO: "clone state" button
        */
 
-      newUMLState: function () {
+      newState: function () {
         var data = this._getStateFormData();
         if(!data) return;
 
-        // var position =  { x:this.width/2, y: this.height/2 };
-        var position = this._getNewStatePosition(this);
-        this.addState(data.type, data.name, data.attributes, data.methods, position);
+        data.position = this._getNewStatePosition(this);
+        this.addState(data);
 
         this._expandStateMenu();
       },
 
       _getStateFormData: function (typeChange) {
-        // var el = Polymer.dom(this.root).querySelector('div[class="menu state"] div[class=menu-content]') ||
-        //   Polymer.dom(this.root).querySelector('div[class="menu edit"] div[class=menu-content]');
+
         var el = this.$$('div[class="menu state"] div[class=menu-content]') || this.$$('div[class="menu edit"] div[class=menu-content]');
 
         var type;
         if(el.querySelector('paper-dropdown-menu').selectedItem)
           type = el.querySelector('paper-dropdown-menu').selectedItem.type;
-        // var type = el.querySelector('paper-dropdown-menu').value;
         var name = el.querySelector('div[id=name] paper-input').value;
 
         if(!typeChange)
-          if (this._showStateErrorMessage(el, type, name))
+          if (this._showStateErrorMessage(el, { type: type, name: name } ) )
             return;
 
         var attrs = Array.prototype.slice.call(el.querySelectorAll('div[id=attributes] paper-input')).filter(function(el){
@@ -571,12 +496,12 @@
         return { type:type, name:name, attributes:attrs, methods:methods }
       },
 
-      addState: function (type, name, attributes, methods, position) {
+      addState: function (data) {
 
-        var state = this._umlStatePropertiesToJSONObj(name, attributes, methods, position, this._computeJointJsStateSize(name, attributes, methods));
-        var s = this._createState(type, state);
+        var state = this._umlStatePropertiesToJSONObj(data.name, data.attributes, data.methods, data.position, this._computeJointJsStateSize(data.name, data.attributes, data.methods));
+        var s = this._createState(data.type, state);
         this._graph.addCell(s);
-        this._states[s.id] = {'type': type, 'cid': s.cid, 'state': state};
+        this._states[s.id] = {'type': data.type, 'cid': s.cid, 'state': state};
 
         s.on('change:position', this._onStatePositionChanged.bind(this)); // for handling position changes
         return s.id;
@@ -596,23 +521,9 @@
 
       /**
        * Relation creation
-       *
-       * TODO:
-       * - copy vertices when replacing relation
        */
 
-      newUMLRelation: function() {
-        var data = this._getRelationFormData();
-        if(!data) return;
-
-        this.addRelation(data.type, data.source, data.target);
-        this._expandRelationMenu();
-      },
-
       _getRelationFormData: function (typeChange) {
-
-        // var el = Polymer.dom(this.root).querySelector('div[class="menu link"] div[class=menu-content]') ||
-        //   Polymer.dom(this.root).querySelector('div[class="menu edit"] div[class=menu-content]');
 
         var el = this.$$('div[class="menu link"] div[class=menu-content]') || this.$$('div[class="menu edit"] div[class=menu-content]');
 
@@ -620,17 +531,15 @@
         if(el.querySelector('div[id=type] paper-dropdown-menu').selectedItem)
           type = el.querySelector('div[id=type] paper-dropdown-menu').selectedItem.type;
 
-
-        // var type = el.querySelector('div[id=type] paper-dropdown-menu').value;
-
         var source = el.querySelector('div[id=relation] paper-dropdown-menu[id=source]').selectedItem;
         if(source) source = { id : source.id};
         var target = el.querySelector('div[id=relation] paper-dropdown-menu[id=target]').selectedItem;
         if(target) target = { id : target.id};
 
+        console.log(type, source, target)
         if(!typeChange) {
-          if (this._showRelationErrorMessage(el, type, source, target))
-            return;
+          console.log('if one')
+          if (this._showRelationErrorMessage( el, { type: type, source: source, target: target } )) return;
         }
         if(!source) source = this.selected.model.get('source');
         if(!target)  target = this.selected.model.get('target');
@@ -638,14 +547,14 @@
         return { type:type, source:source, target: target }
       },
 
-      addRelation: function (type, source, target) {
-        var relation = this._relationPropertiesToJSONObj(source, target);
+      addRelation: function (data) {
+        var relation = this._relationPropertiesToJSONObj(data.source, data.target);
 
-        var r = this._createRelation(type, relation);
+        var r = this._createRelation(data.type, relation);
         this._graph.addCell(r);
-        this._relations[r.id] = {'type': type, 'cid': r.cid, 'relation': relation};
+        this._relations[r.id] = {'type': data.type, 'cid': r.cid, 'relation': relation};
 
-        r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
+        // r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
         return r.id;
       },
@@ -667,122 +576,32 @@
           return new this._uml.Association(relation);
       },
 
-      _connectSelected: function () {
-        var source = this.selectedElements[0].model.get('id')
-        var target = this.selectedElements[1].model.get('id')
-
-        this._multiDeselectAll();
-        var id = this.addRelation( 'generalization', { id: source }, { id: target } );
-        this._singleSelect(this._graph.getCell(id).findView(this._paper));
+      _connect: function (source, target) {
+        return this.addRelation( { type: 'generalization', source: source, target: target } );
       },
 
-      _showNewLinkButton: function(state){
-        if(this._isType('state', state) && !this.newRel){
-
-          var pos = this._getNewLinkPosition(state);
-          var attr = this._getNewRelAttrs();
-          var id = this.addRelation('generalization',pos.source,pos.target);
-
-          this.newRel = this._graph.getCell(id);
-          this.newRel.attr(attr);
-          this.newRel.on('change:target', this._saveNewLink.bind(this));
-          this._restyleArrowHead(id);
-        }
-      },
-
-      _restyleArrowHead: function(id){
-        var arrowHead = this.$.paper.querySelector('g[model-id="'+id+'"] g[class="marker-arrowhead-group marker-arrowhead-group-target"]')
-        if(arrowHead){
-          var transform = arrowHead.getAttribute('transform').split(' ');
-
-          var translate = this.getVal(transform, 'translate')
-
-          arrowHead.setAttribute('transform','translate('+(Number(translate[0])+7.5)+','+(Number(translate[1])+10.5)+') scale(1.3,1.3) rotate(-180)');
-        }
-      },
-
-      getVal: function (t, match) {
-        for(var i = 0; i<t.length;i++){
-          if(t[i].startsWith(match)){
-            return t[i].replace(match+'(', '').replace(')','').split(',');
-          }
-        }
-      },
-
-      _hideNewLinkButton: function(){
-        if(this.newRel)
-          this._deleteRelation(this.newRel.get('id'),true);
-      },
-
-      _saveNewLink: function (cell,val) {
-        if(this.newRel) {
-          var rel = this.newRel;
-          this.newRel = null;
-          this._deselectJointjsObj();
-          var attr = this._getDefaultUMLRelAttrs();
-          rel.set('attrs', attr);
-          rel.findView(this._paper).render();
-        }
-
-        if(val.id){
-          this._singleSelect(cell.findView(this._paper));
-        }
+      _resetNewLinkAttr: function (rel) {
+        var attr = this._getDefaultUMLRelAttrs();
+        rel.set('attrs', attr);
       },
 
       /**
        * State edit
        */
 
-      _onStatePositionChanged: function (state, pos) {
-        this._states[state.id].state.position = pos;
-        if(this.selected && this.selected.model.get('id')===state.id){
-         // this._updateNewRelTargetPosition();
-          this._hideNewLinkButton();
-        }
-        else if(this.selected && this.selected.model.attributes.source)
-          this._onJointjsObjDeselected();
-      },
-
       _onNameChanged: function(e){
         this._editAttribute(this.selected, 'name', e.target.value); // edit the name
         this._renderAfterChange();
-        this._hideNewLinkButton()
+        this._hideNewLinkButton();
       },
 
       _onTypeChanged: function (evt, el) {
-
         var type = el.value;
         if(type){
           if(!this.selected.model.get('type').includes(type)){
-            this._hideNewLinkButton();
-            var data = this._isType('state', this.selected)? this._getStateFormData(true) : this._getRelationFormData(true);
-            var id = this._updateSelectedType(data);
-            this.selected = this._graph.getCell(id).findView(this._paper);
-            this.selected.highlight(null, this.highlighter);
+            this._changeCellType();
           }
         }
-      },
-
-      /* for both states and relations */
-      _updateSelectedType: function (data) {
-        var id;
-
-        if(this._isType('state', this.selected)){
-          id = this.addState(data.type, data.name, data.attributes, data.methods, this.selected.model.get('position'));
-          this._copyRelationsAll(this.selected.model.get('id'), id);
-          this._deleteState(this.selected.model.get('id'));
-        } else{
-          id = this.addRelation(data.type, data.source, data.target);
-
-          var vertices;
-          if((vertices = this.selected.model.get('vertices')))
-            this._graph.getCell(id).findView(this._paper).model.set('vertices',vertices)
-
-          var temp = this.selectedCopy;
-          this._deleteRelation(this.selected.model.get('id'))
-          this.selectedCopy = temp
-        }
-        return id;
       },
 
       _copyRelationsAll: function (oldId, newId) {
@@ -791,15 +610,13 @@
         relations.forEach(function (r) {
           var id;
           if(this._relations[r].relation.source.id === oldId)
-            id = this.addRelation(this._relations[r].type, { id:newId }, this._relations[r].relation.target)
+            id = this.addRelation( { type: this._relations[r].type, source: { id:newId }, target: this._relations[r].relation.target } );
           else
-            id = this.addRelation(this._relations[r].type, this._relations[r].relation.source, { id:newId })
+            id = this.addRelation({ type: this._relations[r].type, source: this._relations[r].relation.source, target: { id:newId } } );
 
-          if(id){
-            var vertices = this._graph.getCell(r).findView(this._paper).model.get('vertices')
-            if(vertices)
-              this._graph.getCell(id).findView(this._paper).model.set('vertices',vertices)
-          }
+          if(id)
+            this._copyVertices(r, id);
+
           if(this._tempNextRel && r === this._tempNextRel.model.get('id')){
             this._tempNextRel = this._graph.getCell(id).findView(this._paper);
           }
@@ -845,41 +662,20 @@
 
       /* for both states and relations */
       _renderAfterChange: function () {
-
         if(this._isType('state', this.selected)) {
-
           this._editAttribute(this.selected, 'size', this._computeJointJsStateSize(this.selected.model.get('name'), this.selected.model.get('attributes'), this.selected.model.get('methods')));
           this.selected.render(); // render state
-          // this._renderRelations(findRelations(this.selected.model.get('id'),this._relations)); // render all involved relation
         }
 
         this.selected.unhighlight(null, this.highlighter);
         this.selected.highlight(null, this.highlighter);
       },
 
-      // _renderRelations: function (relations) {
-      //   relations.forEach(function (r) {
-      //
-      //     var rel = this._graph.getCell(r).findView(this._paper)
-      //
-      //     try {
-      //       // rel.render();
-      //     } catch(err) {
-      //       // unknow error
-      //     }
-      //   }.bind(this))
-      // },
-
-      /* for both states and relations */
-      _saveChanges: function () {
-        var data = this._isType('state', this.selected)? this._getStateFormData() : this._getRelationFormData();
-        if(!data){
-          this._undoChanges();
-        } else {
-          this.selectedCopy = null;
-          this._showNewLinkButton(this.selected);
-        }
-        this._deselectJointjsObj()
+      _renderRelations: function () {
+        Object.keys(this._relations).forEach(function (r) {
+          var rel = this._graph.getCell(r).findView(this._paper);
+          rel.render();
+        }.bind(this))
       },
 
       /* for both states and relations */
@@ -893,271 +689,17 @@
               this._editAttribute(this.selected, key, data[key]);
           }.bind(this));
           this._renderAfterChange();
+          this._renderRelations();
         } else{
-          this._updateSelectedType(data);
+          this._updateType(data);
         }
         this.selectedCopy = null;
-      },
-
-      /* for both states and relations */
-      _editAttribute: function (selected, key, value) {
-        selected.model.set(key, value);
-
-        if(this._isType('state', selected))
-          this._states[selected.model.id].state[key] = value;
-        else
-          this._relations[selected.model.id].relation[key] = value;
-      },
-
-      /**
-       * Relation edit
-       */
-      /* Called when a link is changed (after 'change.z' event in 'joint.dia') */
-      _onRelationTargetOrSourceChanged: function (rel) {
-        this._relations[rel.id].relation.source = rel.attributes.source;
-        this._relations[rel.id].relation.target = rel.attributes.target;
-      },
-
-      _changeRelationSourceAndTarget: function (evt, el) {
-        var type = evt.target.id;
-
-        if(el.value){
-          if(this.selected.model.get(type).id !== el.value.id){
-            this._editAttribute(this.selected, type, { id:el.value.id });
-            this._renderAfterChange();
-          }
-        }
-      },
-
-      // _updateNewRelTargetPosition: function () {
-      //   if(this.newRel) {
-      //     this._hideNewLinkButton();
-      //     this._showNewLinkButton(this.selected);
-      //   }
-      // },
-
-      /**
-       * Cells selection
-       */
-      _selectJointjsObject: function (cellView, evt, x, y) {
-        if(!this.disabled) {
-          var id = cellView.model.id;
-          if (this._states[id] || (this._relations[id] && evt.type === 'mousedown')) { // click on state or on relation 'options' icon
-            if (!this.multiModeEnabled) {
-              if (this.selectedElements.length > 0) {
-                this._multiDeselectAll();
-              }
-              this._singleSelect(cellView);
-            } else {
-              if (!this.selected && this.selectedElements.length === 0) { // null and empty
-                this._singleSelect(cellView);
-              }
-              else if (this.selected && this.selectedElements.length === 0) { // not null and empty
-                if (this.selected.model.id === cellView.model.get('id')) {
-                  this._onJointjsObjDeselected();
-                }
-                else {
-                  var s = this.selected;
-                  this._onJointjsObjDeselected();
-                  this._multiSelect(s);
-                  this._multiSelect(cellView);
-                }
-              } else if (!this.selected && this.selectedElements.length > 0) { // null and not empty
-                this._multiSelect(cellView);
-              }
-            }
-          }
-        }
-      },
-
-      _singleSelect: function(cellView){
-        if(this.selected){
-          if(this.selected.model.id === cellView.model.get('id')){
-            return
-          }
-          else{
-            if(cellView){
-              this._tempNextRel = cellView;
-            }
-            this._onJointjsObjDeselected();
-            if(this._tempNextRel){
-              cellView = this._tempNextRel
-              this._tempNextRel = null;
-            }
-          }
-        }
-        this.selected = cellView;
-        this.selectedCopy = _.cloneDeep(this.selected.model.attributes) // keep a copy in case of 'undo' operation
-        this.selected.highlight(null, this.highlighter);
-        this.selectedCounter++;
-        this._showNewLinkButton(cellView);
-        this._expandSidebar()
-      },
-
-      _multiSelect: function(cellView){
-        if(this._isSelected(cellView)){
-          this._multiDeselect(cellView);
-          if(this.selectedCounter === 1){ // only one element, switch to single mode
-            this._singleSelect(this.selectedElements[0]);
-            this.selectedCounter=1;
-            this.selectedElements = [];
-          }
-        }
-        else {
-          this.selectedElements.push(cellView);
-          cellView.highlight(null, this.highlighter);
-          this.selectedCounter++;
-        }
-      },
-
-      _isSelected: function (cellView) {
-        for(var i=0;i<this.selectedElements.length;i++){
-          if(this.selectedElements[i].model.get('id') === cellView.model.get('id'))
-            return true;
-        }
-        return false;
-      },
-
-      /**
-       * Cells de-selection
-       */
-      _onClearButtonClicked: function (evt) {
-        this._deselectJointjsObj();
-      },
-
-      _deselectJointjsObj: function (cell) {
-        if(this.selectedCounter !== 0){
-          if(cell && cell.model && this.selected && this.newRel){
-            if(this._isNewRelation(cell.model))
-              return;
-          }
-          this._onJointjsObjDeselected();
-          this._multiDeselectAll();
-        }
-      },
-
-      _isNewRelation: function (model) {
-        return model.get('id') === this.newRel.get('id');
-      },
-
-      _onJointjsObjDeselected: function () {
-        var cell = this.selected;
-        if(cell) {
-          if(this.selectedCopy){
-            this._undoChanges();
-          }
-          this.selected.unhighlight(null, this.highlighter);
-          this._hideNewLinkButton();
-          this.selected = null;
-          this._showStateContent = false;
-          this._showLinkContent = false;
-          this._showEditContent = true;
-          this.selectedCounter--;
-        }
-        return cell;
-      },
-
-      _multiDeselect:function (cellView) {
-        for(var i=0;i<this.selectedElements.length;i++){
-          if(this.selectedElements[i].model.get('id') === cellView.model.get('id')) {
-            this.selectedElements[i].unhighlight(null, this.highlighter);
-            this.selectedElements.splice(i, 1);
-            this.selectedCounter--;
-            return;
-          }
-        }
-      },
-
-      _multiDeselectAll:function () {
-        for(var i=0;i<this.selectedElements.length;i++){
-          this.selectedElements[i].unhighlight(null, this.highlighter);
-        }
-        this.selectedElements = [];
-        this.selectedCounter=0;
-      },
-
-      /**
-       * State deletion
-       */
-      _deleteState: function (id) {
-        var rel = this._findRelations(id,this._relations), t = this;
-
-        rel.forEach(function (r) {
-          t._deleteFromRelationsDict(r) // remove involved relations from relations Dictionary
-        });
-
-        this._deleteCellFromGraph(this._states[id].cid); // remove state from graph (and also involved relations)
-        this._deleteFromStatesDict(id); // remove state from states Dictionary
-      },
-
-      /* for both states and relations */
-      _deleteSelected: function (){
-        if(this.selected) {
-          var sel = this._onJointjsObjDeselected();
-          this._singleDelete(sel);
-
-        } else if(this.selectedCounter > 1){
-          this._multiDelete();
-        }
-      },
-
-      _singleDelete:function (cell) {
-        if (this._isType('state', cell))
-          this._deleteState(cell.model.get('id'))
-        else
-          this._deleteRelation(cell.model.get('id'))
-      },
-
-      _multiDelete: function () {
-        this.selectedElements.forEach(function(el){
-          this._singleDelete(el);
-        }.bind(this))
-        this.selectedElements = [];
-        this.selectedCounter = 0;
-      },
-
-      _deleteFromStatesDict: function (id) {
-        delete this._states[id];
-      },
-
-      _deleteCellFromGraph: function (cid) {
-        this._graph.getCell(cid).remove(); // works for both states and relations (also delete elements from 'svg')
-      },
-
-      clear: function() {
-        this._graph.clear();
-        this._states = {};
-        this._relations = {};
-      },
-
-      /**
-       * Relation deletion
-       */
-      _deleteRelation: function (id, isNewRel) {
-        if (this._relations[id]) {
-          this._deleteCellFromGraph(this._relations[id].cid); // remove cell from graph
-          this._deleteFromRelationsDict(id);
-          if(isNewRel)
-            this.newRel = null;
-        }
-      },
-
-      /* Called when a link is deleted (after 'remove' event in 'joint.dia') */
-      _onRelationDeleted: function (rel) {
-        if(this.selected && rel.id === this.selected.model.get('id')){
-          this.selectedCopy = null;
-        }
-        // this._onJointjsObjDeselected();
-        this._deleteFromRelationsDict(rel.id);
-      },
-
-      _deleteFromRelationsDict: function (id) {
-        delete this._relations[id];
       },
 
       /**
        * Helper functions
        */
+
       _addRow: function (e) {
         var table = e.target.parentElement.parentElement.querySelector('table'), row = table.insertRow(table.rows.length);
         row.insertCell(0).appendChild(document.createTextNode(table.rows.length+":"));
@@ -1199,34 +741,16 @@
         }
       },
 
-      _getIcon: function (show) {
-        return show ? 'remove-circle' : 'add-circle';
-      },
-
       _mapToArrayOfObjects: function(obj){
         return Object.keys(obj).map(function(key) {
           return {id: key, text: obj[key].state.name};
         });
       },
 
-      _getKeys: function(obj){
-        return Object.keys(obj);
-      },
-
-      _isType: function(type, selected){
-        if(selected){
-          if(this._states[selected.model.id])
-            return type === 'state';
-          else
-            return type === 'relation';
-        }
-        return false;
-      },
-
       _getIndexOfItem: function (item, array) {
         if(item){
           if(!Array.isArray(array))
-            array = this._getKeys(array);
+            array = Object.keys(array);
           for(var i = 0; i < array.length; i++){
             if(item.includes(array[i]))
               return i;
@@ -1234,63 +758,10 @@
         }
       },
 
-      _inc: function(index){
-        return index+1;
-      },
-
       getSrc: function(type,item){
         return "/../../img/"+type+"/"+item.toLowerCase().replace(/\s/g, '')+".png";
       },
 
-      _keyHandler: function (evt) {
-        if(evt.key === 'Meta') {
-          if (evt.type === 'keydown') this.multiModeEnabled = true;
-          else if (evt.type === 'keyup') this.multiModeEnabled = false;
-        }
-      },
-
-      setHeight: function(e,val){
-        if(val.value){
-          var menu = Polymer.dom(e).localTarget;
-          var relativeY = menu.getBoundingClientRect().y - this.getBoundingClientRect().y;
-          Polymer.dom(menu).querySelector('paper-listbox').style['max-height'] = (this.height/2)+'px';
-          if(this.height > relativeY+(this.height/2))
-            menu.verticalAlign = 'top';
-          else
-            menu.verticalAlign = 'bottom';
-        }
-      },
-
-      zoomIn: function () {
-        this._scale += 0.05;
-        this._paper.scale(this._scale,this._scale);
-        this._scalePaper();
-      },
-
-      zoomOut: function () {
-        this._scale -= 0.05;
-        this._paper.scale(this._scale,this._scale);
-        this._scalePaper();
-      },
-
-      getScale: function (scale) {
-        return (Math.round(this._scale*100))+'%';
-      },
-
-      onDragStart: function(event, x, y) {
-        this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
-      },
-
-      onDragEnd: function(event, x, y) {
-        delete this.dragStartPosition;
-      },
-
-      dragPaper: function (evt) {
-        if (this.dragStartPosition){
-          this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
-          this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
-        }
-      }
     });
   </script>
 

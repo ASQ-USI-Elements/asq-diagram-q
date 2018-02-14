@@ -55,7 +55,7 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQDiagramQBehavior
+        // ASQ.diagramQBehavior
       ],
 
       properties: {
@@ -69,16 +69,22 @@
           reflectToAttribute: true
         },
 
+        _supported_types : {
+          type: Array,
+          value: ['uml', 'erd', 'bpmn']
+        },
+
         /**
          * Type of diagram (default is uml)
-         * options = 'uml', 'er'
+         * options = 'uml', 'erd', 'bpmn'
          */
 
         type: {
           type: String,
           value: 'uml',
           notify: true,
-          reflectToAttribute: true
+          reflectToAttribute: true,
+          observer: 'onTypeChanged'
         },
 
         /**
@@ -155,6 +161,11 @@
           }
           return el.submit();
         }
+      },
+
+      onTypeChanged: function (val) {
+        if(!this._supported_types.includes(val))
+          this.type = 'uml'
       }
     });
 
