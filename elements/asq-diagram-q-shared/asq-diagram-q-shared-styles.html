@@ -15,36 +15,24 @@
       #paper[is-disabled=true] .link-tools .tool-remove,
       #paper[is-disabled=true] .marker-vertices,
       #paper[is-disabled=true] .marker-arrowheads,
-      #paper[is-disabled=true] .connection-wrap
-      {
+      #paper[is-disabled=true] .connection-wrap {
         display: none;
       }
 
       #app-body {
         font-family: sans-serif, Arial;
-        border: 1px solid #383b61;
+        border: 2px solid #383b61;
       }
 
-      #app-body > div, #sidebar > div{
+      #app-body > div, #sidebar > div {
         float: left;
-      }
-
-      #app-body > #main-container {
-        height: 100%;
-        width: 100%;
-      }
-
-      #main-container > #zoom{
-        color: #cfd8dc;
-        height: 40px;
-        background: #383b61;
-        box-shadow: 1px 0 20px #383b61;
       }
 
       #container{
         @apply(--layout-horizontal);
       }
-      #main{
+
+      #app-container{
         @apply(--layout-flex-3);
       }
       #list-container{
@@ -99,6 +87,10 @@
         transition: width .5s;
       }
 
+      #sidebar-content::-webkit-scrollbar {
+        width: 0 !important
+      }
+
       #sidebar > #sidebar-button > paper-icon-button {
         visibility: hidden;
         -webkit-transition: visibility 1.5s;
@@ -110,12 +102,12 @@
         transition: visibility 0s;
       }
 
-      #sidebar-content, #submission {
+      #sidebar-content {
         overflow-y: scroll;
       }
 
       #sidebar-content {
-        height: calc(100% - 30px);
+        height: calc(100% - 40px);
         width:200px;
       }
 
@@ -124,7 +116,7 @@
         bottom: 0;
         right: 0;
         background: #383b61;
-        height: 30px;
+        height: 40px;
         width: 100%;
       }
 
@@ -162,7 +154,21 @@
       #paper-container {
         overflow: scroll;
         cursor: move;
+        resize: both;
       }
+
+      ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 10px;
+        height: 10px;
+        background: lightgray;
+      }
+      ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: rgba(0, 0, 0, .5);
+        -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+      }
+
 
       .menu {
         margin: 5px 10px;
@@ -277,7 +283,9 @@
       }
 
       .menu-element > table > tbody > tr > td > paper-input,
-      .menu-element > paper-input, .menu-element > div > paper-input{
+      .menu-element > paper-input,
+      .menu-element > div > paper-input,
+      .menu-element > paper-textarea {
 
         --paper-input-container-input: {
           background-color: var(--paper-blue-grey-50);
@@ -295,6 +303,22 @@
         --paper-font-caption: {
           display: none;
         };
+      }
+
+      #sub-process {
+        display: flex;
+      }
+
+      #sub-process > iron-label {
+        flex: 2;
+      }
+
+      #sub-process > paper-toggle-button {
+        flex: 1;
+      }
+
+      paper-toggle-button {
+        cursor: pointer;
       }
 
       .menu-element > div > paper-input {
@@ -328,9 +352,15 @@
         @apply(--layout-horizontal);
       }
 
-      #buttons > paper-button{
+      #buttons > paper-button.twoCol {
         width: 45%;
-        margin: 0.29em;
+        margin: 2.5%;
+        @apply(--layout-vertical);
+      }
+
+      #buttons > paper-button.oneCol{
+        width: 50%;
+        margin: 2.5% 25%;
         @apply(--layout-vertical);
       }
 

@@ -1,0 +1,833 @@
+<link rel="import" href="../../../iron-icon/iron-icon.html">
+<link rel="import" href="../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../../../paper-button/paper-button.html">
+<link rel="import" href="../../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../paper-item/paper-item.html">
+<link rel="import" href="../../../paper-input/paper-input.html">
+<link rel="import" href="../../../paper-input/paper-textarea.html">
+<link rel="import" href="../../../paper-toggle-button/paper-toggle-button.html">
+
+<!--
+`asq-diagram-q-presenter-bpmn` is use to show to the presenter.
+
+@element asq-diagram-q-presenter-bpmn
+@demo demo/index.html
+@group ASQ Elements
+@blurb Element acting as an editor for diagram questions.
+@homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
+-->
+<dom-module id="asq-diagram-q-presenter-bpmn">
+
+  <template>
+    <style include="asq-diagram-q-shared-styles"></style>
+    <div id="app-body">
+      <div id="sidebar" class="open">
+        <div id="sidebar-content">
+          <template is="dom-if" if="{{_nothingSelected(selectedCounter)}}" restamp>
+            <div class="menu state">
+              <div class="expand-button">
+                <paper-button raised on-click="_expandStateMenu"><iron-icon icon="{{_getIcon(_showStateContent)}}"></iron-icon><h4 class="button-label">NEW STATE</h4></paper-button>
+              </div>
+              <template is="dom-if" if="{{_showStateContent}}" restamp>
+                <div class="menu-content">
+
+                  <div class="menu-element entities" id="buttons">
+                    <iron-label class="group-label"><span>Gateway</span></iron-label>
+                    <paper-button class="oneCol" create="Gateway" raised on-click="newState"><div><img src="../../img/bpmn/gateway.png" height="100%" width="100%"></div></paper-button>
+                  </div>
+                  <div class="menu-element relationships" id="buttons">
+                    <iron-label class="group-label"><span>Activity</span></iron-label>
+                    <paper-button class="oneCol" create="Activity" raised on-click="newState"><div><img src="../../img/bpmn/activity.png" height="100%" width="100%"></div></paper-button>
+                  </div>
+                  <div class="menu-element attributes" id="buttons">
+                    <iron-label class="group-label"><span>Event</span></iron-label>
+                    <paper-button class="oneCol" create="Event" raised on-click="newState"><div><img src="../../img/bpmn/event.png" height="100%" width="100%"></div></paper-button>
+                  </div>
+                  <div class="menu-element attributes" id="buttons">
+                    <iron-label class="group-label"><span>Annotation</span></iron-label>
+                    <paper-button class="oneCol" create="Annotation" raised on-click="newState"><div><img src="../../img/bpmn/annotation.png" height="100%" width="100%"></div></paper-button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template is="dom-if" if="{{_somethingSelected(selectedCounter)}}" restamp>
+            <div class="menu edit">
+              <div class="expand-button">
+                <paper-button raised on-click="_expandEditMenu"><iron-icon icon="{{_getIcon(_showEditContent)}}"></iron-icon><h4 class="button-label">EDIT</h4></paper-button>
+              </div>
+              <div class="menu-content">
+                <template is="dom-if" if="{{_showEditContent}}" restamp>
+                  <template is="dom-if" if="{{_oneSelected(selectedCounter)}}" restamp>
+                    <template is="dom-repeat" items="{{_getCellPropertiesKeys(selected)}}" restamp>
+                      <div class="menu-element" id="{{item}}" restamp>
+
+                        <template is="dom-if" if="{{_isString(selected, item)}}" restamp>
+                          <iron-label>
+                            <span>{{_capitalize(item)}}</span>
+                          </iron-label>
+                          <template is="dom-if" if="{{_singleLine(item)}}" restamp>
+                            <paper-input value="[[_getStringValue(selected, item)]]" on-input="_onStringValueChanged"></paper-input>
+                          </template>
+
+                          <template is="dom-if" if="{{_multiLine(item)}}" restamp>
+                            <paper-textarea value="[[_getStringValue(selected, item)]]" on-input="_onStringValueChanged"></paper-textarea>
+                          </template>
+                        </template>
+
+                        <template is="dom-if" if="{{_isBoolean(selected, item)}}" restamp>
+                          <iron-label>
+                            <span>{{_capitalize(item)}}</span>
+                          </iron-label>
+                          <paper-toggle-button id="statsToggle" checked="{{_getBooleanValue(selected,item)}}" on-checked-changed="_onBooleanValueChanged"></paper-toggle-button>
+                        </template>
+
+                        <template is="dom-if" if="{{_isArray(selected, item)}}" restamp>
+                          <paper-dropdown-menu class="drop-down" label="[[_capitalize(item)]]" horizontal-align="left" on-value-changed="_onSelectedItemChanged" on-opened-changed="setDropdownMenuHeight" restamp>
+                            <paper-listbox class="dropdown-content" on-dom-change="_onItemsChanged" item="{{item}}" restamp>
+                              <template is="dom-repeat" items="[[_getDropdownItems(selected, item)]]" restamp>
+                                <paper-item id="[[item]]" restamp>[[_capitalize(item)]]</paper-item>
+                              </template>
+                            </paper-listbox>
+                          </paper-dropdown-menu>
+                        </template>
+
+                      </div>
+                    </template>
+                    <!--error-->
+                    <div class="menu-element error-message" id="error">
+                      <p>Submission not valid:</p>
+                      <p id="whichError">- error message -</p>
+                    </div>
+                    <!--Buttons-->
+                    <div class="menu-element" id="buttons">
+                      <!--<paper-button class="twoCol" raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>-->
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="{{_twoSelected(selectedCounter)}}" restamp>
+                    <div class="menu-element" id="buttons">
+                      <paper-button class="twoCol" raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="{{_multipleSelected(selectedCounter)}}" restamp>
+                    <div class="menu-element" id="buttons">
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </template>
+          <div id="zoom">
+            <paper-icon-button icon="zoom-in" on-click="zoomIn"></paper-icon-button>
+            <p id="scale-label">{{getScale(_scale)}}</p>
+            <paper-icon-button icon="zoom-out" on-click="zoomOut"></paper-icon-button>
+          </div>
+        </div>
+        <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>
+      </div>
+      <div id="paper-container"><div id="paper"></div></div>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'asq-diagram-q-presenter-bpmn',
+
+      behaviors: [
+        ASQ.asqQuestionElementBehavior,
+        ASQ.diagramQBehavior
+      ],
+
+      properties: {
+
+        type: {
+          type: String,
+          value: 'bpmn'
+        },
+
+        /**
+         * width in pixels of the diagram
+         */
+        width: {
+          type: Number,
+          value: 600,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * height in pixels of the diagram
+         */
+        height: {
+          type: Number,
+          value: 600,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Disable or enable the element. Changes will be also
+         * propagated to inner propagated elements.
+         */
+        disabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true,
+          observer: "_onDisabled"
+        },
+
+        value: {
+          type: Object,
+          notify: true,
+          observer: '_valueChanged'
+        },
+
+        /**
+         * The grap object
+         *  @type {Object}
+         */
+        _graph: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The paper object
+         *  @type {Object}
+         */
+        _paper: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _scale: {
+          type: Number,
+          value: 1,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The uml object
+         *  @type {Object}
+         */
+        _bpmn: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Obj containing subtypes for every supported type
+         */
+        _shapes: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Object containing all created states
+         *  @type {Object}
+         */
+        _states: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Object containing all created relations
+         *  @type {Object}
+         */
+        _relations: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The selected state/relation
+         */
+        selected: {
+          type: Object,
+          value: null,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The selected state/relation copy for undo operation
+         */
+        selectedCopy: {
+          type: Object,
+          value: null,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The selected state
+         */
+        multiModeEnabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Array of selected cells
+         */
+        selectedElements: {
+          type: Array,
+          value: [],
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * True is multiple elements are selected
+         */
+        selectedCounter:{
+          type: Number,
+          value: 0,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The style of cell highlighter
+         */
+        highlighter: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _showStateContent:{
+          type: Boolean,
+          value:false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _showLinkContent:{
+          type: Boolean,
+          value:false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _showEditContent:{
+          type: Boolean,
+          value:true,
+          notify: true,
+          reflectToAttribute: true
+        }
+      },
+
+      attached: function () {
+        this.async(function () {
+          this.initialize();
+        });
+      },
+
+      _fillGraph: function (value) {
+        var dict = {};
+
+        value.states.forEach(function(s){
+          dict[s.id] = this._addInitialState(s);
+        }.bind(this));
+
+        value.relations.forEach(function(rel){
+          var sourceId = dict[rel.relation.source.id];
+          var targetId = dict[rel.relation.target.id];
+
+          var rId = this._addInitialRelation(sourceId, targetId, rel)
+          if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
+        }.bind(this));
+      },
+
+      /**
+       * State creation
+       *
+       * TODO: "clone state" button
+       */
+
+      newState: function (e) {
+
+        var shape = Polymer.dom(e).localTarget.closest('paper-button').getAttribute('create');
+        var position = this._getNewStatePosition();
+
+        var id = this.addState( { shape: shape, position: position } );
+
+        this._singleSelect(this._graph.getCell(id).findView(this._paper));
+      },
+
+      addState: function (data) {
+
+        var type = data.shape;
+        delete data.shape;
+
+        var s = this._createState(type, data);
+
+        this._graph.addCell(s);
+        this._fixStateSize(s,data);
+        this._states[s.id] = { type: type, cid:s.cid, state:data };
+
+        s.on('change:position', this._onStatePositionChanged.bind(this)); // for handling position changes
+
+        return s.id;
+      },
+
+      _addInitialState: function (state) {
+        var data = {
+          shape: state.type,
+          position: state.state.position || this._getNewStatePosition()
+        };
+
+        if(state.state.size) data.size = state.state.size;
+
+        if(data.shape === 'Gateway'){
+          data.name = state.state.name;
+          data.type = state.state.type;
+        }
+        else if(data.shape === 'Activity'){
+          data.content = state.state.content;
+          data.type = state.state.type;
+          data.icon = state.state.icon;
+          data.subProcess = state.state.subProcess;
+        }
+        else if(data.shape === 'Event'){
+          data.name = state.state.name;
+          data.type = state.state.type;
+          data.subtype = state.state.subtype;
+        }
+        else if(data.shape === 'Annotation'){
+          data.content = state.state.content;
+        }
+        else if (data.shape === 'Pool'){
+          data.lanes = state.state.lanes;
+          data.attrs = state.state.attrs;
+        }
+
+        return this.addState(data);
+      },
+
+      _fixStateSize: function (cell, state) {
+
+        state.defaultSize = cell.attributes.size;
+
+        if (state.size){
+          cell.set('size', state.size);
+        } else {
+          if(state.hasOwnProperty('name')){
+            state.size = state.defaultSize;
+          } else if(state.hasOwnProperty('content')){
+            state.size = this._computeJointJsStateSize(cell, state.defaultSize);
+          }
+        }
+      },
+
+      _createState: function (type, state) {
+        var s = { position : state.position };
+        var cell;
+
+        if (type === 'Gateway'){
+
+          state.name = state.name || '';
+          s.attrs = { text: { text: state.name } };
+
+          state.type = state.type || 'default';
+          s.icon = this._gatewayIconsDict(state.type);
+
+          cell = new this._bpmn.Gateway(s);
+        }
+        else if (type === 'Activity'){
+
+          state.content = state.content || '';
+          s.content = state.content;
+
+          state.icon = state.icon || 'none';
+          s.icon = state.icon;
+
+          state.type = state.type || 'task';
+          s.activityType = state.type;
+
+          state.subProcess = state.subProcess || false;
+          s.subProcess = state.subProcess;
+
+          cell = new this._bpmn.Activity(s);
+        }
+        else if (type === 'Event') {
+
+          state.name = state.name || '';
+          s.attrs = { text: { text: state.name } };
+
+          state.type = state.type || 'start';
+          s.eventType = state.type;
+
+          state.subtype = state.subtype || 'none';
+          s.icon = this._eventIconsDict(state.subtype);
+
+          cell = new this._bpmn.Event(s);
+        }
+        else if (type === 'Annotation') {
+
+          state.content = state.content || '';
+          s.content = state.content;
+
+          s.attrs = { rect: { fill: '#FFFFFF', 'fill-opacity': .5 } };
+
+          cell = new this._bpmn.Annotation(s);
+        }
+
+        else if(type === 'Pool'){
+
+          state.lanes = state.lanes || {};
+          s.lanes = state.lanes;
+
+          state.attrs = state.attrs || {};
+          s.attrs = state.attrs;
+
+          cell = new this._bpmn.Pool(s);
+        }
+
+        return cell;
+      },
+
+      _eventIconsDict: function (subtype) {
+        var icon = 'none';
+        switch (subtype) {
+          case 'cancel':
+            icon = 'cross';
+            break;
+          case 'message':
+            icon = 'message';
+            break;
+          case 'parallel-multiple':
+            icon = 'plus';
+        }
+        return icon;
+      },
+
+      _gatewayIconsDict: function (subtype) {
+        var icon = 'none';
+        switch (subtype) {
+          case 'exclusive':
+            icon = 'cross';
+            break;
+          case 'inclusive':
+            icon = 'circle';
+            break;
+          case 'parallel':
+            icon = 'plus';
+        }
+        return icon;
+      },
+
+      /**
+       * Relation creation
+       */
+
+      addRelation: function (data) {
+
+        data.label = data.label ||'';
+        data.type = data.type || 'normal';
+
+        var relation = this._relationPropertiesToJSONObj(data.source, data.target);
+        relation.flowType = data.type;
+
+        var r = this._createRelation(relation).set(this._createLabel(data.label));
+        this._graph.addCell(r);
+        this._relations[r.id] = { cid: r.cid, relation: data };
+
+        r.on('remove', this._onRelationDeleted.bind(this));
+        return r.id;
+      },
+
+      _addInitialRelation: function (sourceId, targetId, rel) {
+        var label = rel.label || '';
+        var type = rel.type || 'normal';
+
+        return this.addRelation( { source: { id: sourceId }, target: { id: targetId }, label: label, flowType: type } );
+      },
+
+      _createRelation: function (relation) {
+          return new this._bpmn.Flow(relation);
+      },
+
+      _connect: function (source, target) {
+        return this.addRelation({ source: source, target: target, label: '', type: 'normal' });
+      },
+
+      _resetNewLinkAttr: function (rel) {
+        var attr = this._getDefaultBPMNRelAttrs();
+        rel.set('attrs', attr);
+      },
+
+      /**
+       * State edit
+       */
+
+      _getStringValue: function (cell, prop) {
+        if(cell)
+          return (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id].relation)[prop] || '';
+      },
+
+      _onStringValueChanged: function(evt){
+
+        var value = evt.target.value;
+        var prop = Polymer.dom(evt).localTarget.closest('div[class="menu-element"]').id;
+
+        if(this._isType('state', this.selected)){
+
+          var state = this._states[this.selected.model.get('id')].state;
+
+          if(prop === "name") {
+            this.selected.model.attr('text/text', value);
+            state.name = value;
+          } else if(prop === "content") {
+            this.selected.model.set('content', value);
+            state.content = value;
+
+            state.size = this._computeJointJsStateSize(this.selected.model, state.defaultSize);
+          }
+        } else{
+          if(prop === "label") {
+            this.selected.model.set(this._createLabel(value));
+            this._relations[this.selected.model.get('id')].relation.label = value;
+          }
+        }
+        this._hideNewLinkButton();
+        this._renderAfterChange();
+        this._showNewLinkButton(this.selected);
+      },
+
+      _getBooleanValue: function (cell, prop) {
+        if(cell)
+          return (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id])[_.camelCase(prop)] || false;
+      },
+
+      _onBooleanValueChanged: function (evt, val) {
+        var el = evt.target.closest('div[class="menu-element"]');
+
+        if(el && val.value !== undefined){
+
+          var state = this._states[this.selected.model.get('id')].state;
+          var prop = evt.target.closest('div[class="menu-element"]').id;
+
+          state[_.camelCase(prop)] = val.value;
+          this.selected.model.set(_.camelCase(prop), val.value);
+
+          // this._hideNewLinkButton();
+          this._renderAfterChange();
+          // this._showNewLinkButton(this.selected);
+        }
+      },
+
+      _getSelectedItem: function (cell, prop) {
+        if(cell){
+          var items = this._getDropdownItems(cell, prop);
+          var item = (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id].relation)[prop] || '';
+
+          return items.indexOf(item);
+        }
+      },
+
+      _onItemsChanged: function (evt) {
+        var list = evt.target.parentElement;
+        list.selected =-1;
+        list.selected = this._getSelectedItem(this.selected, list.item);
+      },
+
+      _onSelectedItemChanged: function (evt, val) {
+
+        if(val.value) {
+
+          var cell = this._isType('state', this.selected)? this._states[this.selected.model.id] : this._relations[this.selected.model.id];
+
+          var prop = evt.target.closest('div[class="menu-element"]').id;
+          var newVal = val.value.toLowerCase();
+          var oldVal = (this._isType('state', this.selected)? cell.state : cell.relation)[prop];
+
+          if(newVal !== oldVal){
+            var kProp = this._getCellProp(this.selected, prop);
+
+            // console.log(cell, prop, kProp, oldVal, newVal);
+
+            var kValue;
+
+            if(kProp === 'icon'){
+              if (cell.type === 'Gateway') kValue = this._gatewayIconsDict(newVal);
+              else if (cell.type === 'Activity') kValue = newVal;
+              else if (cell.type === 'Event') kValue = this._eventIconsDict(newVal);
+
+            } else
+              kValue = newVal;
+
+            // console.log(cell, prop, kProp, oldVal, newVal, kValue);
+            cell[this._isType('state', this.selected)? 'state' : 'relation'][prop] = newVal;
+            this.selected.model.set(kProp, kValue);
+
+            if (cell.state && cell.state.hasOwnProperty('content'))
+              cell.state.size = this._computeJointJsStateSize(this.selected.model, cell.state.defaultSize);
+
+            this._hideNewLinkButton();
+            this._renderAfterChange();
+            this._showNewLinkButton(this.selected);
+
+          }
+        }
+      },
+
+      /* for both states and relations */
+      _renderAfterChange: function () {
+        this.selected.render();
+        this.selected.unhighlight(null, this.highlighter);
+        this.selected.highlight(null, this.highlighter);
+      },
+
+      /* for both states and relations */
+      _undoChanges: function(){
+        // do nothing
+        this.selectedCopy = null;
+      },
+
+      /**
+       * State selection
+       */
+
+      /* Overwrite from ASQ.diagramQBehaviour */
+
+      _singleSelect: function(cellView){
+        if(this.selected){
+          if(this.selected.model.id === cellView.model.get('id'))
+            return;
+          else{
+            if(cellView)
+              this._tempNextRel = cellView;
+            this._onJointjsObjDeselected();
+            if(this._tempNextRel){
+              cellView = this._tempNextRel;
+              this._tempNextRel = null;
+            }
+          }
+        }
+        if(cellView.model instanceof joint.shapes.bpmn.Pool)
+          return;
+
+        this.selected = cellView;
+        this.selectedCopy = _.cloneDeep(this.selected.model.attributes) // keep a copy in case of 'undo' operation
+        this.selected.highlight(null, this.highlighter);
+        this.selectedCounter++;
+        this._showNewLinkButton(cellView);
+        this._expandSidebar()
+      },
+
+
+      /**
+       * Helper functions
+       */
+
+      _getCellPropertiesKeys: function (cell) {
+        if(cell) return  Object.keys(this._getCellProperties(cell, cell.model.get('type')));
+      },
+
+      _getCellProperties: function (cell, type) {
+        return this._isType('state', cell)? this._shapes.states[type.toLowerCase().replace('bpmn.','')] : this._shapes.relations[type.toLowerCase().replace('bpmn.','')]
+      },
+
+      _isString: function (cell, prop) {
+        if(cell) return this._isTypeOf(cell, prop, String);
+      },
+
+      _isBoolean: function (cell, prop) {
+        if(cell) return this._isTypeOf(cell, prop, Boolean);
+      },
+
+      _isArray: function (cell, prop) {
+        if(cell) return this._isTypeOf(cell, prop, Array);
+      },
+
+      _getDropdownItems: function (cell, prop) {
+        if(cell){
+          var items = this._getCellProperties(cell, cell.model.get('type'))[prop];
+          return Array.isArray(items) ? items : [];
+        }
+      },
+
+      _getPropertyValue: function (cell, prop) {
+        if(cell)
+          return this._getCellProperties(cell, cell.model.get('type'))[prop];
+      },
+
+      _isFunction: function (value) {
+        return value instanceof Function
+      },
+
+      _isTypeOf: function (cell, prop, type) {
+
+        var value = this._getPropertyValue(cell, prop);
+        if( this._isFunction(value) )
+          return value.toString() === type.toString()
+
+        else if ( !this._isFunction(value) )
+          return value instanceof type && type.toString() === Array.toString();
+      },
+
+      _capitalize: function (str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      },
+
+      _singleLine: function (item) {
+        return item === 'name' || item === 'label'
+      },
+
+      _multiLine: function (item) {
+        return ! this._singleLine(item)
+      },
+
+      _computeJointJsStateSize: function(cell, defaultSize) {
+        var content = this.$.paper.querySelector('g[model-id="'+cell.get('id')+'"] div[class="content"]');
+
+        cell.set('size', defaultSize);
+
+        var style = content.style.cssText
+        content.removeAttribute('style')
+
+        var margin = (cell.get('activityType') === 'transaction')? 20 : 0;
+
+        var w = content.clientWidth + margin> defaultSize.width? content.clientWidth+margin : defaultSize.width;
+        var h = defaultSize.height;
+
+        var actualHeight= content.clientHeight;
+
+        if(cell.get('subProcess')) actualHeight+= 40;
+        else if(cell.get('icon') && cell.get('icon') !== 'none') actualHeight+= 50;
+
+        if(actualHeight+margin > h) h = actualHeight+10+margin;
+
+        content.style = style;
+        cell.set('size', { width: w, height: h });
+        return cell.get('size')
+      }
+
+    });
+  </script>
+
+</dom-module>

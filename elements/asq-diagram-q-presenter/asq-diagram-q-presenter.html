@@ -11,6 +11,7 @@
 
 <link rel="import" href="asq-diagram-q-presenter-uml.html">
 <link rel="import" href="asq-diagram-q-presenter-erd.html">
+<link rel="import" href="asq-diagram-q-presenter-bpmn.html">
 
 <!--
 `asq-diagram-q-presenter` is use to show to the presenter.
@@ -31,36 +32,38 @@
     </style>
 
     <div id="container">
-      <div id="main">
-        <div id="app-body">
-          <div id="main-container">
-            <div id="submission">
-              <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
-                <asq-diagram-q-presenter-uml
-                        role="presenter"
-                        uid="[[uid]]"
-                        value="[[value]]"
-                        width="{{width}}"
-                        height="{{_computePaperHeight(height)}}">
-                </asq-diagram-q-presenter-uml>
-              </template>
-              <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
-                <asq-diagram-q-presenter-erd
-                        role="presenter"
-                        uid="[[uid]]"
-                        value="[[value]]"
-                        width="{{width}}"
-                        height="{{_computePaperHeight(height)}}">
-                </asq-diagram-q-presenter-erd>
-              </template>
-            </div>
-            <div id="zoom">
-              <paper-icon-button id="clearBtn" icon="av:not-interested" on-tap="_onClearBtnTap" title="Clear Ranges"></paper-icon-button>
-              <paper-icon-button icon="zoom-out" on-click="zoomOut" on-mousedown="onZoomOutPressed" on-mouseup="onZoomReleased"></paper-icon-button>
-              <paper-icon-button icon="zoom-in" on-click="zoomIn" on-mousedown="onZoomInPressed" on-mouseup="onZoomReleased"></paper-icon-button>
-            </div>
-          </div>
-        </div>
+
+      <div id="app-container">
+        <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
+          <asq-diagram-q-presenter-uml
+                  role="presenter"
+                  uid="[[uid]]"
+                  value="[[value]]"
+                  disabled="{{disabled}}"
+                  width="{{width}}"
+                  height="{{height}}">
+          </asq-diagram-q-presenter-uml>
+        </template>
+        <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
+          <asq-diagram-q-presenter-erd
+                  role="presenter"
+                  uid="[[uid]]"
+                  value="[[value]]"
+                  disabled="{{disabled}}"
+                  width="{{width}}"
+                  height="{{height}}">
+          </asq-diagram-q-presenter-erd>
+        </template>
+        <template is="dom-if" if="{{_isType('bpmn', type)}}" restamp>
+          <asq-diagram-q-presenter-bpmn
+                  role="presenter"
+                  uid="[[uid]]"
+                  value="[[value]]"
+                  disabled="{{disabled}}"
+                  width="{{width}}"
+                  height="{{height}}">
+          </asq-diagram-q-presenter-bpmn>
+        </template>
       </div>
 
       <div id="list-container">
@@ -122,6 +125,17 @@
         },
 
         /**
+         * Disable or enable the element. Changes will be also
+         * propagated to inner propagated elements.
+         */
+        disabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
          * Event bus to communicate with ASQ
          */
         eventBus: {
@@ -162,19 +176,7 @@
 
       },
 
-      attached: function () {
-        this.async(function () {
-          this.init();
-        });
-      },
-
-      init: function () {
-        this._computePresenterSize(this.height, this.width);
-      },
-
-      _computePaperHeight: function(height){
-        return height-40;
-      },
+      attached: function () {},
 
       toggleSubmissionList: function(evt, detail){
         var current = this.$.submissionListWrapper.style.display;
@@ -183,7 +185,7 @@
       },
 
       _selectedSubmissionItemChanged: function(newItem, old){
-        if(! newItem) return;
+        if(! newItem || this.disabled) return;
         this.value = newItem;
       },
 
@@ -232,7 +234,8 @@
               if(this._submissions[i].answeree === id){
                 this._submissions[i].diagram = evt.question.submission;
                 if(this.value && this.value.answeree === id){
-                  this._api.reload()
+                  // todo: reload function!!
+                  // this._api.reload()
                 }
                 return;
               }
@@ -248,10 +251,6 @@
 
       _isType: function (type, thisType) {
         return type === thisType;
-      },
-
-      setSize: function (sWidth, sHeight) {
-        return 'height:' + sHeight + 'px;' + 'width:' + (sWidth-2) + 'px;';
       },
 
       indexPlusOne: function(index){
@@ -292,10 +291,6 @@
           clearInterval(this.mousePressed);
           this.mousePressed = undefined;
         }
-      },
-
-      _onClearBtnTap: function () {
-        this.clear()
       },
 
       clear: function () {

@@ -1,6 +1,6 @@
 <link rel="import" href="asq-diagram-q-viewer-uml.html">
 <link rel="import" href="asq-diagram-q-viewer-erd.html">
-<!--<link rel="import" href="asq-diagram-q-viewer-bpmn.html">-->
+<link rel="import" href="asq-diagram-q-viewer-bpmn.html">
 
 <!--
 `asq-diagram-q`is used to allow the user to draw diagrams like UML's or ER's.
@@ -36,15 +36,15 @@
       </asq-diagram-q-viewer-erd>
     </template>
 
-    <!--<template is="dom-if" if="{{_isType('bpmn', type)}}" restamp>-->
-      <!--<asq-diagram-q-viewer-bpmn-->
-              <!--role="viewer"-->
-              <!--uid="[[uid]]"-->
-              <!--value="{{value}}"-->
-              <!--disabled="{{disabled}}"-->
-              <!--width="[[width]]"-->
-              <!--height="[[height]]">-->
-      <!--</asq-diagram-q-viewer-bpmn>-->
+    <template is="dom-if" if="{{_isType('bpmn', type)}}" restamp>
+      <asq-diagram-q-viewer-bpmn
+              role="viewer"
+              uid="[[uid]]"
+              value="{{value}}"
+              disabled="{{disabled}}"
+              width="[[width]]"
+              height="[[height]]">
+      </asq-diagram-q-viewer-bpmn>
     </template>
   </template>
 
@@ -131,34 +131,15 @@
           diagram.clear();
 
           value.states.forEach(function(state){
-            var sId;
-            if(this.type === 'uml')
-              sId = diagram.addState( { type: state.type , name: state.state.name, attributes: state.state.attributes, methods: state.state.methods, position: state.state.position } );
-              // sId = diagram.addState(state.type, state.state.name, state.state.attributes, state.state.methods, state.state.position);
-            else if(this.type === 'erd')
-              sId = diagram.addState( { type: state.type, position: state.state.position, label: state.label } );
-              // sId = diagram.addState(state.type, state.state.position, state.label);
-
-            if(state.id)
-              idMap[state.id] = sId;
+            var sId = diagram._addInitialState(state);
+            if(state.id) idMap[state.id] = sId;
           }.bind(this));
 
           value.relations.forEach(function(rel){
             var sourceId = idMap[rel.relation.source.id] || this._findStateByName(this.type, diagram._states, rel.relation.source.name);
             var targetId = idMap[rel.relation.target.id] || this._findStateByName(this.type, diagram._states, rel.relation.target.name);
 
-            var rId;
-            if(this.type === 'uml')
-              rId = diagram.addRelation( { type: rel.type, source: { id: sourceId }, target: { id: targetId } } );
-            else if(this.type === 'erd'){
-              var sLabel, tLabel;
-              if(rel.labels){
-                sLabel = rel.labels.sLabel;
-                tLabel = rel.labels.tLabel
-              }
-              rId = diagram.addRelation( { source: { id: sourceId }, target: { id: targetId }, sLabel: sLabel, tLabel: tLabel } );
-              // rId = diagram.addRelation( { id: sourceId }, { id: targetId }, sLabel, tLabel );
-            }
+            var rId = diagram._addInitialRelation(sourceId, targetId, rel);
 
             if(rel.vertices)
               diagram._graph.getCell(rId).set('vertices',rel.vertices)
@@ -226,7 +207,7 @@
 
           states.push(state);
         }.bind(this));
-
+        
         relationsIds.forEach(function (id) {
           var relation = {
             relation : diagram._relations[id].relation,

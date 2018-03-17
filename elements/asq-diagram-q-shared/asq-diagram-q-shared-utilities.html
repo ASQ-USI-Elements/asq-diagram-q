@@ -2,6 +2,7 @@
 <script type="text/javascript" src="../../../lodash/lodash.js"></script>
 <script type="text/javascript" src="../../../backbone/backbone.js"></script>
 <script type="text/javascript" src="../../../jointjs/dist/joint.js"></script>
+<script type="text/javascript" src="./bpmn_shapes.js"></script>
 
 <script>
 
@@ -38,6 +39,8 @@
         this._uml = joint.shapes.uml;
       else if( type === 'erd' )
         this._erd = joint.shapes.erd;
+      else if( type === 'bpmn' )
+        this._bpmn = joint.shapes.bpmn;
     },
 
     _setKeyAndMouseEventListeners: function() {
@@ -92,6 +95,45 @@
           },
           relations: ['Line']
         };
+      else if(diagramType === 'bpmn')
+        return {
+          states : {
+            gateway: { name: String, type : ['default', 'inclusive', 'exclusive', 'parallel'] },
+            activity: { content: String, icon : ['none', 'message', 'user'], type : ['task', 'transaction', 'event-sub-process', 'call-activity'], "sub-process": Boolean },
+            event: { name: String, type : ['start', 'end', 'intermediate'], subtype : ['none', 'cancel', 'message', 'parallel-multiple'] },
+            annotation: { content: String },
+            pool: {}
+          },
+          relations: {
+            flow: { type : ['default', 'conditional', 'normal', 'message','association', 'conversation'], label: String },
+          }
+        };
+    },
+
+    _getCellProp: function (cell, key) {
+
+      var dict = this._bpmnPropDict();
+
+      if(cell.model instanceof joint.shapes.bpmn.Gateway) return dict.states.gateway[key];
+      else if(cell.model instanceof joint.shapes.bpmn.Activity) return dict.states.activity[key];
+      else if(cell.model instanceof joint.shapes.bpmn.Event) return dict.states.event[key];
+      else if(cell.model instanceof joint.shapes.bpmn.Flow) return dict.relations.flow[key];
+
+    },
+
+    _bpmnPropDict: function () {
+      return {
+        states : {
+          gateway: { type: 'icon'},
+          activity: { icon : 'icon', type : 'activityType' },
+          event: { type : 'eventType', subtype : 'icon' },
+          annotation: {},
+          Pool: {}
+        },
+        relations: {
+          flow: { type : 'flowType' },
+        }
+      }
     },
 
     /** Expand/collapse sidebar */
@@ -143,7 +185,7 @@
 
     _twoSelected: function(counter){
       return counter === 2 && this.selectedElements.every(function (el) {
-        return this._isType('state',el);
+        return this._isType('state', el);
       }.bind(this))
     },
 
@@ -179,26 +221,18 @@
 
     /** Relation creation */
 
-    newRelation: function() {
-      var data = this._getRelationFormData();
-      if(!data) return;
-
-      this.addRelation(data);
-      this._expandRelationMenu();
-    },
-
     _relationPropertiesToJSONObj: function(source, target) {
       return {source: source, target: target}
     },
 
     _getNewLinkPosition: function(state) {
-      var pos =  state.model.get('position');
-      var size =  state.model.get('size');
 
-      var source = { id:state.model.get('id') };
-      var target = { x : pos.x+size.width+25, y : pos.y+(size.height/2) };
+      var bbox = state.getBBox();
 
-      return {source:source, target:target}
+      return {
+        source: { id:state.model.get('id') },
+        target: { x : 22+(bbox.x+bbox.width)/this._scale, y : (bbox.y+(bbox.height/2))/this._scale }
+      }
     },
 
     _getNewRelAttrs: function() {
@@ -218,11 +252,32 @@
       return {'.marker-target': {d: 'M 20 0 L 0 10 L 20 20 z', fill: 'white'}};
     },
 
+    _getDefaultBPMNRelAttrs: function() {
+      return {
+        ".marker-source": {
+          d: "M 0 0"
+        },
+        ".marker-target": {
+          d: "M 10 0 L 0 5 L 10 10 z",
+          fill: "#000000"
+        },
+        ".connection": {
+          "stroke-dasharray": " ",
+          "stroke-width": 1
+        },
+        ".connection-wrap": {
+          style: "",
+          onMouseOver: "",
+          onMouseOut: ""
+        }
+      };
+    },
+
     _connectSelected: function () {
-      var source = this.selectedElements[0].model.get('id')
-      var target = this.selectedElements[1].model.get('id')
+      var source = this.selectedElements[0].model.get('id');
+      var target = this.selectedElements[1].model.get('id');
       this._multiDeselectAll();
-      var id = this._connect({id : source}, {id : target})
+      var id = this._connect({id : source}, {id : target});
       this._singleSelect(this._graph.getCell(id).findView(this._paper));
     },
 
@@ -297,7 +352,6 @@
     },
 
     _changeCellType: function () {
-      console.log(this.type)
       this._hideNewLinkButton();
       var data = this._isType('state', this.selected)? this._getStateFormData(true) : this._getRelationFormData(true);
       var id = this._updateType(data);
@@ -307,10 +361,7 @@
 
     _saveChanges: function () {
       var data = this._isType('state', this.selected)? this._getStateFormData() : this._getRelationFormData();
-      if(data){
-        this.selectedCopy = null;
-        this._showNewLinkButton(this.selected);
-      }
+      if(data) this.selectedCopy = null;
       this._deselectJointjsObj()
     },
 
@@ -348,12 +399,6 @@
       if((vertices = this._graph.getCell(idFrom).findView(this._paper).model.get('vertices') ))
         this._graph.getCell(idTo).findView(this._paper).model.set('vertices',vertices)
     },
-
-    // _onRelationTargetOrSourceChanged: function (rel) {
-    //   console.log('_onRelationTargetOrSourceChanged')
-    //   this._relations[rel.id].relation.source = rel.attributes.source;
-    //   this._relations[rel.id].relation.target = rel.attributes.target;
-    // },
 
     _changeRelationSourceAndTarget: function (evt, el) {
       var type = evt.target.id || evt.target.parentElement.id;
@@ -682,6 +727,10 @@
       return index+1;
     },
 
+    _strCmp: function (a,b) {
+      return a === b;
+    },
+
     setDropdownMenuHeight: function(e,val){
       if(val.value){
         var menu = Polymer.dom(e).localTarget;
@@ -695,9 +744,21 @@
     },
 
     _computeViewerSize: function (h,w) {
-      this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
+      var observer = new MutationObserver(function() {
+        var style = this.$['paper-container'].style;
+        var height = Number(style.height.replace('px',''));
+        var width = Number(style.width.replace('px',''));
+
+        this.$['app-body'].style = 'height:' + style.height + '; width:' + (width+10)+'px;';
+        this.$['sidebar'].style.height = style.height;
+
+        this.height = height;
+        this.width = width;
+
+      }.bind(this));
+      observer.observe(this.$['paper-container'], { attributes : true, attributeFilter : ['style'] });
+
       this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
-      this.$['sidebar'].style.height = h+'px';
     },
 
     _findStateByName: function(diagramType, states, name) {
@@ -744,8 +805,6 @@
           break;
         }
       }
-      if(!err && required.source.id === required.target.id)
-        err='- source and target are the same';
 
       if(err) {
         this._showError(el,err);
@@ -794,6 +853,14 @@
       var canvas = document.createElement('canvas');
       var ctx = canvas.getContext('2d');
       ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
+
+      return ctx.measureText(txt).width;
+    },
+
+    _getWidthOfTextVariableFont: function(txt, fontSize) {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = fontSize +'px Arial';
       return ctx.measureText(txt).width;
     },
 
@@ -976,6 +1043,17 @@
           }]
       };
     },
+
+    _createLabel: function(label) {
+      return {
+        labels: [{
+          attrs: {
+            text: { text: label, fill: '#000000' },
+            rect: { fill: '#ffffff' }
+            },
+          position: 0.5 }]
+      };
+    }
   };
 
   var diagramQPresenterBehaviour = ASQ.diagramQPresenterBehaviour = {
@@ -984,25 +1062,34 @@
     _valueChanged: function (newVal,oldVal) {
       this._clear();
       if(newVal){
-        this.width = this._defaultWidth;
-        this.height = this._defaultHeight;
-        var offset = this._setPaperSize(this.value.diagram);
-        this._fillGraph(this.value.diagram, offset)
+        this._fillGraph(this.value.diagram);
+        this._cropAndScaleGraph();
       }
     },
 
     /** Helper functions */
 
+    _onClearBtnTap: function () {
+      this.value = null;
+    },
+
     _computePresenterSize: function (h, w){
       this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-      this.$['submission'].style = 'height:' + (h-40) + 'px;' + 'width:' + w + 'px;';
+      this.$['submission'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
     },
 
     _computeSubmissionSize: function(h,w) {
       this.$['paper'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
     },
 
-    _setPaperSize: function (value) {
+    _mapToArrayOfObjects: function(obj){
+      return Object.keys(obj).map(function(key) {
+        return {id: key, text: obj[key].label};
+      });
+    },
+
+    _cropAndScaleGraph: function () {
+
       var coord = {
         x0: -1,
         x1: -1,
@@ -1010,56 +1097,47 @@
         y1: -1
       };
 
-      value.states.forEach(function (s) {
-        var x = s.state.position.x;
-        var y = s.state.position.y;
+      var h = this.height,
+        w = this.width-10;
 
-        var sW, sH;
-        if(s.state.size) {
-          sW = s.state.size.width;
-          sH = s.state.size.height;
-        }
-        else{
-          sW = 150;
-          sH = 80;
-        }
+      var bbox;
+      this._graph.getCells().forEach(function (cell) {
+        bbox = cell.findView(this._paper).getBBox();
 
-        coord.x0 = this._getMin(coord.x0, x);
-        coord.x1 = this._getMax(coord.x1, (x + sW) );
-        coord.y0 = this._getMin(coord.y0, y);
-        coord.y1 = this._getMax(coord.y1, (y + sH) );
+        coord.x0 = this._getMin(coord.x0, bbox.x);
+        coord.x1 = this._getMax(coord.x1, (bbox.x + bbox.width) );
+        coord.y0 = this._getMin(coord.y0, bbox.y);
+        coord.y1 = this._getMax(coord.y1, (bbox.y + bbox.height) );
       }.bind(this));
 
-      value.relations.forEach(function (r) {
-        if(r.vertices)
-          r.vertices.forEach(function (v) {
-            var x = v.x;
-            var y = v.y;
-
-            coord.x0 = this._getMin(coord.x0, x);
-            coord.x1 = this._getMax(coord.x1, x );
-            coord.y0 = this._getMin(coord.y0, y);
-            coord.y1 = this._getMax(coord.y1, y);
-          }.bind(this))
-      }.bind(this));
-
-      var pWidth = coord.x1 - coord.x0 + 40;
-      var pHeight = coord.y1 - coord.y0 + 40;
-
+      var pWidth = (coord.x1 - coord.x0)+40;
+      var pHeight = (coord.y1 - coord.y0)+40;
 
       if(this._paper){
 
-        var p = Math.min(this.height/pHeight,this.width/pWidth);
+        var hRatio = h/pHeight;
+        var wRatio = w/pWidth;
+        var s, yScroll, xScroll;
 
-        this._paper.scale(p, p);
-        this._scale = p;
-        this._minScale = p;
+        if(hRatio <= wRatio){
+          s = hRatio;
+          yScroll = (coord.y0-20)*s;
+          xScroll = (coord.x0-20)*s - ((w-(pWidth*s))/2);
+
+        } else if(hRatio > wRatio){
+          s = wRatio;
+          yScroll = (coord.y0-20)*s - ((h-(pHeight*s))/2);
+          xScroll = (coord.x0-20)*s;
+        }
+
+        this._paper.scale(s, s);
+        this._scale = s;
+
+        this.$['paper-container'].scrollLeft = xScroll;
+        this.$['paper-container'].scrollTop = yScroll;
+
       }
 
-      return {
-        offX: coord.x0 -20,
-        offY: coord.y0 -20,
-      };
     },
 
     _getMax: function(a,b) {
@@ -1087,15 +1165,16 @@
     },
 
     _resetSize: function () {
-      this._scale=this._minScale;
+      this._scale=1;
+      this._scalePaper();
       this._paper.scale(this._scale, this._scale);
-      this.height=this._defaultHeight;
-      this.width=this._defaultWidth;
     },
 
     _clear: function(){
       this._resetSize();
       this._graph.clear();
+      this._states = {};
+      this._relations = {};
     },
   };
 

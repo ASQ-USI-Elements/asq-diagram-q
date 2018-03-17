@@ -1,5 +1,12 @@
 <link rel="import" href="../../../iron-icon/iron-icon.html">
 <link rel="import" href="../../../iron-icons/iron-icons.html">
+<link rel="import" href="../../../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../../../paper-button/paper-button.html">
+<link rel="import" href="../../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../paper-listbox/paper-listbox.html">
+<link rel="import" href="../../../paper-item/paper-item.html">
+<link rel="import" href="../../../paper-input/paper-input.html">
 
 <!--
 `asq-diagram-q-presenter-erd` is use to show to the presenter.
@@ -10,12 +17,142 @@
 @blurb Element acting as an editor for diagram questions.
 @homepage http://github.com/ASQ-USI-Elements/asq-diagram-q
 -->
-<dom-module id='asq-diagram-q-presenter-erd'>
+<dom-module id="asq-diagram-q-presenter-erd">
 
   <template>
-    <style include='asq-diagram-q-shared-styles'></style>
+    <style include="asq-diagram-q-shared-styles"></style>
+    <div id="app-body">
+      <div id="sidebar" class="open">
+        <div id="sidebar-content">
+          <template is="dom-if" if="{{_nothingSelected(selectedCounter)}}" restamp>
+            <div class="menu state">
+              <div class="expand-button">
+                <paper-button raised on-click="_expandStateMenu"><iron-icon icon="{{_getIcon(_showStateContent)}}"></iron-icon><h4 class="button-label">NEW STATE</h4></paper-button>
+              </div>
+              <template is="dom-if" if="{{_showStateContent}}" restamp>
+                <div class="menu-content">
+                  <iron-label class="group-label"><span>Entities</span></iron-label>
+                  <div class="menu-element entities" id="buttons">
+                    <paper-button class="oneCol" create="Entity" raised on-click="newState"><div><img src="../../img/erd/entity.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Weak Entity" raised on-click="newState"><div><img src="../../img/erd/weakEntity.png" height="100%" width="100%"></div><div></div></paper-button>
+                  </div>
+                  <iron-label class="group-label"><span>Relationships</span></iron-label>
+                  <div class="menu-element relationships" id="buttons">
+                    <paper-button class="oneCol" create="Relationship" raised on-click="newState"><div><img src="../../img/erd/relationship.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Identifying Relationship" raised on-click="newState"><div><img src="../../img/erd/identifyingRelationship.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="ISA" raised on-click="newState"><div><img src="../../img/erd/isa.png" height="100%" width="100%"></div><div></div></paper-button>
+                  </div>
+                  <iron-label class="group-label"><span>Attributes</span></iron-label>
+                  <div class="menu-element attributes" id="buttons">
+                    <paper-button class="oneCol" create="Attribute" raised on-click="newState"><div><img src="../../img/erd/attribute.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Key" raised on-click="newState"><div><img src="../../img/erd/key.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Multivalued" raised on-click="newState"><div><img src="../../img/erd/multivalued.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Derived" raised on-click="newState"><div><img src="../../img/erd/derived.png" height="100%" width="100%"></div><div></div></paper-button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template is="dom-if" if="{{_somethingSelected(selectedCounter)}}" restamp>
+            <div class="menu edit">
+              <div class="expand-button">
+                <paper-button raised on-click="_expandEditMenu"><iron-icon icon="{{_getIcon(_showEditContent)}}"></iron-icon><h4 class="button-label">EDIT</h4></paper-button>
+              </div>
+              <div class="menu-content">
+                <template is="dom-if" if="{{_showEditContent}}" restamp>
+                  <template is="dom-if" if="{{_oneSelected(selectedCounter)}}" restamp>
+                    <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
+                      <!--type-->
+                      <div class="menu-element" id="type">
+                        <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged" on-opened-changed="setDropdownMenuHeight">
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItemType(selected.model.attributes.type, _shapes.states)}}">
+                            <paper-item disabled><p class="inner-label">Entities</p></paper-item>
+                            <template is="dom-repeat" items="{{_shapes.states.entities}}" restamp>
+                              <paper-item>[[item]]</paper-item>
+                            </template>
+                            <paper-item disabled><p class="inner-label">Relationships</p></paper-item>
+                            <template is="dom-repeat" items="{{_shapes.states.relationships}}" restamp>
+                              <paper-item>[[item]]</paper-item>
+                            </template>
+                            <paper-item disabled><p class="inner-label">Attributes</p></paper-item>
+                            <template is="dom-repeat" items="{{_shapes.states.attributes}}" restamp>
+                              <paper-item>[[item]]</paper-item>
+                            </template>
+                          </paper-listbox>
+                        </paper-dropdown-menu>
+                      </div>
+                      <!--label-->
+                      <template is="dom-if" if="{{_not_ISA_Relationship(selected.model.attributes.type)}}" restamp>
+                        <div class="menu-element" id="label">
+                          <iron-label>
+                            <span>Label</span>
+                          </iron-label>
+                          <paper-input value="{{getStateLabel(selected)}}" on-input="_onStateLabelChanged"></paper-input>
+                        </div>
+                      </template>
+                    </template>
 
-    <div id='paper' is-disabled='true'></div>
+                    <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
+                      <div class="menu-element" id="source">
+                        <div id="label">
+                          <iron-label>
+                            <span>Source Label</span>
+                          </iron-label>
+                          <paper-input id="sLabel" value="{{getRelationLabel(selected, 'source')}}" on-input="_onRelationLabelChanged"></paper-input>
+                        </div>
+                      </div>
+                      <div class="menu-element" id="target">
+                        <div id="label">
+                          <iron-label>
+                            <span>Target Label</span>
+                          </iron-label>
+                          <paper-input id="tLabel" value="{{getRelationLabel(selected, 'target')}}" on-input="_onRelationLabelChanged"></paper-input>
+                        </div>
+                      </div>
+                    </template>
+                    <!--error-->
+                    <div class="menu-element error-message" id="error">
+                      <p>Submission not valid:</p>
+                      <p id="whichError">- error message -</p>
+                    </div>
+                    <!--Buttons-->
+                    <div class="menu-element" id="buttons">
+                      <paper-button class="twoCol" raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
+                      <!--<template is="dom-if" if="{{_isType('state', selected)}}" restamp>-->
+                      <!--<paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>-->
+                      <!--</template>-->
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="{{_twoSelected(selectedCounter)}}" restamp>
+                    <div class="menu-element" id="buttons">
+                      <paper-button class="twoCol" raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                  <template is="dom-if" if="{{_multipleSelected(selectedCounter)}}" restamp>
+                    <div class="menu-element" id="buttons">
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                    </div>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </template>
+          <div id="zoom">
+            <paper-icon-button id="clearBtn" icon="av:not-interested" on-tap="_onClearBtnTap" title="Clear Ranges"></paper-icon-button>
+            <paper-icon-button icon="zoom-in" on-click="zoomIn"></paper-icon-button>
+            <p id="scale-label">{{getScale(_scale)}}</p>
+            <paper-icon-button icon="zoom-out" on-click="zoomOut"></paper-icon-button>
+          </div>
+        </div>
+        <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>
+      </div>
+      <div id="paper-container"><div id="paper"></div></div>
+    </div>
   </template>
 
   <script>
@@ -24,40 +161,48 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQPresenterBehaviour,
-        ASQ.diagramQCommonBehaviour
+        ASQ.diagramQBehavior
       ],
 
-      listeners: {},
-
-      keyBindings: {},
-
-      hostAttributes: {},
-
       properties: {
+
+        type: {
+          type: String,
+          value: 'erd',
+        },
+
         /**
-         * width in pixels of the paper container element
+         * width in pixels of the diagram
          */
         width: {
           type: Number,
+          value: 600,
           notify: true,
-          reflectToAttribute: true,
-          observer: '_setSize'
+          reflectToAttribute: true
         },
 
         /**
-         * default height in pixels of the paper element
+         * height in pixels of the diagram
          */
         height: {
           type: Number,
+          value: 600,
           notify: true,
-          reflectToAttribute: true,
-          observer: '_setSize'
+          reflectToAttribute: true
         },
 
         /**
-         * diagram value
+         * Disable or enable the element. Changes will be also
+         * propagated to inner propagated elements.
          */
+        disabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true,
+          observer: "_onDisabled"
+        },
+
         value: {
           type: Object,
           notify: true,
@@ -84,9 +229,6 @@
           reflectToAttribute: true
         },
 
-        /**
-         * The scale value
-         */
         _scale: {
           type: Number,
           value: 1,
@@ -95,7 +237,7 @@
         },
 
         /**
-         * The _erd object
+         * The uml object
          *  @type {Object}
          */
         _erd: {
@@ -103,47 +245,136 @@
           notify: true,
           reflectToAttribute: true
         },
+
+        /**
+         * Obj containing subtypes for every supported type
+         */
+        _shapes: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Object containing all created states
+         *  @type {Object}
+         */
+        _states: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Object containing all created relations
+         *  @type {Object}
+         */
+        _relations: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The selected state/relation
+         */
+        selected: {
+          type: Object,
+          value: null,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The selected state/relation copy for undo operation
+         */
+        selectedCopy: {
+          type: Object,
+          value: null,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The selected state
+         */
+        multiModeEnabled: {
+          type: Boolean,
+          value: false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * Array of selected cells
+         */
+        selectedElements: {
+          type: Array,
+          value: [],
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * True is multiple elements are selected
+         */
+        selectedCounter:{
+          type: Number,
+          value: 0,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        /**
+         * The style of cell highlighter
+         */
+        highlighter: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _showStateContent:{
+          type: Boolean,
+          value:false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _showLinkContent:{
+          type: Boolean,
+          value:false,
+          notify: true,
+          reflectToAttribute: true
+        },
+
+        _showEditContent:{
+          type: Boolean,
+          value:true,
+          notify: true,
+          reflectToAttribute: true
+        }
       },
 
       attached: function () {
         this.async(function () {
-          this._init();
+          this.initialize()
         });
       },
-      /**
-       * set up phase
-       */
-      _init: function () {
-        this._graph = new joint.dia.Graph();
-        this._paper = new joint.dia.Paper({
-          el: this.$.paper,
-          width: this.width,
-          height: this.height,
-          model: this._graph,
-          gridSize: 10,
-          drawGrid:true,
-          interactive: false
-        });
-        this._erd = joint.shapes.erd;
 
-        this._defaultWidth = this.width;
-        this._defaultHeight = this.height;
+      _not_ISA_Relationship: function(type){
+        return type && !type.includes("ISA");
       },
 
-      _setSize: function (newVal,oldVal) {
-        this._computeSubmissionSize(this.height, this.width);
-      },
-
-      _fillGraph: function (value, offset) {
-
+      _fillGraph: function (value) {
         var dict = {};
 
         value.states.forEach(function(s){
           var position = {
-            x: s.state.position.x - offset.offX,
-            y: s.state.position.y - offset.offY
+            x: s.state.position.x,
+            y: s.state.position.y
           };
-          dict[s.label] = this._addState(s.type, position, s.label);
+          dict[s.label] = this.addState( { type: s.type, position: position, label: s.label } );
         }.bind(this));
 
         value.relations.forEach(function(rel){
@@ -156,101 +387,262 @@
             tLabel = rel.labels.tLabel
           }
 
-          var rId = this.addRelation( { id: sourceId }, { id: targetId }, sLabel, tLabel );
-          if(rel.vertices){
-            var vertices = [];
-            rel.vertices.forEach(function (v) {
-              vertices.push({
-                x : v.x - offset.offX,
-                y : v.y - offset.offY
-              });
-            });
+          var rId = this.addRelation( { source : { id: sourceId }, target : { id: targetId }, sLabel: sLabel, tLabel : tLabel });
 
-            this._graph.getCell(rId).set('vertices',vertices)
-          }
+          if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
         }.bind(this));
-
       },
 
-      _addState: function (type, position, optionalLabel) {
-        var label = optionalLabel || "\"Label\"";
-        var state = this._createState(type, label, { position: position });
-        this._graph.addCell(state);
-        return state.id;
+      /**
+       * State creation
+       *
+       * TODO: "clone state" button
+       */
+
+      newState: function (e) {
+        var type = Polymer.dom(e).localTarget.closest('paper-button').getAttribute('create');
+
+        var position = this._getNewStatePosition(this);
+        var id = this.addState( { type: type, position: position } );
+
+        this._singleSelect(this._graph.getCell(id).findView(this._paper));
+      },
+
+      _getStateFormData: function (typeChange) {
+        var el = this.$$('div[class="menu edit"] div[class=menu-content]');
+
+        var type = el.querySelector('div[id=type] paper-dropdown-menu').value;
+        var label;
+        if(this._not_ISA_Relationship(type)){
+          label = el.querySelector('div[id=label] paper-input');
+          label = label? label.value : "\"Label\"";
+        } else
+          label = 'ISA';
+
+        if(!typeChange) {
+          if (this._showStateErrorMessage( el, { type: type, label: label } ) )
+            return;
+        }
+        return { type:type, label:label }
+      },
+
+      addState: function (data) {
+
+        var state = { position: data.position };
+        var label = data.label || "\"Label\"";
+        var s = this._createState(data.type, label, state);
+
+        this._graph.addCell(s);
+        this._states[s.id] = { type: data.type, cid:s.cid, label:label, state:state };
+
+        s.on('change:position', this._onStatePositionChanged.bind(this)); // for handling position changes
+        return s.id;
       },
 
       _createState: function (type, label, state) {
-        state.attrs = this._getERDAttrs(type, label);
+        var s = _.cloneDeep(state);
+        s.attrs = this._getERDAttrs(type, label);
 
         if (type === 'Entity')
-          return new this._erd.Entity(state);
+          return new this._erd.Entity(s);
         else if (type === 'Weak Entity')
-          return new this._erd.WeakEntity(state);
+          return new this._erd.WeakEntity(s);
         else if (type === 'Relationship')
-          return new this._erd.Relationship(state);
+          return new this._erd.Relationship(s);
         else if (type === 'Identifying Relationship')
-          return new this._erd.IdentifyingRelationship(state);
+          return new this._erd.IdentifyingRelationship(s);
         else if (type === 'ISA')
-          return new this._erd.ISA(state);
+          return new this._erd.ISA(s);
         else if (type === 'Attribute')
-          return new this._erd.Normal(state);
+          return new this._erd.Normal(s);
         else if (type === 'Key')
-          return new this._erd.Key(state);
+          return new this._erd.Key(s);
         else if (type === 'Multivalued')
-          return new this._erd.Multivalued(state);
+          return new this._erd.Multivalued(s);
         else if (type === 'Derived')
-          return new this._erd.Derived(state);
+          return new this._erd.Derived(s);
       },
 
-      addRelation: function (source, target, sLabel, tLabel) {
+      /**
+       * Relation creation
+       */
 
-        var relation = this._createRelation({source: source, target: target}).set(this._createLabels(sLabel,tLabel));
-        this._graph.addCell(relation);
-        return relation.id;
+      _getRelationFormData: function () {
+        var el = this.$$('div[class="menu edit"] div[class=menu-content]');
+
+        var sLabel = el.querySelector('div[id=source] div[id=label] paper-input').value;
+        var tLabel = el.querySelector('div[id=target] div[id=label] paper-input').value;
+
+        return { sLabel:sLabel, tLabel:tLabel}
+      },
+
+      addRelation: function (data) {
+        var relation = this._relationPropertiesToJSONObj(data.source, data.target);
+
+        var r = this._createRelation(relation).set(this._createLabels(data.sLabel,data.tLabel));
+        this._graph.addCell(r);
+        this._relations[r.id] = {'cid': r.cid, 'relation': relation, labels: {sLabel: data.sLabel, tLabel: data.tLabel}};
+
+        r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
+        return r.id;
       },
 
       _createRelation: function (relation) {
         return new this._erd.Line(relation);
       },
 
-      reload: function(){
-        this._valueChanged(this.value)
+      _connect: function (source, target) {
+        return this.addRelation({ source: source, target: target });
+      },
+
+      _resetNewLinkAttr: function (rel) {
+        delete rel.attributes.attrs;
+      },
+
+      /**
+       * State edit
+       */
+
+      _onStateLabelChanged: function(e){
+        this.selected.model.attr('text/text',e.target.value)
+        this._states[this.selected.model.id].label = e.target.value
+        this._hideNewLinkButton()
+      },
+
+      _onTypeChanged: function (evt, el) {
+        var newType = el.value;
+        var oldType = this.selected.model.get('type').includes("Normal")? "Attribute" : this.selected.model.get('type');
+        if(newType){
+          if(oldType.toLowerCase().replace(/erd./g, '') !== newType.toLowerCase().replace(/\s/g, '')){
+            this._changeCellType();
+          }
+        }
+      },
+
+      _copyRelationsAll: function (oldId, newId) {
+        var relations = this._findRelations(this.selected.model.get('id'), this._relations);
+
+        relations.forEach(function (r) {
+          var id;
+          if(this._relations[r].relation.source.id === oldId)
+            id = this.addRelation( { source: { id:newId }, target: this._relations[r].relation.target, sLabel: this._relations[r].labels.sLabel, tLabel: this._relations[r].labels.tLabel } );
+          else
+            id = this.addRelation( { source: this._relations[r].relation.source, target: { id:newId }, sLabel: this._relations[r].labels.sLabel, tLabel: this._relations[r].labels.tLabel } );
+
+          if(id)
+            this._copyVertices(r, id);
+
+          if(this._tempNextRel && r === this._tempNextRel.model.get('id')){
+            this._tempNextRel = this._graph.getCell(id).findView(this._paper);
+          }
+        }.bind(this))
+      },
+
+      _renderAfterChange: function () {
+        this.selected.render();
+        this.selected.unhighlight(null, this.highlighter);
+        this.selected.highlight(null, this.highlighter);
+      },
+
+      _undoChanges: function(){
+        var data = this._getERDModelData(this.selectedCopy, this._isType('state', this.selected));
+        if(this._isType('state', this.selected)){
+          var newType = this.selected.model.get('type').includes('Normal')? 'Attribute' : this.selected.model.get('type');
+          if(newType.toLowerCase().replace(/erd./g, '') === (data.type.toLowerCase().replace(/\s/g, ''))){
+            if(this._not_ISA_Relationship(newType)){
+              this.selected.model.attr('text/text',data.label);
+              this._states[this.selected.model.id].label = data.label;
+            }
+          } else {
+            this._updateType(data);
+          }
+        }
+        else {
+          this.selected.model.set('source', data.source);
+          this.selected.model.set('target', data.target);
+
+          this._setSourceLabel(data.sLabel);
+          this._setTargetLabel(data.tLabel);
+          this._renderAfterChange();
+        }
+        this.selectedCopy = null;
+      },
+
+      _onRelationLabelChanged: function (e) {
+
+        var pInput = e.target;
+        if(pInput){
+          if(pInput.id === "sLabel"){
+            this._setSourceLabel(pInput.value);
+          } else if(pInput.id === "tLabel"){
+            this._setTargetLabel(pInput.value);
+          }
+          this._renderAfterChange();
+        }
+      },
+
+      _setSourceLabel: function(value){
+        this.selected.model.attributes.labels[0].attrs.text.text = value;
+        this._relations[this.selected.model.id].labels.sLabel = value;
+      },
+
+      _setTargetLabel: function(value){
+        this.selected.model.attributes.labels[1].attrs.text.text = value;
+        this._relations[this.selected.model.id].labels.tLabel = value;
+      },
+
+      /**
+       * Helper functions
+       */
+
+      _getIndexOfItemType: function (type, obj) {
+        if(type){
+          var array = this.customShapesObjToArray(obj);
+          if(type.includes("Normal"))
+            type = "Attribute";
+          for(var i = 0; i < array.length; i++){
+            if(type.toLowerCase().replace(/erd./g, '') === (array[i].toLowerCase().replace(/\s/g, '')))
+              return i;
+          }
+        }
+      },
+
+      customShapesObjToArray: function (obj) {
+        var array=[];
+        Object.keys(obj).forEach(function (arr) {
+          array.push("label");
+          obj[arr].forEach(function (el) {
+            array.push(el);
+          });
+        });
+        return array;
+      },
+
+      _getIndexOfItemRel: function (id, obj) {
+        var array = Object.keys(obj);
+        for(var i = 0; i < array.length; i++){
+          if(id === array[i])
+            return i;
+        }
+      },
+
+      getStateLabel: function (selected) {
+        if(selected)
+          return selected.model.attr('text/text');
+      },
+
+      getRelationLabel: function (selected, which) {
+        if(selected) {
+          var labels = selected.model.get('labels');
+          if(labels){
+            if (which === 'source')
+              return labels[0].attrs.text.text;
+            else if(which === 'target')
+              return labels[1].attrs.text.text;
+          }
+        }
       }
 
-
-      // _valueChanged: function (newVal,oldVal) {
-      //   this.clear();
-      //   if(newVal){
-      //     this.width = this._defaultWidth;
-      //     this.height = this._defaultHeight;
-      //     var offset = this._setPaperSize(this.value.diagram);
-      //     this.fillGraph(this.value.diagram, offset)
-      //   }
-      // },
-
-      // scale: function (value) {
-      //   var s = Math.round((this._scale*value)* 1000)/1000;
-      //   if(s>=this._minScale){
-      //     this._scale=s;
-      //     this._paper.scale(s, s);
-      //     this.height*=value;
-      //     this.width*=value;
-      //   } else {
-      //     this._resetSize();
-      //   }
-      // },
-      //
-      // _resetSize: function () {
-      //   this._scale=this._minScale;
-      //   this._paper.scale(this._scale, this._scale);
-      //   this.height=this._defaultHeight;
-      //   this.width=this._defaultWidth;
-      // },
-      //
-      // clear: function(){
-      //   this._resetSize();
-      //   this._graph.clear();
-      // }
 
     });
   </script>

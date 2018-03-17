@@ -33,68 +33,21 @@
                 <div class="menu-content">
                   <iron-label class="group-label"><span>Entities</span></iron-label>
                   <div class="menu-element entities" id="buttons">
-                    <paper-button class="newERDBtn" create="Entity" raised on-click="newState"><div><img src="../../img/erd/entity.png" height="100%" width="100%"></div><div></div></paper-button>
-                    <paper-button class="newERDBtn" create="Weak Entity" raised on-click="newState"><div><img src="../../img/erd/weakEntity.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Entity" raised on-click="newState"><div><img src="../../img/erd/entity.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Weak Entity" raised on-click="newState"><div><img src="../../img/erd/weakEntity.png" height="100%" width="100%"></div><div></div></paper-button>
                   </div>
                   <iron-label class="group-label"><span>Relationships</span></iron-label>
                   <div class="menu-element relationships" id="buttons">
-                    <paper-button class="newERDBtn" create="Relationship" raised on-click="newState"><div><img src="../../img/erd/relationship.png" height="100%" width="100%"></div><div></div></paper-button>
-                    <paper-button class="newERDBtn" create="Identifying Relationship" raised on-click="newState"><div><img src="../../img/erd/identifyingRelationship.png" height="100%" width="100%"></div><div></div></paper-button>
-                    <paper-button class="newERDBtn" create="ISA" raised on-click="newState"><div><img src="../../img/erd/isa.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Relationship" raised on-click="newState"><div><img src="../../img/erd/relationship.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Identifying Relationship" raised on-click="newState"><div><img src="../../img/erd/identifyingRelationship.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="ISA" raised on-click="newState"><div><img src="../../img/erd/isa.png" height="100%" width="100%"></div><div></div></paper-button>
                   </div>
                   <iron-label class="group-label"><span>Attributes</span></iron-label>
                   <div class="menu-element attributes" id="buttons">
-                    <paper-button class="newERDBtn" create="Attribute" raised on-click="newState"><div><img src="../../img/erd/attribute.png" height="100%" width="100%"></div><div></div></paper-button>
-                    <paper-button class="newERDBtn" create="Key" raised on-click="newState"><div><img src="../../img/erd/key.png" height="100%" width="100%"></div><div></div></paper-button>
-                    <paper-button class="newERDBtn" create="Multivalued" raised on-click="newState"><div><img src="../../img/erd/multivalued.png" height="100%" width="100%"></div><div></div></paper-button>
-                    <paper-button class="newERDBtn" create="Derived" raised on-click="newState"><div><img src="../../img/erd/derived.png" height="100%" width="100%"></div><div></div></paper-button>
-                  </div>
-                </div>
-              </template>
-            </div>
-            <div class="menu link">
-              <div class="expand-button">
-                <paper-button raised on-click="_expandRelationMenu"><iron-icon icon="{{_getIcon(_showLinkContent)}}"></iron-icon><h4 class="button-label">CONNECT</h4></paper-button>
-              </div>
-              <template is="dom-if" if="{{_showLinkContent}}" restamp>
-                <div class="menu-content">
-                  <div class="menu-element" id="source">
-                    <paper-dropdown-menu class="drop-down" label="Source" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
-                      <paper-listbox class="dropdown-content">
-                        <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                          <paper-item id="{{item.id}}">{{item.text}}</paper-item>
-                        </template>
-                      </paper-listbox>
-                    </paper-dropdown-menu>
-                    <div id="label">
-                      <iron-label>
-                        <span>Label</span>
-                      </iron-label>
-                      <paper-input></paper-input>
-                    </div>
-                  </div>
-                  <div class="menu-element" id="target">
-                    <paper-dropdown-menu class="drop-down" label="Target" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
-                      <paper-listbox class="dropdown-content">
-                        <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                          <paper-item id="{{item.id}}">{{item.text}}</paper-item>
-                        </template>
-                      </paper-listbox>
-                    </paper-dropdown-menu>
-                    <div id="label">
-                      <iron-label>
-                        <span>Label</span>
-                      </iron-label>
-                      <paper-input></paper-input>
-                    </div>
-                  </div>
-                  <div class="menu-element error-message" id="error">
-                    <p>Submission not valid:</p>
-                    <p id="whichError">- error message -</p>
-                  </div>
-                  <div class="menu-element" id="buttons">
-                    <paper-button raised on-click="newRelation"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
-                    <paper-button raised on-click="_expandRelationMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                    <paper-button class="oneCol" create="Attribute" raised on-click="newState"><div><img src="../../img/erd/attribute.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Key" raised on-click="newState"><div><img src="../../img/erd/key.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Multivalued" raised on-click="newState"><div><img src="../../img/erd/multivalued.png" height="100%" width="100%"></div><div></div></paper-button>
+                    <paper-button class="oneCol" create="Derived" raised on-click="newState"><div><img src="../../img/erd/derived.png" height="100%" width="100%"></div><div></div></paper-button>
                   </div>
                 </div>
               </template>
@@ -141,31 +94,17 @@
 
                     <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
                       <div class="menu-element" id="source">
-                        <paper-dropdown-menu class="drop-down" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setDropdownMenuHeight">
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItemRel(selected.model.attributes.source.id, _states)}}">
-                            <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                              <paper-item id="[[item.id]]">[[item.text]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
                         <div id="label">
                           <iron-label>
-                            <span>Label</span>
+                            <span>Source Label</span>
                           </iron-label>
                           <paper-input id="sLabel" value="{{getRelationLabel(selected, 'source')}}" on-input="_onRelationLabelChanged"></paper-input>
                         </div>
                       </div>
                       <div class="menu-element" id="target">
-                        <paper-dropdown-menu class="drop-down" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setDropdownMenuHeight">
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItemRel(selected.model.attributes.target.id, _states)}}">
-                            <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                              <paper-item id="[[item.id]]">[[item.text]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
                         <div id="label">
                           <iron-label>
-                            <span>Label</span>
+                            <span>Target Label</span>
                           </iron-label>
                           <paper-input id="tLabel" value="{{getRelationLabel(selected, 'target')}}" on-input="_onRelationLabelChanged"></paper-input>
                         </div>
@@ -178,25 +117,25 @@
                     </div>
                     <!--Buttons-->
                     <div class="menu-element" id="buttons">
-                      <paper-button raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
                       <!--<template is="dom-if" if="{{_isType('state', selected)}}" restamp>-->
                         <!--<paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>-->
                       <!--</template>-->
-                      <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
-                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
                   <template is="dom-if" if="{{_twoSelected(selectedCounter)}}" restamp>
                     <div class="menu-element" id="buttons">
-                      <paper-button raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
-                      <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
-                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
                   <template is="dom-if" if="{{_multipleSelected(selectedCounter)}}" restamp>
                     <div class="menu-element" id="buttons">
-                      <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
-                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
                 </template>
@@ -211,7 +150,7 @@
         </div>
         <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>
       </div>
-      <div id="paper-container"><div id="paper" is-disabled="false"></div></div>
+      <div id="paper-container"><div id="paper"></div></div>
     </div>
 
   </template>
@@ -222,8 +161,7 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQViewerBehaviour,
-        ASQ.diagramQCommonBehaviour
+        ASQ.diagramQBehavior
       ],
 
       properties: {
@@ -464,8 +402,12 @@
         this._graph.addCell(s);
         this._states[s.id] = { type: data.type, cid:s.cid, label:label, state:state };
 
-        s.on('change:position', this._onStatePositionChanged.bind(this)); // for handling position changes
+        s.on('change:position', this._onStatePositionChanged.bind(this));
         return s.id;
+      },
+
+      _addInitialState: function (state) {
+        return this.addState( { type: state.type, position: state.state.position, label: state.label } );
       },
 
       _createState: function (type, label, state) {
@@ -497,15 +439,12 @@
        */
 
       _getRelationFormData: function () {
-        var el = this.$$('div[class="menu link"] div[class=menu-content]') || this.$$('div[class="menu edit"] div[class=menu-content]');
+        var el = this.$$('div[class="menu edit"] div[class=menu-content]');
 
-        var source = el.querySelector('div[id=source] paper-dropdown-menu').selectedItem;
         var sLabel = el.querySelector('div[id=source] div[id=label] paper-input').value;
-        var target = el.querySelector('div[id=target] paper-dropdown-menu').selectedItem;
         var tLabel = el.querySelector('div[id=target] div[id=label] paper-input').value;
 
-        if (this._showRelationErrorMessage(el, { source: source, target: target } )) return;
-        return { source: {id: source.id}, sLabel:sLabel, target: {id: target.id }, tLabel:tLabel}
+        return { sLabel:sLabel, tLabel:tLabel}
       },
 
       addRelation: function (data) {
@@ -515,9 +454,15 @@
         this._graph.addCell(r);
         this._relations[r.id] = {'cid': r.cid, 'relation': relation, labels: {sLabel: data.sLabel, tLabel: data.tLabel}};
 
-        // r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
-        r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
+        r.on('remove', this._onRelationDeleted.bind(this));
         return r.id;
+      },
+
+      _addInitialRelation: function (sourceId, targetId, rel) {
+        var sLabel = rel.labels? rel.labels.sLabel : '',
+          tLabel = rel.labels? rel.labels.tLabel : '';
+
+        return this.addRelation( { source: { id: sourceId }, target: { id: targetId }, sLabel: sLabel, tLabel: tLabel } );
       },
 
       _createRelation: function (relation) {
@@ -571,14 +516,12 @@
         }.bind(this))
       },
 
-      /* for both states and relations */
       _renderAfterChange: function () {
         this.selected.render();
         this.selected.unhighlight(null, this.highlighter);
         this.selected.highlight(null, this.highlighter);
       },
 
-      /* for both states and relations */
       _undoChanges: function(){
         var data = this._getERDModelData(this.selectedCopy, this._isType('state', this.selected));
         if(this._isType('state', this.selected)){
@@ -629,12 +572,6 @@
       /**
        * Helper functions
        */
-
-      _mapToArrayOfObjects: function(obj){
-        return Object.keys(obj).map(function(key) {
-          return {id: key, text: obj[key].label};
-        });
-      },
 
       _getIndexOfItemType: function (type, obj) {
         if(type){

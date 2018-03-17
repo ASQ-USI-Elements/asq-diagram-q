@@ -63,50 +63,8 @@
                     <p id="whichError">- error message -</p>
                   </div>
                   <div class="menu-element" id="buttons">
-                    <paper-button raised on-click="newState"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CREATE</h4></div></paper-button>
-                    <paper-button raised on-click="_expandStateMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
-                  </div>
-                </div>
-              </template>
-            </div>
-            <div class="menu link">
-              <div class="expand-button">
-                <paper-button raised on-click="_expandRelationMenu"><iron-icon icon="{{_getIcon(_showLinkContent)}}"></iron-icon><h4 class="button-label">CONNECT</h4></paper-button>
-              </div>
-              <template is="dom-if" if="{{_showLinkContent}}" restamp>
-                <div class="menu-content">
-                  <div class="menu-element" id="type">
-                    <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
-                      <paper-listbox class="dropdown-content">
-                        <template is="dom-repeat" items="{{_shapes.relations}}" restamp>
-                          <paper-item type="{{item}}">{{item}}</paper-item>
-                        </template>
-                      </paper-listbox>
-                    </paper-dropdown-menu>
-                  </div>
-                  <div class="menu-element" id="relation">
-                    <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
-                      <paper-listbox class="dropdown-content">
-                        <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                          <paper-item id="{{item.id}}">{{item.text}}</paper-item>
-                        </template>
-                      </paper-listbox>
-                    </paper-dropdown-menu>
-                    <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
-                      <paper-listbox class="dropdown-content">
-                        <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                          <paper-item id="{{item.id}}">{{item.text}}</paper-item>
-                        </template>
-                      </paper-listbox>
-                    </paper-dropdown-menu>
-                  </div>
-                  <div class="menu-element error-message" id="error">
-                    <p>Submission not valid:</p>
-                    <p id="whichError">- error message -</p>
-                  </div>
-                  <div class="menu-element" id="buttons">
-                    <paper-button raised on-click="newRelation"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
-                    <paper-button raised on-click="_expandRelationMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                    <paper-button class="twoCol" raised on-click="newState"><div><iron-icon icon="note-add"></iron-icon></div><div><h4 class="button-label">CREATE</h4></div></paper-button>
+                    <paper-button class="twoCol" raised on-click="_expandStateMenu"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                   </div>
                 </div>
               </template>
@@ -182,26 +140,6 @@
                         </table>
                       </div>
                     </template>
-                    <!--Source and Target-->
-                    <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
-                      <div class="menu-element" id="relation">
-                        <paper-dropdown-menu class="drop-down" id="source" label="Source" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setDropdownMenuHeight">
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.source.id, _states)}}">
-                            <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                              <paper-item id="[[item.id]]">[[item.text]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
-
-                        <paper-dropdown-menu class="drop-down" id="target" label="Target" horizontal-align="left" on-selected-item-changed="_changeRelationSourceAndTarget" on-opened-changed="setDropdownMenuHeight">
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.target.id, _states)}}">
-                            <template is="dom-repeat" items="{{_mapToArrayOfObjects(_states)}}">
-                              <paper-item id="[[item.id]]">[[item.text]]</paper-item>
-                            </template>
-                          </paper-listbox>
-                        </paper-dropdown-menu>
-                      </div>
-                    </template>
                     <!--error-->
                     <div class="menu-element error-message" id="error">
                       <p>Submission not valid:</p>
@@ -209,24 +147,24 @@
                     </div>
                     <!--Buttons-->
                     <div class="menu-element" id="buttons">
-                      <paper-button raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
                       <!--<template is="dom-if" if="{{_isType('state', selected)}}" restamp>-->
                         <!--<paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>-->
                       <!--</template>-->
-                      <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
-                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
                   <template is="dom-if" if="{{_twoSelected(selectedCounter)}}" restamp>
                     <div class="menu-element" id="buttons">
-                      <paper-button raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
-                      <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
-                      <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_connectSelected"><div><iron-icon icon="link"></iron-icon></div><div><h4 class="button-label">CONNECT</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
                   <template is="dom-if" if="{{_multipleSelected(selectedCounter)}}" restamp>
                     <div class="menu-element" id="buttons">
-                      <paper-button raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
+                      <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                       <paper-button raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
                   </template>
@@ -242,7 +180,7 @@
         </div>
         <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>
       </div>
-      <div id="paper-container"><div id="paper" disabled="{{disabled}}"></div></div>
+      <div id="paper-container"><div id="paper"></div></div>
     </div>
 
   </template>
@@ -253,8 +191,7 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQViewerBehaviour,
-        ASQ.diagramQCommonBehaviour
+        ASQ.diagramQBehavior
       ],
 
       properties: {
@@ -507,6 +444,10 @@
         return s.id;
       },
 
+      _addInitialState: function (state) {
+        return this.addState( { type: state.type , name: state.state.name, attributes: state.state.attributes, methods: state.state.methods, position: state.state.position } );
+      },
+
       _createState: function (type, state) {
         var s = _.cloneDeep(state);
         s.attrs = this._getUMLAttrs(type);
@@ -531,20 +472,11 @@
         if(el.querySelector('div[id=type] paper-dropdown-menu').selectedItem)
           type = el.querySelector('div[id=type] paper-dropdown-menu').selectedItem.type;
 
-        var source = el.querySelector('div[id=relation] paper-dropdown-menu[id=source]').selectedItem;
-        if(source) source = { id : source.id};
-        var target = el.querySelector('div[id=relation] paper-dropdown-menu[id=target]').selectedItem;
-        if(target) target = { id : target.id};
-
-        console.log(type, source, target)
         if(!typeChange) {
-          console.log('if one')
-          if (this._showRelationErrorMessage( el, { type: type, source: source, target: target } )) return;
+          if (this._showRelationErrorMessage( el, { type: type } )) return;
         }
-        if(!source) source = this.selected.model.get('source');
-        if(!target)  target = this.selected.model.get('target');
 
-        return { type:type, source:source, target: target }
+        return { type:type, source:this.selected.model.get('source'), target: this.selected.model.get('target') }
       },
 
       addRelation: function (data) {
@@ -557,6 +489,10 @@
         // r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
         return r.id;
+      },
+
+      _addInitialRelation: function (sourceId, targetId, rel) {
+        return this.addRelation( { type: rel.type, source: { id: sourceId }, target: { id: targetId } } );
       },
 
       _createRelation: function (type, relation) {
@@ -581,8 +517,7 @@
       },
 
       _resetNewLinkAttr: function (rel) {
-        var attr = this._getDefaultUMLRelAttrs();
-        rel.set('attrs', attr);
+        rel.set('attrs', this._getDefaultUMLRelAttrs());
       },
 
       /**
@@ -739,12 +674,6 @@
         for (var i = 0; i < table.rows.length; i++) {
           table.rows[i].querySelector('td').innerHTML = (i + 1) + ':';
         }
-      },
-
-      _mapToArrayOfObjects: function(obj){
-        return Object.keys(obj).map(function(key) {
-          return {id: key, text: obj[key].state.name};
-        });
       },
 
       _getIndexOfItem: function (item, array) {

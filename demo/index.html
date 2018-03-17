@@ -33,28 +33,124 @@
   <body unresolved>
 
     <div>
-      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram1" type="uml" width="600" height="500">
+
+      <asq-diagram-q id="bpmn-demo-viewer" uid="" name="diagram0" type="bpmn" width="800" height="500">
+        <asq-stem>This is a BPMN Exercise</asq-stem>
+      </asq-diagram-q>
+
+      <asq-diagram-q id="bpmn-demo-presenter" uid="" name="diagram1" type="bpmn" role="presenter" width="800" height="500">
+        <asq-stem>This is a BPMN Exercise</asq-stem>
+      </asq-diagram-q>
+
+      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram2" type="uml" width="600" height="500">
         <asq-stem>This is a UML Exercise</asq-stem>
       </asq-diagram-q>
 
-
-
-      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram2" type="uml" role="presenter" width="600" height="500">
+      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram3" type="uml" role="presenter" width="800" height="500">
         <asq-stem>This is a UML Exercise</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram3" type="erd" width="600" height="500">
+      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram4" type="erd" width="600" height="500">
         <asq-stem>This is a ERD Exercise</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram4" type="erd" role="presenter" width="600" height="500">
+      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram5" type="erd" role="presenter" width="600" height="500">
         <asq-stem>This is a ERD Exercise</asq-stem>
       </asq-diagram-q>
+
+
 
     </div>
 
     <script>
 
+      var bmpnDiagram = {
+        states: [
+          {
+            state: {
+              position: {x: 20, y: 20},
+              size: { height:300, width:200},
+              attrs: {
+                '.myClass .lane-body': {
+                  fill: 'yellow',
+                  'fill-opacity': 0.2
+                },
+                '.header': {
+                  fill: '#16A',
+                  'fill-opacity': 0.3
+                },
+                '.lane-header': {
+                  fill: '#16A',
+                  'fill-opacity': 0.1
+                },
+                '.blackbox-label': {
+                  visibility: 'hidden'
+                }
+              },
+              lanes: {
+                label: 'pool', sublanes: [
+                  { label: 'lane 1', name: 'myClass' },
+                  { label: 'lane 2', sublanes: [
+                      { label: 'sublane 1' },
+                      { label: 'sublane 2' }
+                    ]}
+                ]
+              }
+            },
+            id: "43358f93-a36c-4218-8a37-eb0826cc6923",
+            type: 'Pool'
+          },
+          {
+            state: {
+              position: {x: 220, y: 50},
+              name: 'Gateway1',
+              type: 'inclusive'
+            },
+            id: "43358f93-a36c-4218-8a37-eb0826cc6991",
+            type: 'Gateway'
+          },
+          {
+            state: {
+              position: {x: 410, y: 110},
+              content: 'This is some example content.',
+              icon : "message",
+              type : "transaction",
+              subProcess: true
+            },
+            id: "0b49c377-ead1-46c1-963a-118509aeea29",
+            type: 'Activity'
+          },
+          {
+            state: {
+              position: {x: 260, y: 300},
+              name: 'Event1',
+              type: 'end',
+              subtype: 'parallel-multiple'
+            },
+            id: "0d99f134-59f0-44e4-890a-1561e87d635d",
+            type: 'Event'
+          },
+          {
+            state: {
+              position: {x: 380, y: 250},
+              content: 'Some other content',
+            },
+            id: "43358f93-a36c-4218-8a37-eb0826cc6993",
+            type: 'Annotation'
+          }],
+        relations: [
+          {
+            relation : {
+              source : { name: 'Event1', id: '0d99f134-59f0-44e4-890a-1561e87d635d' },
+              target : { id: '0b49c377-ead1-46c1-963a-118509aeea29' }
+            },
+            type: 'normal',
+            label: 'FlowLabel',
+            vertices: [{x: 420, y: 240}]
+          }
+        ],
+        type: 'bpmn'
+      };
       var umlDiagram = {
         states: [
           {
@@ -161,7 +257,34 @@
 
       document.addEventListener('WebComponentsReady', function (evt) {
 
-        // UML
+        var bpmn_viewer = document.getElementById('bpmn-demo-viewer');
+        bpmn_viewer.value = bmpnDiagram;
+
+        var bpmn_presenter = document.getElementById('bpmn-demo-presenter');
+        bpmn_presenter.$$('asq-diagram-q-presenter')._submissions = [
+          {
+            answeree: '1234314156',
+            diagram: bmpnDiagram
+          },
+          {
+            answeree: '1234314223',
+            diagram: bmpnDiagram
+          },
+          {
+            answeree: '1234314324',
+            diagram: bmpnDiagram
+          },
+          {
+            answeree: '1234314571',
+            diagram: bmpnDiagram
+          },
+          {
+            answeree: '1234314987',
+            diagram: bmpnDiagram
+          }
+        ];
+
+        // // UML
         var uml_viewer = document.getElementById('uml-demo-viewer');
         uml_viewer.value = umlDiagram;
 
