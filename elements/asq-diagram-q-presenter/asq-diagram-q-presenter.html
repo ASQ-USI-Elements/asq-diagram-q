@@ -34,31 +34,34 @@
     <div id="container">
 
       <div id="app-container">
-        <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
+        <template is="dom-if" if="{{_isDiagramType('uml', type)}}" restamp>
           <asq-diagram-q-presenter-uml
                   role="presenter"
                   uid="[[uid]]"
                   value="[[value]]"
+                  type="uml"
                   disabled="{{disabled}}"
                   width="{{width}}"
                   height="{{height}}">
           </asq-diagram-q-presenter-uml>
         </template>
-        <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
+        <template is="dom-if" if="{{_isDiagramType('erd', type)}}" restamp>
           <asq-diagram-q-presenter-erd
                   role="presenter"
                   uid="[[uid]]"
                   value="[[value]]"
+                  type="erd"
                   disabled="{{disabled}}"
                   width="{{width}}"
                   height="{{height}}">
           </asq-diagram-q-presenter-erd>
         </template>
-        <template is="dom-if" if="{{_isType('bpmn', type)}}" restamp>
+        <template is="dom-if" if="{{_isDiagramType('bpmn', type)}}" restamp>
           <asq-diagram-q-presenter-bpmn
                   role="presenter"
                   uid="[[uid]]"
                   value="[[value]]"
+                  type="bpmn"
                   disabled="{{disabled}}"
                   width="{{width}}"
                   height="{{height}}">
@@ -73,7 +76,7 @@
         <div id="submissionListWrapper" >
           <iron-list id="submissionList" items="[[_submissions]]" as="submission" selection-enabled selected-item="{{_selectedSubmissionItem}}">
             <template>
-              <paper-item>#<span>[[indexPlusOne(index)]]</span>&nbsp;&nbsp;<span>ID:&nbsp;[[submission.answeree]]</span>
+              <paper-item>#<span>[[_inc(index)]]</span>&nbsp;&nbsp;<span>ID:&nbsp;[[submission.answeree]]</span>
               </paper-item>
             </template>
           </iron-list>
@@ -88,60 +91,20 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQBehavior
+        ASQ.diagramQGlobalBehaviour
       ],
 
       properties: {
 
         /**
-         * Type of diagram (default is uml)
-         * options = 'uml', 'er'
+         * Get or set the current input value.
+         *
+         * @attribute value
+         * @type string
+         * @default ''
          */
-        type: {
-          type: String,
-          value: 'uml',
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * width in pixels of the paper element
-         */
-        width: {
-          type: Number,
-          value: 800,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of the paper element
-         */
-        height: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Disable or enable the element. Changes will be also
-         * propagated to inner propagated elements.
-         */
-        disabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Event bus to communicate with ASQ
-         */
-        eventBus: {
-          type: Object,
-          observer: '_eventBusChanged',
-          notify: true
+        value: {
+          observer: '_valueChanged'
         },
 
         _submissions:{
@@ -159,18 +122,16 @@
           notify: true
         },
 
-        /**
-         * Get or set the current input value.
-         *
-         * @attribute value
-         * @type string
-         * @default ''
-         */
-        value: {
-          observer: '_valueChanged'
+        _api : {
+          notify: true
         },
 
-        _api : {
+        /**
+         * Event bus to communicate with ASQ
+         */
+        eventBus: {
+          type: Object,
+          observer: '_eventBusChanged',
           notify: true
         }
 
@@ -247,50 +208,6 @@
             }
             this._submissions = temp;
           }
-      },
-
-      _isType: function (type, thisType) {
-        return type === thisType;
-      },
-
-      indexPlusOne: function(index){
-        return ++index;
-      },
-
-      zoomIn: function () {
-        if(this._api){
-          this._api.scale(1.01);
-        }
-      },
-
-      zoomOut: function () {
-
-        if(this._api){
-          this._api.scale(0.99);
-        }
-      },
-
-      onZoomInPressed: function () {
-        if(!this.mousePressed)
-          this.mousePressed = setInterval(
-            function(){
-              this.zoomIn()
-            }.bind(this), 25);
-      },
-
-      onZoomOutPressed: function () {
-        if(!this.mousePressed)
-          this.mousePressed = setInterval(
-            function(){
-              this.zoomOut()
-            }.bind(this), 25);
-      },
-
-      onZoomReleased: function () {
-        if(this.mousePressed) {
-          clearInterval(this.mousePressed);
-          this.mousePressed = undefined;
-        }
       },
 
       clear: function () {

@@ -104,7 +104,6 @@
                     </div>
                     <!--Buttons-->
                     <div class="menu-element" id="buttons">
-                      <!--<paper-button class="twoCol" raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>-->
                       <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                       <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
@@ -145,200 +144,12 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQBehavior
+        ASQ.diagramQGlobalBehaviour,
+        ASQ.diagramQCommonUIBehaviour,
+        ASQ.diagramQBPMNBehaviour
       ],
 
-      properties: {
-
-        type: {
-          type: String,
-          value: 'bpmn'
-        },
-
-        /**
-         * width in pixels of the diagram
-         */
-        width: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of the diagram
-         */
-        height: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Disable or enable the element. Changes will be also
-         * propagated to inner propagated elements.
-         */
-        disabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true,
-          observer: "_onDisabled"
-        },
-
-        /**
-         * The grap object
-         *  @type {Object}
-         */
-        _graph: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The paper object
-         *  @type {Object}
-         */
-        _paper: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _scale: {
-          type: Number,
-          value: 1,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The uml object
-         *  @type {Object}
-         */
-        _bpmn: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Obj containing subtypes for every supported type
-         */
-        _shapes: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Object containing all created states
-         *  @type {Object}
-         */
-        _states: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Object containing all created relations
-         *  @type {Object}
-         */
-        _relations: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state/relation
-         */
-        selected: {
-          type: Object,
-          value: null,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state/relation copy for undo operation
-         */
-        selectedCopy: {
-          type: Object,
-          value: null,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state
-         */
-        multiModeEnabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Array of selected cells
-         */
-        selectedElements: {
-          type: Array,
-          value: [],
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * True is multiple elements are selected
-         */
-        selectedCounter:{
-          type: Number,
-          value: 0,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The style of cell highlighter
-         */
-        highlighter: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showStateContent:{
-          type: Boolean,
-          value:false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showLinkContent:{
-          type: Boolean,
-          value:false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showEditContent:{
-          type: Boolean,
-          value:true,
-          notify: true,
-          reflectToAttribute: true
-        }
-      },
-
-      attached: function () {
-        this.async(function () {
-          this.initialize();
-        });
-      },
+      properties: {},
 
       /**
        * State creation
@@ -416,7 +227,7 @@
           if(state.hasOwnProperty('name')){
             state.size = state.defaultSize;
           } else if(state.hasOwnProperty('content')){
-            state.size = this._computeJointJsStateSize(cell, state.defaultSize);
+            state.size = this._computeBPMNStateSize(cell, state.defaultSize);
           }
         }
       },
@@ -433,7 +244,7 @@
           state.type = state.type || 'default';
           s.icon = this._gatewayIconsDict(state.type);
 
-          cell = new this._bpmn.Gateway(s);
+          cell = new this._shapes.Gateway(s);
         }
         else if (type === 'Activity'){
 
@@ -449,7 +260,7 @@
           state.subProcess = state.subProcess || false;
           s.subProcess = state.subProcess;
 
-          cell = new this._bpmn.Activity(s);
+          cell = new this._shapes.Activity(s);
         }
         else if (type === 'Event') {
 
@@ -462,7 +273,7 @@
           state.subtype = state.subtype || 'none';
           s.icon = this._eventIconsDict(state.subtype);
 
-          cell = new this._bpmn.Event(s);
+          cell = new this._shapes.Event(s);
         }
         else if (type === 'Annotation') {
 
@@ -471,7 +282,7 @@
 
           s.attrs = { rect: { fill: '#FFFFFF', 'fill-opacity': .5 } };
 
-          cell = new this._bpmn.Annotation(s);
+          cell = new this._shapes.Annotation(s);
         }
 
         else if(type === 'Pool'){
@@ -482,7 +293,7 @@
           state.attrs = state.attrs || {};
           s.attrs = state.attrs;
 
-          cell = new this._bpmn.Pool(s);
+          cell = new this._shapes.Pool(s);
         }
 
         return cell;
@@ -546,7 +357,7 @@
       },
 
       _createRelation: function (relation) {
-          return new this._bpmn.Flow(relation);
+          return new this._shapes.Flow(relation);
       },
 
       _connect: function (source, target) {
@@ -583,7 +394,7 @@
             this.selected.model.set('content', value);
             state.content = value;
 
-            state.size = this._computeJointJsStateSize(this.selected.model, state.defaultSize);
+            state.size = this._computeBPMNStateSize(this.selected.model, state.defaultSize);
           }
         } else{
           if(prop === "label") {
@@ -605,16 +416,16 @@
         var el = evt.target.closest('div[class="menu-element"]');
 
         if(el && val.value !== undefined){
+          var cell = this._states[this.selected.model.get('id')];
+          if(cell){
+            var state = this._states[this.selected.model.get('id')].state;
+            var prop = _.camelCase(evt.target.closest('div[class="menu-element"]').id);
 
-          var state = this._states[this.selected.model.get('id')].state;
-          var prop = evt.target.closest('div[class="menu-element"]').id;
+            state[prop] = val.value;
+            this.selected.model.set(prop, val.value);
 
-          state[_.camelCase(prop)] = val.value;
-          this.selected.model.set(_.camelCase(prop), val.value);
-
-          // this._hideNewLinkButton();
-          this._renderAfterChange();
-          // this._showNewLinkButton(this.selected);
+            this._renderAfterChange();
+          }
         }
       },
 
@@ -646,8 +457,6 @@
           if(newVal !== oldVal){
             var kProp = this._getCellProp(this.selected, prop);
 
-            // console.log(cell, prop, kProp, oldVal, newVal);
-
             var kValue;
 
             if(kProp === 'icon'){
@@ -663,7 +472,7 @@
             this.selected.model.set(kProp, kValue);
 
             if (cell.state && cell.state.hasOwnProperty('content'))
-              cell.state.size = this._computeJointJsStateSize(this.selected.model, cell.state.defaultSize);
+              cell.state.size = this._computeBPMNStateSize(this.selected.model, cell.state.defaultSize);
 
             this._hideNewLinkButton();
             this._renderAfterChange();
@@ -727,7 +536,7 @@
       },
 
       _getCellProperties: function (cell, type) {
-        return this._isType('state', cell)? this._shapes.states[type.toLowerCase().replace('bpmn.','')] : this._shapes.relations[type.toLowerCase().replace('bpmn.','')]
+        return this._isType('state', cell)? this._shapesDict.states[type.toLowerCase().replace('bpmn.','')] : this._shapesDict.relations[type.toLowerCase().replace('bpmn.','')]
       },
 
       _isString: function (cell, prop) {
@@ -780,7 +589,7 @@
         return ! this._singleLine(item)
       },
 
-      _computeJointJsStateSize: function(cell, defaultSize) {
+      _computeBPMNStateSize: function(cell, defaultSize) {
         var content = this.$.paper.querySelector('g[model-id="'+cell.get('id')+'"] div[class="content"]');
 
         cell.set('size', defaultSize);

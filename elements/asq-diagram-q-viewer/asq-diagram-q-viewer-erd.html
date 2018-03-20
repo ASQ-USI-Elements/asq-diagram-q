@@ -65,17 +65,17 @@
                       <!--type-->
                       <div class="menu-element" id="type">
                         <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged" on-opened-changed="setDropdownMenuHeight">
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItemType(selected.model.attributes.type, _shapes.states)}}">
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItemType(selected.model.attributes.type, _shapesDict.states)}}">
                             <paper-item disabled><p class="inner-label">Entities</p></paper-item>
-                            <template is="dom-repeat" items="{{_shapes.states.entities}}" restamp>
+                            <template is="dom-repeat" items="{{_shapesDict.states.entities}}" restamp>
                               <paper-item>[[item]]</paper-item>
                             </template>
                             <paper-item disabled><p class="inner-label">Relationships</p></paper-item>
-                            <template is="dom-repeat" items="{{_shapes.states.relationships}}" restamp>
+                            <template is="dom-repeat" items="{{_shapesDict.states.relationships}}" restamp>
                               <paper-item>[[item]]</paper-item>
                             </template>
                             <paper-item disabled><p class="inner-label">Attributes</p></paper-item>
-                            <template is="dom-repeat" items="{{_shapes.states.attributes}}" restamp>
+                            <template is="dom-repeat" items="{{_shapesDict.states.attributes}}" restamp>
                               <paper-item>[[item]]</paper-item>
                             </template>
                           </paper-listbox>
@@ -161,204 +161,12 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQBehavior
+        ASQ.diagramQGlobalBehaviour,
+        ASQ.diagramQCommonUIBehaviour,
+        ASQ.diagramQERDBehaviour
       ],
 
-      properties: {
-
-        type: {
-          type: String,
-          value: 'erd',
-        },
-
-        /**
-         * width in pixels of the diagram
-         */
-        width: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of the diagram
-         */
-        height: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Disable or enable the element. Changes will be also
-         * propagated to inner propagated elements.
-         */
-        disabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true,
-          observer: "_onDisabled"
-        },
-
-        /**
-         * The grap object
-         *  @type {Object}
-         */
-        _graph: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The paper object
-         *  @type {Object}
-         */
-        _paper: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _scale: {
-          type: Number,
-          value: 1,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The uml object
-         *  @type {Object}
-         */
-        _erd: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Obj containing subtypes for every supported type
-         */
-        _shapes: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Object containing all created states
-         *  @type {Object}
-         */
-        _states: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Object containing all created relations
-         *  @type {Object}
-         */
-        _relations: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state/relation
-         */
-        selected: {
-          type: Object,
-          value: null,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state/relation copy for undo operation
-         */
-        selectedCopy: {
-          type: Object,
-          value: null,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state
-         */
-        multiModeEnabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Array of selected cells
-         */
-        selectedElements: {
-          type: Array,
-          value: [],
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * True is multiple elements are selected
-         */
-        selectedCounter:{
-          type: Number,
-          value: 0,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The style of cell highlighter
-         */
-        highlighter: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showStateContent:{
-          type: Boolean,
-          value:false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showLinkContent:{
-          type: Boolean,
-          value:false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showEditContent:{
-          type: Boolean,
-          value:true,
-          notify: true,
-          reflectToAttribute: true
-        }
-      },
-
-      attached: function () {
-        this.async(function () {
-          this.initialize()
-        });
-      },
-
-      _not_ISA_Relationship: function(type){
-        return type && !type.includes("ISA");
-      },
+      properties: {},
 
       /**
        * State creation
@@ -402,7 +210,7 @@
         this._graph.addCell(s);
         this._states[s.id] = { type: data.type, cid:s.cid, label:label, state:state };
 
-        s.on('change:position', this._onStatePositionChanged.bind(this));
+        s.on('change:position', this._onStatePositionChanged.bind(this)); // for handling position changes
         return s.id;
       },
 
@@ -415,23 +223,23 @@
         s.attrs = this._getERDAttrs(type, label);
 
         if (type === 'Entity')
-          return new this._erd.Entity(s);
+          return new this._shapes.Entity(s);
         else if (type === 'Weak Entity')
-          return new this._erd.WeakEntity(s);
+          return new this._shapes.WeakEntity(s);
         else if (type === 'Relationship')
-          return new this._erd.Relationship(s);
+          return new this._shapes.Relationship(s);
         else if (type === 'Identifying Relationship')
-          return new this._erd.IdentifyingRelationship(s);
+          return new this._shapes.IdentifyingRelationship(s);
         else if (type === 'ISA')
-          return new this._erd.ISA(s);
+          return new this._shapes.ISA(s);
         else if (type === 'Attribute')
-          return new this._erd.Normal(s);
+          return new this._shapes.Normal(s);
         else if (type === 'Key')
-          return new this._erd.Key(s);
+          return new this._shapes.Key(s);
         else if (type === 'Multivalued')
-          return new this._erd.Multivalued(s);
+          return new this._shapes.Multivalued(s);
         else if (type === 'Derived')
-          return new this._erd.Derived(s);
+          return new this._shapes.Derived(s);
       },
 
       /**
@@ -466,7 +274,7 @@
       },
 
       _createRelation: function (relation) {
-          return new this._erd.Line(relation);
+          return new this._shapes.Line(relation);
       },
 
       _connect: function (source, target) {
@@ -516,12 +324,14 @@
         }.bind(this))
       },
 
+      /* for both states and relations */
       _renderAfterChange: function () {
         this.selected.render();
         this.selected.unhighlight(null, this.highlighter);
         this.selected.highlight(null, this.highlighter);
       },
 
+      /* for both states and relations */
       _undoChanges: function(){
         var data = this._getERDModelData(this.selectedCopy, this._isType('state', this.selected));
         if(this._isType('state', this.selected)){

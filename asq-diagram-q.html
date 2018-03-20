@@ -56,19 +56,10 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        // ASQ.diagramQBehavior
+        ASQ.diagramQGlobalBehaviour
       ],
 
       properties: {
-
-        /**
-         * Name of 'this' obj
-         */
-        name: {
-          type: String,
-          notify: true,
-          reflectToAttribute: true
-        },
 
         _supported_types : {
           type: Array,
@@ -89,42 +80,11 @@
         },
 
         /**
-         * width in pixels of the diagram
-         */
-        width: {
-          type: Number,
-          value: 800,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of the diagram
-         */
-        height: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
          * An optional initial set of states/relations.
          */
         value: {
           type: Object,
           notify: true
-        },
-
-        /**
-         * Disable or enable the element. Changes will be also
-         * propagated to inner propagated elements.
-         */
-        disabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true
         },
 
         /**

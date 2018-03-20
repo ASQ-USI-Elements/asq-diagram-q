@@ -40,7 +40,7 @@
                   <div class="menu-element" id="type">
                     <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-opened-changed="setDropdownMenuHeight">
                       <paper-listbox class="dropdown-content">
-                        <template is="dom-repeat" items="{{_shapes.states}}" restamp>
+                        <template is="dom-repeat" items="{{_shapesDict.states}}" restamp>
                           <paper-item type="{{item}}">{{item}}</paper-item>
                         </template>
                       </paper-listbox>
@@ -91,16 +91,16 @@
                     <div class="menu-element" id="type">
                       <paper-dropdown-menu class="drop-down" label="Type" horizontal-align="left" on-value-changed="_onTypeChanged" on-opened-changed="setDropdownMenuHeight">
                         <template is="dom-if" if="{{_isType('state', selected)}}" restamp>
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapes.states)}}">
-                            <template is="dom-repeat" items="{{_shapes.states}}" restamp>
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapesDict.states)}}">
+                            <template is="dom-repeat" items="{{_shapesDict.states}}" restamp>
                               <paper-item type="[[item]]">[[item]]</paper-item>
                             </template>
                           </paper-listbox>
                         </template>
 
                         <template is="dom-if" if="{{_isType('relation', selected)}}" restamp>
-                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapes.relations)}}">
-                            <template is="dom-repeat" items="{{_shapes.relations}}" restamp>
+                          <paper-listbox class="dropdown-content" selected="{{_getIndexOfItem(selected.model.attributes.type,_shapesDict.relations)}}">
+                            <template is="dom-repeat" items="{{_shapesDict.relations}}" restamp>
                               <paper-item type="[[item]]">[[item]]</paper-item>
                             </template>
                           </paper-listbox>
@@ -191,203 +191,13 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQBehavior
+        ASQ.diagramQGlobalBehaviour,
+        ASQ.diagramQCommonUIBehaviour,
+        ASQ.diagramQUMLBehaviour
       ],
 
-      properties: {
+      properties: {},
 
-        type: {
-          type: String,
-          value: 'uml',
-        },
-
-        /**
-         * width in pixels of the diagram
-         */
-        width: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of the diagram
-         */
-        height: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Disable or enable the element. Changes will be also
-         * propagated to inner propagated elements.
-         */
-        disabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true,
-          observer: "_onDisabled"
-        },
-
-        /**
-         * The grap object
-         *  @type {Object}
-         */
-        _graph: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The paper object
-         *  @type {Object}
-         */
-        _paper: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The scale value
-         */
-        _scale: {
-          type: Number,
-          value: 1,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The uml object
-         *  @type {Object}
-         */
-        _uml: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Obj containing subtypes for every supported type
-         */
-        _shapes: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Object containing all created states
-         *  @type {Object}
-         */
-        _states: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Object containing all created relations
-         *  @type {Object}
-         */
-        _relations: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state/relation
-         */
-        selected: {
-          type: Object,
-          value: null,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state/relation copy for undo operation
-         */
-        selectedCopy: {
-          type: Object,
-          value: null,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The selected state
-         */
-        multiModeEnabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Array of selected cells
-         */
-        selectedElements: {
-          type: Array,
-          value: [],
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * True is multiple elements are selected
-         */
-        selectedCounter:{
-          type: Number,
-          value: 0,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * The style of cell highlighter
-         */
-        highlighter: {
-          type: Object,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showStateContent:{
-          type: Boolean,
-          value:false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showLinkContent:{
-          type: Boolean,
-          value:false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _showEditContent:{
-          type: Boolean,
-          value:true,
-          notify: true,
-          reflectToAttribute: true
-        }
-      },
-
-      attached: function () {
-        this.async(function () {
-          this.initialize()
-        });
-      },
 
       /**
        * State creation
@@ -435,7 +245,7 @@
 
       addState: function (data) {
 
-        var state = this._umlStatePropertiesToJSONObj(data.name, data.attributes, data.methods, data.position, this._computeJointJsStateSize(data.name, data.attributes, data.methods));
+        var state = this._umlStatePropertiesToJSONObj(data.name, data.attributes, data.methods, data.position, this._computeUMLStateSize(data.name, data.attributes, data.methods));
         var s = this._createState(data.type, state);
         this._graph.addCell(s);
         this._states[s.id] = {'type': data.type, 'cid': s.cid, 'state': state};
@@ -453,11 +263,11 @@
         s.attrs = this._getUMLAttrs(type);
 
         if (type.toLowerCase() === 'class')
-          return new this._uml.Class(s);
+          return new this._shapes.Class(s);
         else if (type.toLowerCase() === 'abstract')
-          return new this._uml.Abstract(s);
+          return new this._shapes.Abstract(s);
         else
-          return new this._uml.Interface(s);
+          return new this._shapes.Interface(s);
       },
 
       /**
@@ -497,19 +307,19 @@
 
       _createRelation: function (type, relation) {
         if (type.toLowerCase() === 'generalization')
-          return new this._uml.Generalization(relation);
+          return new this._shapes.Generalization(relation);
 
         else if (type.toLowerCase() === 'implementation')
-          return new this._uml.Implementation(relation);
+          return new this._shapes.Implementation(relation);
 
         else if (type.toLowerCase() === 'aggregation')
-          return new this._uml.Aggregation(relation);
+          return new this._shapes.Aggregation(relation);
 
         else if (type.toLowerCase() === 'composition')
-          return new this._uml.Composition(relation);
+          return new this._shapes.Composition(relation);
 
         else
-          return new this._uml.Association(relation);
+          return new this._shapes.Association(relation);
       },
 
       _connect: function (source, target) {
@@ -598,7 +408,8 @@
       /* for both states and relations */
       _renderAfterChange: function () {
         if(this._isType('state', this.selected)) {
-          this._editAttribute(this.selected, 'size', this._computeJointJsStateSize(this.selected.model.get('name'), this.selected.model.get('attributes'), this.selected.model.get('methods')));
+          console.log('_renderAfterChange');
+          this._editAttribute(this.selected, 'size', this._computeUMLStateSize(this.selected.model.get('name'), this.selected.model.get('attributes'), this.selected.model.get('methods')));
           this.selected.render(); // render state
         }
 

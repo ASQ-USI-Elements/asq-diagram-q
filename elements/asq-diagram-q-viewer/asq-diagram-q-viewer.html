@@ -14,33 +14,36 @@
 <dom-module id="asq-diagram-q-viewer">
 
   <template>
-    <template is="dom-if" if="{{_isType('uml', type)}}" restamp>
+    <template is="dom-if" if="{{_isDiagramType('uml', type)}}" restamp>
       <asq-diagram-q-viewer-uml
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
+              type="uml"
               disabled="{{disabled}}"
               width="[[width]]"
               height="[[height]]">
       </asq-diagram-q-viewer-uml>
     </template>
 
-    <template is="dom-if" if="{{_isType('erd', type)}}" restamp>
+    <template is="dom-if" if="{{_isDiagramType('erd', type)}}" restamp>
       <asq-diagram-q-viewer-erd
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
+              type="erd"
               disabled="{{disabled}}"
               width="[[width]]"
               height="[[height]]">
       </asq-diagram-q-viewer-erd>
     </template>
 
-    <template is="dom-if" if="{{_isType('bpmn', type)}}" restamp>
+    <template is="dom-if" if="{{_isDiagramType('bpmn', type)}}" restamp>
       <asq-diagram-q-viewer-bpmn
               role="viewer"
               uid="[[uid]]"
               value="{{value}}"
+              type="bpmn"
               disabled="{{disabled}}"
               width="[[width]]"
               height="[[height]]">
@@ -54,39 +57,10 @@
 
       behaviors: [
         ASQ.asqQuestionElementBehavior,
-        ASQ.diagramQBehavior
+        ASQ.diagramQGlobalBehaviour
       ],
 
       properties: {
-
-        /**
-         * Type of diagram
-         */
-        type: {
-          type: String,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * width in pixels of the diagram
-         */
-        width: {
-          type: Number,
-          value: 800,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
-         * height in pixels of the diagram
-         */
-        height: {
-          type: Number,
-          value: 600,
-          notify: true,
-          reflectToAttribute: true
-        },
 
         /**
          * An optional initial set of states/relations.
@@ -98,17 +72,6 @@
         },
 
         /**
-         * Disable or enable the element. Changes will be also
-         * propagated to inner propagated elements.
-         */
-        disabled: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        /**
          * Event bus to communicate with ASQ
          */
         eventBus: {
@@ -116,10 +79,6 @@
           observer: '_eventBusChanged',
           notify: true
         }
-      },
-
-      _isType: function (type, thisType) {
-        return type === thisType;
       },
 
       _valueChanged: function (value) {
@@ -144,9 +103,24 @@
             if(rel.vertices)
               diagram._graph.getCell(rId).set('vertices',rel.vertices)
           }.bind(this));
-          // this.value = undefined;
         }
 
+      },
+
+      _findStateByName: function(diagramType, states, name) {
+        var ids = Object.keys(states)
+        if(diagramType === 'uml')
+          for(var i=0;i<ids.length;i++){
+            if(states[ids[i]].state.name === name)
+              return ids[i];
+          }
+        else if(diagramType === 'erd')
+          for(var i=0;i<ids.length;i++){
+            if(states[ids[i]].label === name)
+              return ids[i];
+          }
+
+        return false;
       },
 
       _eventBusChanged: function (eventBus) {

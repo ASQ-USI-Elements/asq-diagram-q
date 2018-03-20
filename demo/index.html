@@ -33,32 +33,39 @@
   <body unresolved>
 
     <div>
+      <h1>BPMN Demo</h1>
 
-      <asq-diagram-q id="bpmn-demo-viewer" uid="" name="diagram0" type="bpmn" width="800" height="500">
-        <asq-stem>This is a BPMN Exercise</asq-stem>
+      <asq-diagram-q id="bpmn-demo-viewer" uid="" name="diagram0" type="bpmn" width="600" height="400">
+        <asq-stem>This is the VIEWER</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="bpmn-demo-presenter" uid="" name="diagram1" type="bpmn" role="presenter" width="800" height="500">
-        <asq-stem>This is a BPMN Exercise</asq-stem>
+      <asq-diagram-q id="bpmn-demo-presenter" uid="" name="diagram1" type="bpmn" role="presenter" width="600" height="400">
+        <asq-stem>This is the PRESENTER</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram2" type="uml" width="600" height="500">
-        <asq-stem>This is a UML Exercise</asq-stem>
+      <hr>
+
+      <h1>UML Demo</h1>
+
+      <asq-diagram-q id="uml-demo-viewer" uid="" name="diagram2" type="uml" width="600" height="400">
+        <asq-stem>This is the VIEWER</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram3" type="uml" role="presenter" width="800" height="500">
-        <asq-stem>This is a UML Exercise</asq-stem>
+      <asq-diagram-q id="uml-demo-presenter" uid="" name="diagram3" type="uml" role="presenter" width="600" height="400">
+        <asq-stem>This is the PRESENTER</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram4" type="erd" width="600" height="500">
-        <asq-stem>This is a ERD Exercise</asq-stem>
+      <hr>
+
+      <h1>ERD Demo</h1>
+
+      <asq-diagram-q id="erd-demo-viewer" uid="" name="diagram4" type="erd" width="600" height="400">
+        <asq-stem>This is the VIEWER</asq-stem>
       </asq-diagram-q>
 
-      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram5" type="erd" role="presenter" width="600" height="500">
-        <asq-stem>This is a ERD Exercise</asq-stem>
+      <asq-diagram-q id="erd-demo-presenter" uid="" name="diagram5" type="erd" role="presenter" width="600" height="400">
+        <asq-stem>This is the PRESENTER</asq-stem>
       </asq-diagram-q>
-
-
 
     </div>
 
@@ -257,10 +264,10 @@
 
       document.addEventListener('WebComponentsReady', function (evt) {
 
+        /* BPMN */
         var bpmn_viewer = document.getElementById('bpmn-demo-viewer');
-        bpmn_viewer.value = bmpnDiagram;
-
         var bpmn_presenter = document.getElementById('bpmn-demo-presenter');
+        bpmn_viewer.value = bmpnDiagram;
         bpmn_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
             answeree: '1234314156',
@@ -284,11 +291,11 @@
           }
         ];
 
-        // // UML
-        var uml_viewer = document.getElementById('uml-demo-viewer');
-        uml_viewer.value = umlDiagram;
 
+        /* UML */
+        var uml_viewer = document.getElementById('uml-demo-viewer');
         var uml_presenter = document.getElementById('uml-demo-presenter');
+        uml_viewer.value = umlDiagram;
         uml_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
             answeree: '1234314156',
@@ -312,11 +319,11 @@
           }
         ];
 
-        // ERD
-        var erd_viewer = document.getElementById('erd-demo-viewer');
-        erd_viewer.value = erdDiagram;
 
+        /* ERD */
+        var erd_viewer = document.getElementById('erd-demo-viewer');
         var erd_presenter = document.getElementById('erd-demo-presenter');
+        erd_viewer.value = erdDiagram;
         erd_presenter.$$('asq-diagram-q-presenter')._submissions = [
           {
             answeree: '1234314156',

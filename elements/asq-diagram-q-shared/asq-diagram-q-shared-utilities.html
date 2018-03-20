@@ -8,11 +8,259 @@
 
   var ASQ = window.ASQ || {};
 
-  var diagramQViewerBehaviour = ASQ.diagramQViewerBehaviour = {
+  var diagramQGlobalBehaviour = ASQ.diagramQGlobalBehaviour = {
 
-    /** Initialization */
+    properties: {
 
-    initialize: function () {
+      /**
+       * Name of 'this' element
+       * @type {String}
+       */
+      name: {
+        type: String,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Type of diagram, options are:  1) 'uml', 2) 'erd' or 3) 'bpmn'
+       * default is 'uml'
+       * * @type {String}
+       */
+      type: {
+        type: String,
+        notify: true,
+        reflectToAttribute: true,
+      },
+
+      /**
+       * width in pixels of the diagram UI
+       * @type {Number}
+       */
+      width: {
+        type: Number,
+        value: 500,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * height in pixels of the diagram UI
+       * @type {Number}
+       */
+      height: {
+        type: Number,
+        value: 500,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Disable or enable the element.
+       * @type {Boolean}
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true,
+      },
+
+    },
+
+    _isDiagramType: function (type, thisType) {
+      return type === thisType;
+    },
+
+    _inc: function(index){
+      return ++index;
+    },
+  };
+
+  var diagramQCommonUIBehaviour = ASQ.diagramQCommonUIBehaviour = {
+
+    properties: {
+
+      /**
+       * The graph object
+       * @type {Object}
+       */
+      _graph: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * The paper object
+       * @type {Object}
+       */
+      _paper: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * The uml object
+       * @type {Object}
+       */
+      _shapes: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Obj containing subtypes for every supported type
+       * @type {Object}
+       */
+      _shapesDict: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Object containing all created states
+       * @type {Object}
+       */
+      _states: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Object containing all created relations
+       * @type {Object}
+       */
+      _relations: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * The selected state/relation
+       *  @type {Object}
+       */
+      selected: {
+        type: Object,
+        value: null,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * The selected state/relation copy for undo operation
+       * @type {Object}
+       */
+      selectedCopy: {
+        type: Object,
+        value: null,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * The selected state
+       * @type {Boolean}
+       */
+      multiModeEnabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Array of selected cells
+       * @type {Array}
+       */
+      selectedElements: {
+        type: Array,
+        value: [],
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * True is multiple elements are selected
+       *  @type {Number}
+       */
+      selectedCounter:{
+        type: Number,
+        value: 0,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Disable or enable the element.
+       * @type {Boolean}
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true,
+        observer: "_onDisabled"
+      },
+
+      /**
+       * The scale value of the paper element
+       * @type {Number}
+       */
+      _scale: {
+        type: Number,
+        value: 1,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * The style of cell highlighter
+       * @type {Object}
+       */
+      highlighter: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Show/hide the state menu on the sidebar
+       * @type {Boolean}
+       */
+      _showStateContent:{
+        type: Boolean,
+        value:false,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Show/hide the edit menu on the sidebar
+       * @type {Boolean}
+       */
+      _showEditContent:{
+        type: Boolean,
+        value:true,
+        notify: true,
+        reflectToAttribute: true
+      }
+    },
+
+    /** UI INITIALIZATION */
+
+    attached: function () {
+      this.async(function () {
+        this.initDiagram()
+      });
+    },
+
+    initDiagram: function () {
       this._graph = new joint.dia.Graph();
       this._paper = new joint.dia.Paper({
         el: this.$.paper,
@@ -22,9 +270,9 @@
         gridSize: 10,
         drawGrid:true
       });
-      this._computeViewerSize(this.height, this.width);
-      this._setJointJsShapes(this.type);
-      this._shapes = this._getShapes(this.type);
+      this._computeUISize(this.height, this.width);
+      this._shapes = this._setJointJsShapes();
+      this._shapesDict = this._getShapesDict(this.type);
       this._states = {};
       this._relations = {};
       this.selectedElements = [];
@@ -34,53 +282,31 @@
       this._setKeyAndMouseEventListeners();
     },
 
-    _setJointJsShapes: function (type) {
-      if( type === 'uml' )
-        this._uml = joint.shapes.uml;
-      else if( type === 'erd' )
-        this._erd = joint.shapes.erd;
-      else if( type === 'bpmn' )
-        this._bpmn = joint.shapes.bpmn;
+    _computeUISize: function (h,w) {
+      var observer = new MutationObserver(function() {
+        var style = this.$['paper-container'].style;
+        var height = Number(style.height.replace('px',''));
+        var width = Number(style.width.replace('px',''));
+
+        this.$['app-body'].style = 'height:' + style.height + '; width:' + (width+10)+'px;';
+        this.$['sidebar'].style.height = style.height;
+
+        this.height = height;
+        this.width = width;
+
+      }.bind(this));
+      observer.observe(this.$['paper-container'], { attributes : true, attributeFilter : ['style'] });
+
+      this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
     },
 
-    _setKeyAndMouseEventListeners: function() {
-      document.addEventListener('keydown',this._keyHandler.bind(this));
-      document.addEventListener('keyup',this._keyHandler.bind(this));
-      this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
+    _setJointJsShapes: function () {
+      if( this.type === 'uml' ) return joint.shapes.uml;
+      else if( this.type === 'erd' ) return joint.shapes.erd;
+      else if( this.type === 'bpmn' ) return joint.shapes.bpmn;
     },
 
-    _keyHandler: function (evt) {
-        if(evt.key === 'Meta') {
-          if (evt.type === 'keydown') this.multiModeEnabled = true;
-          else if (evt.type === 'keyup') this.multiModeEnabled = false;
-        }
-      },
-
-    _setJointJsEventListeners: function() {
-      this._paper.on('cell:pointerclick', this._selectJointjsObject.bind(this));
-      this._paper.on('link:options', this._selectJointjsObject.bind(this));
-      this._paper.on('link:pointerdown', this._deselectJointjsObj.bind(this));
-      this._paper.on('blank:pointerclick', this._deselectJointjsObj.bind(this));
-      this._paper.on('blank:pointerdown', this.onDragStart.bind(this));
-      this._paper.on('cell:pointerup blank:pointerup', this.onDragEnd.bind(this));
-      this._paper.on('cell:pointerup', this.onSelectedPositionChanged.bind(this));
-    },
-
-    _setCellHighlighter: function() {
-      this.highlighter = {
-        highlighter: {
-          name: 'stroke',
-          options: {
-            padding: 10,
-            rx: 5,
-            ry: 5,
-            attrs: { 'stroke-width': 2, stroke: '#FF0000' }
-          }
-        }
-      }
-    },
-
-    _getShapes: function(diagramType) {
+    _getShapesDict: function(diagramType) {
       if(diagramType === 'uml')
         return {
           states : ['Class','Abstract','Interface'],
@@ -110,33 +336,37 @@
         };
     },
 
-    _getCellProp: function (cell, key) {
-
-      var dict = this._bpmnPropDict();
-
-      if(cell.model instanceof joint.shapes.bpmn.Gateway) return dict.states.gateway[key];
-      else if(cell.model instanceof joint.shapes.bpmn.Activity) return dict.states.activity[key];
-      else if(cell.model instanceof joint.shapes.bpmn.Event) return dict.states.event[key];
-      else if(cell.model instanceof joint.shapes.bpmn.Flow) return dict.relations.flow[key];
-
+    _setJointJsEventListeners: function() {
+      this._paper.on('cell:pointerclick', this._selectJointjsObject.bind(this));
+      this._paper.on('link:options', this._selectJointjsObject.bind(this));
+      this._paper.on('link:pointerdown', this._deselectJointjsObj.bind(this));
+      this._paper.on('blank:pointerclick', this._deselectJointjsObj.bind(this));
+      this._paper.on('blank:pointerdown', this.onDragStart.bind(this));
+      this._paper.on('cell:pointerup blank:pointerup', this.onDragEnd.bind(this));
+      this._paper.on('cell:pointerup', this._onSelectedPositionChanged.bind(this));
     },
 
-    _bpmnPropDict: function () {
-      return {
-        states : {
-          gateway: { type: 'icon'},
-          activity: { icon : 'icon', type : 'activityType' },
-          event: { type : 'eventType', subtype : 'icon' },
-          annotation: {},
-          Pool: {}
-        },
-        relations: {
-          flow: { type : 'flowType' },
+    _setCellHighlighter: function() {
+      this.highlighter = {
+        highlighter: {
+          name: 'stroke',
+          options: {
+            padding: 10,
+            rx: 5,
+            ry: 5,
+            attrs: { 'stroke-width': 2, stroke: '#FF0000' }
+          }
         }
       }
     },
 
-    /** Expand/collapse sidebar */
+    _setKeyAndMouseEventListeners: function() {
+      document.addEventListener('keydown',this._keyHandler.bind(this));
+      document.addEventListener('keyup',this._keyHandler.bind(this));
+      this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
+    },
+
+    /** EXPAND/COLLAPSE SIDEBAR */
 
     _expandOrCollapse: function () {
       if(this.$['sidebar'].className === "open")
@@ -155,21 +385,17 @@
       var btn = this.$['sidebar-button'].firstChild.icon='chevron-right';
     },
 
-    /**
-     * expand/collapse menu
-     */
+    /** EXPAND/COLLAPSE MENU */
 
     _expandStateMenu: function () {
       this._showStateContent = !this._showStateContent
     },
 
-    _expandRelationMenu: function () {
-      this._showLinkContent = !this._showLinkContent
-    },
-
     _expandEditMenu: function () {
       this._showEditContent = !this._showEditContent
     },
+
+    /** SIDEBAR CONTENT RENDERING */
 
     _nothingSelected: function (counter) {
       return counter === 0;
@@ -193,11 +419,7 @@
       return counter > 1 && !this._twoSelected(counter);
     },
 
-    /** State creation */
-
-    _umlStatePropertiesToJSONObj: function(name, attributes, methods, position, size) {
-      return {name: name, attributes: attributes, methods: methods, position: position, size: size}
-    },
+    /** STATE CREATION */
 
     _getNewStatePosition: function(){
 
@@ -219,7 +441,7 @@
       }
     },
 
-    /** Relation creation */
+    /** RELATION CREATION */
 
     _relationPropertiesToJSONObj: function(source, target) {
       return {source: source, target: target}
@@ -246,31 +468,6 @@
         '.link-tools':{ visibility: 'hidden'},
         '.marker-target': { stroke: '#FF0000', fill: '#FF0000', d:'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'}
       }
-    },
-
-    _getDefaultUMLRelAttrs: function() {
-      return {'.marker-target': {d: 'M 20 0 L 0 10 L 20 20 z', fill: 'white'}};
-    },
-
-    _getDefaultBPMNRelAttrs: function() {
-      return {
-        ".marker-source": {
-          d: "M 0 0"
-        },
-        ".marker-target": {
-          d: "M 10 0 L 0 5 L 10 10 z",
-          fill: "#000000"
-        },
-        ".connection": {
-          "stroke-dasharray": " ",
-          "stroke-width": 1
-        },
-        ".connection-wrap": {
-          style: "",
-          onMouseOver: "",
-          onMouseOut: ""
-        }
-      };
     },
 
     _connectSelected: function () {
@@ -300,13 +497,13 @@
       if(arrowHead){
         var transform = arrowHead.getAttribute('transform').split(' ');
 
-        var translate = this.getVal(transform, 'translate')
+        var translate = this._getVal(transform, 'translate')
 
         arrowHead.setAttribute('transform','translate('+(Number(translate[0])+7.5)+','+(Number(translate[1])+10.5)+') scale(1.3,1.3) rotate(-180)');
       }
     },
 
-    getVal: function (t, match) {
+    _getVal: function (t, match) {
       for(var i = 0; i<t.length;i++){
         if(t[i].startsWith(match)){
           return t[i].replace(match+'(', '').replace(')','').split(',');
@@ -332,7 +529,7 @@
       }
     },
 
-    /** State and relation Edit */
+    /** STATE AND RELATION EDITING */
 
     _onStatePositionChanged: function (state, pos) {
       this._states[state.id].state.position = pos;
@@ -343,7 +540,7 @@
         this._onJointjsObjDeselected();
     },
 
-    onSelectedPositionChanged: function (cell) {
+    _onSelectedPositionChanged: function (cell) {
       if(this.selected) {
         if(cell.model.get('id') === this.selected.model.get('id')){
           this._showNewLinkButton(this.selected)
@@ -385,113 +582,14 @@
       return id;
     },
 
-    _editAttribute: function (cell, key, value) {
-      cell.model.set(key, value);
-
-      if(this._isType('state', cell))
-        this._states[cell.model.id].state[key] = value;
-      else
-        this._relations[cell.model.id].relation[key] = value;
-    },
-
     _copyVertices: function (idFrom, idTo) {
       var vertices;
       if((vertices = this._graph.getCell(idFrom).findView(this._paper).model.get('vertices') ))
         this._graph.getCell(idTo).findView(this._paper).model.set('vertices',vertices)
     },
 
-    _changeRelationSourceAndTarget: function (evt, el) {
-      var type = evt.target.id || evt.target.parentElement.id;
-      console.log(type)
-      if(el.value){
-        if(this.selected.model.get(type).id !== el.value.id){
-          this._editAttribute(this.selected, type, { id:el.value.id });
-          this._renderAfterChange();
-          console.log(this._relations[this.selected.model.get('id')].relation.source, this._relations[this.selected.model.get('id')].relation.target)
-        }
-      }
-    },
-
-    _getUMLModelData: function(model, isState) {
-      var type = this._getUMLModelSubType(model,isState);
-      if (isState)
-        return {
-          name: model.name,
-          type: type,
-          attributes: model.attributes,
-          methods: model.methods
-        };
-      else
-        return {
-          type: type,
-          source: model.source,
-          target: model.target
-        }
-    },
-
-    _getUMLModelSubType: function(model, isState) {
-      var subType, collection = isState? this._getShapes('uml').states : this._getShapes('uml').relations;
-
-      collection.forEach(function (value) {
-        subType = model.type.includes(value)? value : subType;
-      });
-      return subType;
-    },
-
-    _getERDModelData: function(model, isState){
-      var type = this._getERDModelSubType(model,isState);
-      if (isState)
-        return {
-          type: type,
-          label: type.includes('ISA')? '' : model.attrs.text.text
-        };
-      else
-        return {
-          source: model.source,
-          target: model.target,
-          sLabel: model.labels[0].attrs.text.text,
-          tLabel: model.labels[1].attrs.text.text
-        }
-    },
-
-    _getERDModelSubType: function(model, isState){
-      var subType, collection = isState? this._getShapes('erd').states : this._getShapes('erd').relations;
-
-      if(!Array.isArray(collection)){
-        collection = this._shapesObjToArray(collection);
-      }
-
-      if(model.type.includes('Normal'))
-        model.type = 'Attribute';
-
-      collection.forEach(function (value) {
-        if(model.type.toLowerCase().replace(/erd./g, '') === value.toLowerCase().replace(/\s/g, ''))
-          subType = value;
-      });
-      return subType;
-    },
-
-    _shapesObjToArray: function(obj) {
-      var array=[];
-      Object.keys(obj).forEach(function (arr) {
-        obj[arr].forEach(function (el) {
-          array.push(el);
-        });
-      });
-      return array;
-    },
-
-    _getValuesFromTable: function(table) {
-      var rows = table.querySelectorAll('paper-input');
-      return Array.prototype.slice.call(rows).filter(function(el){
-        return !!el.value.trim();
-      }).map(function (x) {
-        return x.value.trim();
-      });
-    },
-
     /**
-     * Cells selection
+     * CELLS SELECTION
      */
     _selectJointjsObject: function (cellView, evt, x, y) {
       if(!this.disabled) {
@@ -571,7 +669,7 @@
     },
 
     /**
-     * Cells de-selection
+     * CELLS DE-SELECTION
      */
     _onClearButtonClicked: function (evt) {
       this._deselectJointjsObj();
@@ -602,7 +700,6 @@
         this.selected.unhighlight(null, this.highlighter);
         this.selected = null;
         this._showStateContent = false;
-        this._showLinkContent = false;
         this._showEditContent = true;
         this.selectedCounter--;
       }
@@ -629,7 +726,7 @@
     },
 
     /**
-     * State deletion
+     * STATE DELETION
      */
     _deleteState: function (id) {
       var rel = this._findRelations(id,this._relations), t = this;
@@ -642,7 +739,6 @@
       this._deleteFromStatesDict(id); // remove state from states Dictionary
     },
 
-    /* for both states and relations */
     _deleteSelected: function (){
       if(this.selected) {
         var sel = this._onJointjsObjDeselected();
@@ -673,7 +769,8 @@
     },
 
     _deleteCellFromGraph: function (cid) {
-      this._graph.getCell(cid).remove(); // works for both states and relations (also delete elements from 'svg')
+      // works for both states and relations (also delete elements from 'svg')
+      this._graph.getCell(cid).remove();
     },
 
     clear: function() {
@@ -683,7 +780,7 @@
     },
 
     /**
-     * Relation deletion
+     * RELATION DELETION
      */
     _deleteRelation: function (id, isNewRel) {
       if (this._relations[id]) {
@@ -707,7 +804,93 @@
       delete this._relations[id];
     },
 
-    /** Helper functions */
+    /** HELPER FUNCTIONS */
+
+    _keyHandler: function (evt) {
+      if(evt.key === 'Meta') {
+        if (evt.type === 'keydown') this.multiModeEnabled = true;
+        else if (evt.type === 'keyup') this.multiModeEnabled = false;
+      }
+    },
+
+    onDragStart: function(event, x, y) {
+      this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
+    },
+
+    onDragEnd: function(event, x, y) {
+      delete this.dragStartPosition;
+    },
+
+    dragPaper: function (evt) {
+      if (this.dragStartPosition){
+        this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
+        this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
+      }
+    },
+
+    _onDisabled: function(val){
+      if(val){
+        if(this.selectedCounter && this.selectedCounter > 0)
+          this._deselectJointjsObj();
+        this._collapseSidebar();
+        this._disableAll();
+      }
+      else if(!val){
+        this._expandSidebar();
+        this._enableAll();
+      }
+    },
+
+    _disableAll: function(){
+      this.$.paper.setAttribute('is-disabled','true');
+      this.$.sidebar.querySelector('div[id="sidebar-button"]').style = "display: none !important;";
+      if(this._graph){
+        this._graph.getCells().forEach(function (cell) {
+          cell.findView(this._paper).options.interactive = false;
+        }.bind(this))
+      }
+    },
+
+    _enableAll: function(){
+      this.$.paper.setAttribute('is-disabled','false');
+      this.$.sidebar.querySelector('div[id="sidebar-button"]').removeAttribute('style');
+      if(this._graph){
+        this._graph.getCells().forEach(function (cell) {
+          cell.findView(this._paper).options.interactive = {labelMove: false};
+        }.bind(this))
+      }
+    },
+
+    _createLabels: function(sLabel, tLabel) {
+      return {
+        labels: [
+          {
+            position: 20,
+            attrs: {
+              text: { dy: -8, text: sLabel, fill: '#000000' },
+              rect: { fill: '#ffffff' }
+            }
+          },
+          {
+            position: -20,
+            attrs: {
+              text: { dy: -8, text: tLabel, fill: '#000000' },
+              rect: { fill: '#ffffff' }
+            }
+          }]
+      };
+    },
+
+    _createLabel: function(label) {
+      return {
+        labels: [{
+          attrs: {
+            text: { text: label, fill: '#000000' },
+            rect: { fill: '#ffffff' }
+          },
+          position: 0.5 }]
+      };
+    },
 
     _isType: function(type, selected){
       if(selected){
@@ -721,10 +904,6 @@
 
     _getIcon: function (show) {
       return show ? 'remove-circle' : 'add-circle';
-    },
-
-    _inc: function(index){
-      return index+1;
     },
 
     _strCmp: function (a,b) {
@@ -741,40 +920,6 @@
         else
           menu.verticalAlign = 'bottom';
       }
-    },
-
-    _computeViewerSize: function (h,w) {
-      var observer = new MutationObserver(function() {
-        var style = this.$['paper-container'].style;
-        var height = Number(style.height.replace('px',''));
-        var width = Number(style.width.replace('px',''));
-
-        this.$['app-body'].style = 'height:' + style.height + '; width:' + (width+10)+'px;';
-        this.$['sidebar'].style.height = style.height;
-
-        this.height = height;
-        this.width = width;
-
-      }.bind(this));
-      observer.observe(this.$['paper-container'], { attributes : true, attributeFilter : ['style'] });
-
-      this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
-    },
-
-    _findStateByName: function(diagramType, states, name) {
-      var ids = Object.keys(states)
-      if(diagramType === 'uml')
-        for(var i=0;i<ids.length;i++){
-          if(states[ids[i]].state.name === name)
-            return ids[i];
-        }
-      else if(diagramType === 'erd')
-        for(var i=0;i<ids.length;i++){
-          if(states[ids[i]].label === name)
-            return ids[i];
-        }
-
-      return false;
     },
 
     _scalePaper: function(t) {
@@ -833,70 +978,6 @@
       return rel;
     },
 
-    _computeJointJsStateSize: function(name, attributes, methods) {
-      var arr = [name].concat(attributes, methods);
-      return {
-        width: this._computeStateWidth(arr) + 2, // + 2 for margins
-        height: Math.max(50, 2 * 15 + (arr.length) * 12)
-      }
-    },
-
-    _computeStateWidth: function(arr) {
-      var w = 0;
-      for (var i = 0; i < arr.length; i++) {
-        w = Math.max(w, this._getWidthOfText(arr[i], (i===0)))
-      }
-      return Math.max(Math.max(w),100);
-    },
-
-    _getWidthOfText: function(txt, bold) {
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext('2d');
-      ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
-
-      return ctx.measureText(txt).width;
-    },
-
-    _getWidthOfTextVariableFont: function(txt, fontSize) {
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext('2d');
-      ctx.font = fontSize +'px Arial';
-      return ctx.measureText(txt).width;
-    },
-
-    _onDisabled: function(val){
-      if(val){
-        if(this.selectedCounter && this.selectedCounter > 0)
-          this._deselectJointjsObj();
-        this._collapseSidebar();
-        this._disableAll();
-      }
-      else if(!val){
-        this._expandSidebar();
-        this._enableAll();
-      }
-    },
-
-    _disableAll: function(){
-      this.$.paper.setAttribute('is-disabled','true');
-      this.$.sidebar.querySelector('div[id="sidebar-button"]').style = "display: none !important;";
-      if(this._graph){
-        this._graph.getCells().forEach(function (cell) {
-          cell.findView(this._paper).options.interactive = false;
-        }.bind(this))
-      }
-    },
-
-    _enableAll: function(){
-      this.$.paper.setAttribute('is-disabled','false');
-      this.$.sidebar.querySelector('div[id="sidebar-button"]').removeAttribute('style');
-      if(this._graph){
-        this._graph.getCells().forEach(function (cell) {
-          cell.findView(this._paper).options.interactive = {labelMove: false};
-        }.bind(this))
-      }
-    },
-
     zoomIn: function () {
       this._scale += 0.05;
       this._paper.scale(this._scale,this._scale);
@@ -913,24 +994,72 @@
       return (Math.round(this._scale*100))+'%';
     },
 
-    onDragStart: function(event, x, y) {
-      this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
+  };
+
+  var diagramQBPMNBehaviour = ASQ.diagramQBPMNBehaviour = {
+
+    /** RELATION CREATION */
+
+    _getDefaultBPMNRelAttrs: function() {
+      return {
+        ".marker-source": {
+          d: "M 0 0"
+        },
+        ".marker-target": {
+          d: "M 10 0 L 0 5 L 10 10 z",
+          fill: "#000000"
+        },
+        ".connection": {
+          "stroke-dasharray": " ",
+          "stroke-width": 1
+        },
+        ".connection-wrap": {
+          style: "",
+          onMouseOver: "",
+          onMouseOut: ""
+        }
+      };
     },
 
-    onDragEnd: function(event, x, y) {
-      delete this.dragStartPosition;
+    /** STATE AND RELATION EDITING */
+
+    _getCellProp: function (cell, key) {
+
+      var dict = this._bpmnPropDict();
+
+      if(cell.model instanceof joint.shapes.bpmn.Gateway) return dict.states.gateway[key];
+      else if(cell.model instanceof joint.shapes.bpmn.Activity) return dict.states.activity[key];
+      else if(cell.model instanceof joint.shapes.bpmn.Event) return dict.states.event[key];
+      else if(cell.model instanceof joint.shapes.bpmn.Flow) return dict.relations.flow[key];
+
     },
 
-    dragPaper: function (evt) {
-      if (this.dragStartPosition){
-        this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
-        this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
+    _bpmnPropDict: function () {
+      return {
+        states : {
+          gateway: { type: 'icon'},
+          activity: { icon : 'icon', type : 'activityType' },
+          event: { type : 'eventType', subtype : 'icon' },
+          annotation: {},
+          Pool: {}
+        },
+        relations: {
+          flow: { type : 'flowType' },
+        }
       }
-    }
+    },
+
+
 
   };
 
-  var diagramQCommonBehaviour = ASQ.diagramQCommonBehaviour ={
+  var diagramQUMLBehaviour = ASQ.diagramQUMLBehaviour = {
+
+    /** STATE CREATION */
+
+    _umlStatePropertiesToJSONObj: function(name, attributes, methods, position, size) {
+      return {name: name, attributes: attributes, methods: methods, position: position, size: size}
+    },
 
     _getUMLAttrs: function(type) {
 
@@ -1014,8 +1143,100 @@
           'y-alignment': 'middle'
         };
       }
+
       return attrs;
     },
+
+    /** RELATION CREATION */
+
+    _getDefaultUMLRelAttrs: function() {
+      return {'.marker-target': {d: 'M 20 0 L 0 10 L 20 20 z', fill: 'white'}};
+    },
+
+    /** STATE AND RELATION EDITING */
+
+    _getUMLModelData: function(model, isState) {
+      var type = this._getUMLModelSubType(model,isState);
+      if (isState)
+        return {
+          name: model.name,
+          type: type,
+          attributes: model.attributes,
+          methods: model.methods
+        };
+      else
+        return {
+          type: type,
+          source: model.source,
+          target: model.target
+        }
+    },
+
+    _getUMLModelSubType: function(model, isState) {
+      var subType, collection = isState? this._getShapesDict('uml').states : this._getShapesDict('uml').relations;
+
+      collection.forEach(function (value) {
+        subType = model.type.includes(value)? value : subType;
+      });
+      return subType;
+    },
+
+    _editAttribute: function (cell, key, value) {
+      cell.model.set(key, value);
+
+      if(this._isType('state', cell))
+        this._states[cell.model.id].state[key] = value;
+      else
+        this._relations[cell.model.id].relation[key] = value;
+    },
+
+    _getValuesFromTable: function(table) {
+      var rows = table.querySelectorAll('paper-input');
+      return Array.prototype.slice.call(rows).filter(function(el){
+        return !!el.value.trim();
+      }).map(function (x) {
+        return x.value.trim();
+      });
+    },
+
+    /** HELPER FUNCTIONS */
+
+    _computeUMLStateSize: function(name, attributes, methods) {
+      var arr = [name].concat(attributes, methods);
+      return {
+        width: this._computeStateWidth(arr) + 2, // + 2 for margins
+        height: Math.max(50, 2 * 15 + (arr.length) * 12)
+      }
+    },
+
+    _computeStateWidth: function(arr) {
+      var w = 0;
+      for (var i = 0; i < arr.length; i++) {
+        w = Math.max(w, this._getWidthOfText(arr[i], (i===0)))
+      }
+      return Math.max(Math.max(w),100);
+    },
+
+    _getWidthOfText: function(txt, bold) {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = bold ? '12.5px Courier' : '10.4px Courier';
+
+      return ctx.measureText(txt).width;
+    },
+
+    _getWidthOfTextVariableFont: function(txt, fontSize) {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = fontSize +'px Arial';
+      return ctx.measureText(txt).width;
+    },
+
+  };
+
+  var diagramQERDBehaviour = ASQ.diagramQERDBehaviour = {
+
+    /** STATE CREATION */
 
     _getERDAttrs: function(type, label) {
       if (type !== 'ISA')
@@ -1024,41 +1245,70 @@
         return {};
     },
 
-    _createLabels: function(sLabel, tLabel) {
-      return {
-        labels: [
-          {
-            position: 20,
-            attrs: {
-              text: { dy: -8, text: sLabel, fill: '#000000' },
-              rect: { fill: '#ffffff' }
-            }
-          },
-          {
-            position: -20,
-            attrs: {
-              text: { dy: -8, text: tLabel, fill: '#000000' },
-              rect: { fill: '#ffffff' }
-            }
-          }]
-      };
+    /** STATE AND RELATION EDITING */
+
+    _getERDModelData: function(model, isState){
+      var type = this._getERDModelSubType(model,isState);
+      if (isState)
+        return {
+          type: type,
+          label: type.includes('ISA')? '' : model.attrs.text.text
+        };
+      else
+        return {
+          source: model.source,
+          target: model.target,
+          sLabel: model.labels[0].attrs.text.text,
+          tLabel: model.labels[1].attrs.text.text
+        }
     },
 
-    _createLabel: function(label) {
-      return {
-        labels: [{
-          attrs: {
-            text: { text: label, fill: '#000000' },
-            rect: { fill: '#ffffff' }
-            },
-          position: 0.5 }]
-      };
-    }
+    _getERDModelSubType: function(model, isState){
+      var subType, collection = isState? this._getShapesDict('erd').states : this._getShapesDict('erd').relations;
+
+      if(!Array.isArray(collection)){
+        collection = this._shapesObjToArray(collection);
+      }
+
+      if(model.type.includes('Normal'))
+        model.type = 'Attribute';
+
+      collection.forEach(function (value) {
+        if(model.type.toLowerCase().replace(/erd./g, '') === value.toLowerCase().replace(/\s/g, ''))
+          subType = value;
+      });
+      return subType;
+    },
+
+    _shapesObjToArray: function(obj) {
+      var array=[];
+      Object.keys(obj).forEach(function (arr) {
+        obj[arr].forEach(function (el) {
+          array.push(el);
+        });
+      });
+      return array;
+    },
+
+    /** HELPER FUNCTIONS */
+
+    _not_ISA_Relationship: function(type){
+      return type && !type.includes("ISA");
+    },
+
   };
 
   var diagramQPresenterBehaviour = ASQ.diagramQPresenterBehaviour = {
 
-    /** presenter init graph */
+    properties: {
+      value: {
+        type: Object,
+        notify: true,
+        observer: '_valueChanged'
+      }
+    },
+
+    /** PRESENTER INIT GRAPH */
     _valueChanged: function (newVal,oldVal) {
       this._clear();
       if(newVal){
@@ -1073,21 +1323,6 @@
       this.value = null;
     },
 
-    _computePresenterSize: function (h, w){
-      this.$['app-body'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-      this.$['submission'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-    },
-
-    _computeSubmissionSize: function(h,w) {
-      this.$['paper'].style = 'height:' + h + 'px;' + 'width:' + w + 'px;';
-    },
-
-    _mapToArrayOfObjects: function(obj){
-      return Object.keys(obj).map(function(key) {
-        return {id: key, text: obj[key].label};
-      });
-    },
-
     _cropAndScaleGraph: function () {
 
       var coord = {
@@ -1097,8 +1332,7 @@
         y1: -1
       };
 
-      var h = this.height,
-        w = this.width-10;
+      var h = this.height, w = this.width-10;
 
       var bbox;
       this._graph.getCells().forEach(function (cell) {
@@ -1135,9 +1369,7 @@
 
         this.$['paper-container'].scrollLeft = xScroll;
         this.$['paper-container'].scrollTop = yScroll;
-
       }
-
     },
 
     _getMax: function(a,b) {
@@ -1152,17 +1384,54 @@
       return a;
     },
 
-    scale: function (value) {
-      var s = Math.round((this._scale*value)* 1000)/1000;
-      if(s>=this._minScale){
-        this._scale=s;
-        this._paper.scale(s, s);
-        this.height*=value;
-        this.width*=value;
-      } else {
-        this._resetSize();
-      }
-    },
+    // fixme
+    // zoomIn: function () {
+    //   if(this._api){
+    //     this._api.scale(1.01);
+    //   }
+    // },
+    //
+    // zoomOut: function () {
+    //
+    //   if(this._api){
+    //     this._api.scale(0.99);
+    //   }
+    // },
+    //
+    // onZoomInPressed: function () {
+    //   if(!this.mousePressed)
+    //     this.mousePressed = setInterval(
+    //       function(){
+    //         this.zoomIn()
+    //       }.bind(this), 25);
+    // },
+    //
+    // onZoomOutPressed: function () {
+    //   if(!this.mousePressed)
+    //     this.mousePressed = setInterval(
+    //       function(){
+    //         this.zoomOut()
+    //       }.bind(this), 25);
+    // },
+    //
+    // onZoomReleased: function () {
+    //   if(this.mousePressed) {
+    //     clearInterval(this.mousePressed);
+    //     this.mousePressed = undefined;
+    //   }
+    // },
+    //
+    // scale: function (value) {
+    //   var s = Math.round((this._scale*value)* 1000)/1000;
+    //   if(s>=this._minScale){
+    //     this._scale=s;
+    //     this._paper.scale(s, s);
+    //     this.height*=value;
+    //     this.width*=value;
+    //   } else {
+    //     this._resetSize();
+    //   }
+    // },
 
     _resetSize: function () {
       this._scale=1;
@@ -1178,5 +1447,12 @@
     },
   };
 
-  ASQ.diagramQBehavior = [diagramQViewerBehaviour, diagramQCommonBehaviour, diagramQPresenterBehaviour]
+  ASQ.diagramQBehavior = [
+    diagramQGlobalBehaviour,
+    diagramQCommonUIBehaviour,
+    diagramQBPMNBehaviour,
+    diagramQUMLBehaviour,
+    diagramQERDBehaviour,
+    diagramQPresenterBehaviour
+  ]
 </script>
