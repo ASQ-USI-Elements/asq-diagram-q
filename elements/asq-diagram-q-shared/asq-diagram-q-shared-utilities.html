@@ -283,21 +283,24 @@
     },
 
     _computeUISize: function (h,w) {
-      var observer = new MutationObserver(function() {
-        var style = this.$['paper-container'].style;
-        var height = Number(style.height.replace('px',''));
-        var width = Number(style.width.replace('px',''));
+      // var observer = new MutationObserver(function() {
+      //   var style = this.$['paper-container'].style;
+      //   var height = Number(style.height.replace('px',''));
+      //   var width = Number(style.width.replace('px',''));
+      //
+      //   this.$['app-body'].style = 'height:' + style.height + '; width:' + (width+10)+'px;';
+      //   this.$['sidebar'].style.height = style.height;
+      //
+      //   this.height = height;
+      //   this.width = width;
+      //
+      // }.bind(this));
+      // observer.observe(this.$['paper-container'], { attributes : true, attributeFilter : ['style'] });
 
-        this.$['app-body'].style = 'height:' + style.height + '; width:' + (width+10)+'px;';
-        this.$['sidebar'].style.height = style.height;
+      this.$['app-body'].style = 'height:' + h + 'px; width:' + w+'px;';
+      this.$['sidebar'].style.height = h+'px';
+      // this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
 
-        this.height = height;
-        this.width = width;
-
-      }.bind(this));
-      observer.observe(this.$['paper-container'], { attributes : true, attributeFilter : ['style'] });
-
-      this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
     },
 
     _setJointJsShapes: function () {
@@ -363,6 +366,7 @@
     _setKeyAndMouseEventListeners: function() {
       document.addEventListener('keydown',this._keyHandler.bind(this));
       document.addEventListener('keyup',this._keyHandler.bind(this));
+      document.addEventListener('mouseup',this.stopDragging.bind(this));
       this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
     },
 
@@ -926,6 +930,28 @@
       this.$['paper'].style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
     },
 
+    startDragging : function(evt){
+      if(evt.stopPropagation) evt.stopPropagation();
+      if(evt.preventDefault) evt.preventDefault();
+      document.onmousemove = this.onMouseMove.bind(this);
+    },
+
+    onMouseMove: function (evt) {
+      var coords = this.$['app-body'].getBoundingClientRect();
+      var top = coords.top;
+      var left = coords.left;
+
+      this.height = Math.max(evt.clientY-top, 200);
+      this.width = Math.max(evt.clientX-left, 200);
+
+      this.$['app-body'].style = 'height:' + this.height + 'px; width:' + this.width+'px;';
+      this.$['sidebar'].style.height = this.height+'px';
+    },
+
+    stopDragging : function(){
+      document.onmousemove = function(){};
+    },
+
     _showStateErrorMessage: function(el, required) {
       var err, keys = Object.keys(required);
       for( var i=0 ; i<keys.length ; i++) {
@@ -1455,4 +1481,5 @@
     diagramQERDBehaviour,
     diagramQPresenterBehaviour
   ]
+
 </script>

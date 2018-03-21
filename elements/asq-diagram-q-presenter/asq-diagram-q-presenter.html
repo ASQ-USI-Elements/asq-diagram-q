@@ -195,8 +195,9 @@
               if(this._submissions[i].answeree === id){
                 this._submissions[i].diagram = evt.question.submission;
                 if(this.value && this.value.answeree === id){
-                  // todo: reload function!!
-                  // this._api.reload()
+                  var t = this.value;
+                  this.value = null
+                  this.value = t;
                 }
                 return;
               }
