@@ -76,7 +76,7 @@
         <div id="submissionListWrapper" >
           <iron-list id="submissionList" items="[[_submissions]]" as="submission" selection-enabled selected-item="{{_selectedSubmissionItem}}">
             <template>
-              <paper-item>#<span>[[_inc(index)]]</span>&nbsp;&nbsp;<span>ID:&nbsp;[[submission.answeree]]</span>
+              <paper-item id="[[submission.answeree]]">#<span>[[_inc(index)]]</span>&nbsp;&nbsp;<span>ID:&nbsp;[[submission.answeree]]</span>
               </paper-item>
             </template>
           </iron-list>
@@ -145,8 +145,17 @@
         this.$.submissionList.notifyResize();
       },
 
-      _selectedSubmissionItemChanged: function(newItem, old){
+      _selectedSubmissionItemChanged: function(newItem){
+
         if(! newItem || this.disabled) return;
+
+        var oldSel = this.$['submissionList'].querySelector('paper-item[selected]');
+        if(oldSel)
+          oldSel.removeAttribute('selected')
+
+        var newSel = this.$['submissionList'].querySelector('paper-item[id="'+newItem.answeree+'"]');
+        if(newSel)
+          newSel.setAttribute('selected','true');
         this.value = newItem;
       },
 
