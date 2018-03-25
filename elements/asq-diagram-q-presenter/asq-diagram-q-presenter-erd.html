@@ -182,15 +182,17 @@
           var sourceId = dict[rel.relation.source.name];
           var targetId = dict[rel.relation.target.name];
 
-          var sLabel, tLabel;
-          if(rel.labels){
-            sLabel = rel.labels.sLabel;
-            tLabel = rel.labels.tLabel
+          if(sourceId && targetId){
+            var sLabel, tLabel;
+            if(rel.labels){
+              sLabel = rel.labels.sLabel;
+              tLabel = rel.labels.tLabel
+            }
+
+            var rId = this.addRelation( { source : { id: sourceId }, target : { id: targetId }, sLabel: sLabel, tLabel : tLabel });
+
+            if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
           }
-
-          var rId = this.addRelation( { source : { id: sourceId }, target : { id: targetId }, sLabel: sLabel, tLabel : tLabel });
-
-          if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
         }.bind(this));
       },
 
@@ -284,6 +286,7 @@
         this._graph.addCell(r);
         this._relations[r.id] = {'cid': r.cid, 'relation': relation, labels: {sLabel: data.sLabel, tLabel: data.tLabel}};
 
+        r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
         return r.id;
       },

@@ -98,10 +98,12 @@
             var sourceId = idMap[rel.relation.source.id] || this._findStateByName(this.type, diagram._states, rel.relation.source.name);
             var targetId = idMap[rel.relation.target.id] || this._findStateByName(this.type, diagram._states, rel.relation.target.name);
 
-            var rId = diagram._addInitialRelation(sourceId, targetId, rel);
+            if(sourceId && targetId){
+              var rId = diagram._addInitialRelation(sourceId, targetId, rel);
 
-            if(rel.vertices)
-              diagram._graph.getCell(rId).set('vertices',rel.vertices)
+              if(rel.vertices)
+                diagram._graph.getCell(rId).set('vertices',rel.vertices)
+            }
           }.bind(this));
         }
 

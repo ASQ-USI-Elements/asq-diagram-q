@@ -164,8 +164,10 @@
           var sourceId = dict[rel.relation.source.id];
           var targetId = dict[rel.relation.target.id];
 
-          var rId = this._addInitialRelation(sourceId, targetId, rel)
-          if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
+          if(sourceId && targetId){
+            var rId = this._addInitialRelation(sourceId, targetId, rel)
+            if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
+          }
         }.bind(this));
       },
 
@@ -363,6 +365,7 @@
         this._graph.addCell(r);
         this._relations[r.id] = { cid: r.cid, relation: data };
 
+        r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this));
         return r.id;
       },

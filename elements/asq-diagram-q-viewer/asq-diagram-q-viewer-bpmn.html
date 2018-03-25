@@ -346,6 +346,7 @@
         this._graph.addCell(r);
         this._relations[r.id] = { cid: r.cid, relation: data };
 
+        r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this));
         return r.id;
       },

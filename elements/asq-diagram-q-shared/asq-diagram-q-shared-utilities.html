@@ -553,6 +553,11 @@
       }
     },
 
+    _onRelationTargetOrSourceChanged: function (rel) {
+      this._relations[rel.id].relation.source = rel.attributes.source;
+      this._relations[rel.id].relation.target = rel.attributes.target;
+    },
+
     _changeCellType: function () {
       this._hideNewLinkButton();
       var data = this._isType('state', this.selected)? this._getStateFormData(true) : this._getRelationFormData(true);
