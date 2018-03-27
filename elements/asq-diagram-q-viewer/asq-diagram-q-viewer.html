@@ -22,7 +22,8 @@
               type="uml"
               disabled="{{disabled}}"
               width="[[width]]"
-              height="[[height]]">
+              height="[[height]]"
+              link-pinning="[[linkPinning]]">
       </asq-diagram-q-viewer-uml>
     </template>
 
@@ -34,7 +35,8 @@
               type="erd"
               disabled="{{disabled}}"
               width="[[width]]"
-              height="[[height]]">
+              height="[[height]]"
+              link-pinning="[[linkPinning]]">
       </asq-diagram-q-viewer-erd>
     </template>
 
@@ -46,7 +48,8 @@
               type="bpmn"
               disabled="{{disabled}}"
               width="[[width]]"
-              height="[[height]]">
+              height="[[height]]"
+              link-pinning="[[linkPinning]]">
       </asq-diagram-q-viewer-bpmn>
     </template>
   </template>
@@ -89,40 +92,22 @@
           var diagram = this.$$('asq-diagram-q-viewer-' + this.type);
           diagram.clear();
 
-          value.states.forEach(function(state){
-            var sId = diagram._addInitialState(state);
-            if(state.id) idMap[state.id] = sId;
+          value.states.forEach(function(s){
+            var sId = diagram._addInitialState(s);
+            if(s.id) idMap[s.id] = sId;
           }.bind(this));
 
           value.relations.forEach(function(rel){
-            var sourceId = idMap[rel.relation.source.id] || this._findStateByName(this.type, diagram._states, rel.relation.source.name);
-            var targetId = idMap[rel.relation.target.id] || this._findStateByName(this.type, diagram._states, rel.relation.target.name);
+            var sourceId = idMap[rel.relation.source.id]? { id : idMap[rel.relation.source.id] } : rel.relation.source;
+            var targetId = idMap[rel.relation.target.id]? { id : idMap[rel.relation.target.id] } : rel.relation.target;
 
             if(sourceId && targetId){
               var rId = diagram._addInitialRelation(sourceId, targetId, rel);
-
-              if(rel.vertices)
-                diagram._graph.getCell(rId).set('vertices',rel.vertices)
+              if(rel.vertices) diagram._graph.getCell(rId).set('vertices',rel.vertices)
             }
           }.bind(this));
         }
 
-      },
-
-      _findStateByName: function(diagramType, states, name) {
-        var ids = Object.keys(states)
-        if(diagramType === 'uml')
-          for(var i=0;i<ids.length;i++){
-            if(states[ids[i]].state.name === name)
-              return ids[i];
-          }
-        else if(diagramType === 'erd')
-          for(var i=0;i<ids.length;i++){
-            if(states[ids[i]].label === name)
-              return ids[i];
-          }
-
-        return false;
       },
 
       _eventBusChanged: function (eventBus) {

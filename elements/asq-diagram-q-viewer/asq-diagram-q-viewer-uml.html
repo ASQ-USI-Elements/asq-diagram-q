@@ -303,7 +303,7 @@
       },
 
       _addInitialRelation: function (sourceId, targetId, rel) {
-        return this.addRelation( { type: rel.type, source: { id: sourceId }, target: { id: targetId } } );
+        return this.addRelation( { type: rel.type, source: sourceId, target: targetId } );
       },
 
       _createRelation: function (type, relation) {

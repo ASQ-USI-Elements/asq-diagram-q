@@ -171,26 +171,16 @@
         var dict = {};
 
         value.states.forEach(function(s){
-          var position = {
-            x: s.state.position.x,
-            y: s.state.position.y
-          };
-          dict[s.label] = this.addState( { type: s.type, position: position, label: s.label } );
+          var sid = this._addInitialState(s)
+          if(s.id) dict[s.id] = sid;
         }.bind(this));
 
         value.relations.forEach(function(rel){
-          var sourceId = dict[rel.relation.source.name];
-          var targetId = dict[rel.relation.target.name];
+          var sourceId = dict[rel.relation.source.id]? { id : dict[rel.relation.source.id] } : rel.relation.source;
+          var targetId = dict[rel.relation.target.id]? { id : dict[rel.relation.target.id] } : rel.relation.target;
 
           if(sourceId && targetId){
-            var sLabel, tLabel;
-            if(rel.labels){
-              sLabel = rel.labels.sLabel;
-              tLabel = rel.labels.tLabel
-            }
-
-            var rId = this.addRelation( { source : { id: sourceId }, target : { id: targetId }, sLabel: sLabel, tLabel : tLabel });
-
+            var rId = this._addInitialRelation(sourceId, targetId, rel);
             if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
           }
         }.bind(this));
@@ -242,6 +232,10 @@
         return s.id;
       },
 
+      _addInitialState: function (state) {
+        return this.addState( { type: state.type, position: state.state.position, label: state.label } );
+      },
+
       _createState: function (type, label, state) {
         var s = _.cloneDeep(state);
         s.attrs = this._getERDAttrs(type, label);
@@ -289,6 +283,13 @@
         r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
         return r.id;
+      },
+
+      _addInitialRelation: function (sourceId, targetId, rel) {
+        var sLabel = rel.labels? rel.labels.sLabel : '',
+          tLabel = rel.labels? rel.labels.tLabel : '';
+
+        return this.addRelation( { source: sourceId, target: targetId, sLabel: sLabel, tLabel: tLabel } );
       },
 
       _createRelation: function (relation) {

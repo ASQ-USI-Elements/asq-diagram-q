@@ -355,7 +355,7 @@
         var label = rel.label || '';
         var type = rel.type || 'normal';
 
-        return this.addRelation( { source: { id: sourceId }, target: { id: targetId }, label: label, flowType: type } );
+        return this.addRelation( { source: sourceId, target: targetId, label: label, flowType: type } );
       },
 
       _createRelation: function (relation) {

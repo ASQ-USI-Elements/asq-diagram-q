@@ -157,15 +157,18 @@
         var dict = {};
 
         value.states.forEach(function(s){
-          dict[s.id] = this._addInitialState(s);
+          var sid = this._addInitialState(s)
+          if(s.id) dict[s.id] = sid;
         }.bind(this));
 
         value.relations.forEach(function(rel){
-          var sourceId = dict[rel.relation.source.id];
-          var targetId = dict[rel.relation.target.id];
+
+          var sourceId = dict[rel.relation.source.id]? { id : dict[rel.relation.source.id] } : rel.relation.source;
+          var targetId = dict[rel.relation.target.id]? { id : dict[rel.relation.target.id] } : rel.relation.target;
+
 
           if(sourceId && targetId){
-            var rId = this._addInitialRelation(sourceId, targetId, rel)
+            var rId = this._addInitialRelation(sourceId, targetId, rel);
             if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
           }
         }.bind(this));
@@ -374,7 +377,7 @@
         var label = rel.label || '';
         var type = rel.type || 'normal';
 
-        return this.addRelation( { source: { id: sourceId }, target: { id: targetId }, label: label, flowType: type } );
+        return this.addRelation( { source: sourceId, target: targetId, label: label, flowType: type } );
       },
 
       _createRelation: function (relation) {

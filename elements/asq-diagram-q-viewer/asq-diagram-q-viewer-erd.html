@@ -272,7 +272,7 @@
         var sLabel = rel.labels? rel.labels.sLabel : '',
           tLabel = rel.labels? rel.labels.tLabel : '';
 
-        return this.addRelation( { source: { id: sourceId }, target: { id: targetId }, sLabel: sLabel, tLabel: tLabel } );
+        return this.addRelation( { source: sourceId, target: targetId, sLabel: sLabel, tLabel: tLabel } );
       },
 
       _createRelation: function (relation) {

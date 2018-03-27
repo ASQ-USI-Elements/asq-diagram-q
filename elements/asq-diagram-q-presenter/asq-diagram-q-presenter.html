@@ -42,7 +42,8 @@
                   type="uml"
                   disabled="{{disabled}}"
                   width="{{width}}"
-                  height="{{height}}">
+                  height="{{height}}"
+                  link-pinning="[[linkPinning]]">
           </asq-diagram-q-presenter-uml>
         </template>
         <template is="dom-if" if="{{_isDiagramType('erd', type)}}" restamp>
@@ -53,7 +54,8 @@
                   type="erd"
                   disabled="{{disabled}}"
                   width="{{width}}"
-                  height="{{height}}">
+                  height="{{height}}"
+                  link-pinning="[[linkPinning]]">
           </asq-diagram-q-presenter-erd>
         </template>
         <template is="dom-if" if="{{_isDiagramType('bpmn', type)}}" restamp>
@@ -64,7 +66,8 @@
                   type="bpmn"
                   disabled="{{disabled}}"
                   width="{{width}}"
-                  height="{{height}}">
+                  height="{{height}}"
+                  link-pinning="[[_findStateByName]]">
           </asq-diagram-q-presenter-bpmn>
         </template>
       </div>

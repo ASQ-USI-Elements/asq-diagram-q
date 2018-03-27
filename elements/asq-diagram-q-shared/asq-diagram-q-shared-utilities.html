@@ -66,6 +66,17 @@
         reflectToAttribute: true,
       },
 
+      /**
+       * If true links can be pinned to the paper.
+       * @type {Boolean}
+       */
+      linkPinning : {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true
+      }
+
     },
 
     _isDiagramType: function (type, thisType) {
@@ -268,7 +279,8 @@
         height: 1920,
         model: this._graph,
         gridSize: 10,
-        drawGrid:true
+        drawGrid:true,
+        // linkPinning:false
       });
       this._computeUISize(this.height, this.width);
       this._shapes = this._setJointJsShapes();

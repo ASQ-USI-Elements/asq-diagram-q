@@ -203,31 +203,16 @@
         var dict = {};
 
         value.states.forEach(function(s){
-          var position = {
-            x: s.state.position.x,
-            y: s.state.position.y
-          };
-
-
-          var sid = this.addState({
-            type: s.type,
-            name: s.state.name,
-            attributes: s.state.attributes,
-            methods: s.state.methods,
-            position: position
-          });
-          if(s.name) dict[s.name] = sid;
+          var sid = this._addInitialState(s)
           if(s.id) dict[s.id] = sid;
-
-
         }.bind(this));
 
         value.relations.forEach(function(rel){
-          var sourceId = dict[rel.relation.source.name] || dict[rel.relation.source.id];
-          var targetId = dict[rel.relation.target.name] || dict[rel.relation.target.id];
+          var sourceId = dict[rel.relation.source.id]? { id : dict[rel.relation.source.id] } : rel.relation.source;
+          var targetId = dict[rel.relation.target.id]? { id : dict[rel.relation.target.id] } : rel.relation.target;
 
           if(sourceId && targetId){
-            var rId = this.addRelation( { type: rel.type, source : { id: sourceId }, target : { id: targetId } });
+            var rId = this._addInitialRelation(sourceId, targetId, rel);
             if(rel.vertices) this._graph.getCell(rId).set('vertices',rel.vertices)
           }
         }.bind(this));
@@ -288,6 +273,10 @@
         return s.id;
       },
 
+      _addInitialState: function (state) {
+        return this.addState( { type: state.type , name: state.state.name, attributes: state.state.attributes, methods: state.state.methods, position: state.state.position } );
+      },
+
       _createState: function (type, state) {
         var s = _.cloneDeep(state);
         s.attrs = this._getUMLAttrs(type);
@@ -329,6 +318,10 @@
         r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this)); // handle link deletion
         return r.id;
+      },
+
+      _addInitialRelation: function (sourceId, targetId, rel) {
+        return this.addRelation( { type: rel.type, source: sourceId, target: targetId } );
       },
 
       _createRelation: function (type, relation) {
