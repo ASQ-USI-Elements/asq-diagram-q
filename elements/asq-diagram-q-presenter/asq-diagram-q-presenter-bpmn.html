@@ -191,7 +191,6 @@
       },
 
       addState: function (data) {
-
         var type = data.shape;
         delete data.shape;
 
@@ -357,16 +356,14 @@
        */
 
       addRelation: function (data) {
-
         data.label = data.label ||'';
         data.type = data.type || 'normal';
 
         var relation = this._relationPropertiesToJSONObj(data.source, data.target);
-        relation.flowType = data.type;
 
-        var r = this._createRelation(relation).set(this._createLabel(data.label));
+        var r = this._createRelation(data.type, relation).set(this._createLabel(data.label));
         this._graph.addCell(r);
-        this._relations[r.id] = { cid: r.cid, relation: data };
+        this._relations[r.id] = { cid: r.cid, type:data.type, relation: relation, label: data.label };
 
         r.on('change:z', this._onRelationTargetOrSourceChanged.bind(this)); // handle source/target modifications
         r.on('remove', this._onRelationDeleted.bind(this));
@@ -377,11 +374,13 @@
         var label = rel.label || '';
         var type = rel.type || 'normal';
 
-        return this.addRelation( { source: sourceId, target: targetId, label: label, flowType: type } );
+        return this.addRelation( { source: sourceId, target: targetId, label: label, type: type } );
       },
 
-      _createRelation: function (relation) {
-          return new this._shapes.Flow(relation);
+      _createRelation: function (type, relation) {
+        var r = _.cloneDeep(relation);
+        r.flowType = type;
+        return new this._shapes.Flow(r);
       },
 
       _connect: function (source, target) {
@@ -399,7 +398,7 @@
 
       _getStringValue: function (cell, prop) {
         if(cell)
-          return (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id].relation)[prop] || '';
+          return (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id])[prop] || '';
       },
 
       _onStringValueChanged: function(evt){
@@ -423,7 +422,7 @@
         } else{
           if(prop === "label") {
             this.selected.model.set(this._createLabel(value));
-            this._relations[this.selected.model.get('id')].relation.label = value;
+            this._relations[this.selected.model.get('id')].label = value;
           }
         }
         this._hideNewLinkButton();
@@ -448,9 +447,7 @@
             state[prop] = val.value;
             this.selected.model.set(prop, val.value);
 
-            // this._hideNewLinkButton();
             this._renderAfterChange();
-            // this._showNewLinkButton(this.selected);
           }
         }
       },
@@ -458,7 +455,7 @@
       _getSelectedItem: function (cell, prop) {
         if(cell){
           var items = this._getDropdownItems(cell, prop);
-          var item = (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id].relation)[prop] || '';
+          var item = (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id])[prop] || '';
 
           return items.indexOf(item);
         }
@@ -483,8 +480,6 @@
           if(newVal !== oldVal){
             var kProp = this._getCellProp(this.selected, prop);
 
-            // console.log(cell, prop, kProp, oldVal, newVal);
-
             var kValue;
 
             if(kProp === 'icon'){
@@ -495,8 +490,9 @@
             } else
               kValue = newVal;
 
-            // console.log(cell, prop, kProp, oldVal, newVal, kValue);
-            cell[this._isType('state', this.selected)? 'state' : 'relation'][prop] = newVal;
+            if(this._isType('state', this.selected)) cell.state[prop] = newVal;
+            else cell[prop] = newVal;
+
             this.selected.model.set(kProp, kValue);
 
             if (cell.state && cell.state.hasOwnProperty('content'))

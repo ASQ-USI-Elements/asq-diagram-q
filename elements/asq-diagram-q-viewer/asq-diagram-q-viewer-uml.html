@@ -148,9 +148,6 @@
                     <!--Buttons-->
                     <div class="menu-element" id="buttons">
                       <paper-button class="twoCol" raised on-click="_saveChanges"><div><iron-icon icon="save"></iron-icon></div><div><h4 class="button-label">SAVE</h4></div></paper-button>
-                      <!--<template is="dom-if" if="{{_isType('state', selected)}}" restamp>-->
-                        <!--<paper-button raised on-click="_onJointjsObjDeselected"><div><iron-icon icon="content-copy"></iron-icon></div><div><h4 class="button-label">CLONE</h4></div></paper-button>-->
-                      <!--</template>-->
                       <paper-button class="twoCol" raised on-click="_onClearButtonClicked"><div><iron-icon icon="block"></iron-icon></div><div><h4 class="button-label">CLEAR</h4></div></paper-button>
                       <paper-button class="twoCol" raised on-click="_deleteSelected"><div><iron-icon icon="delete"></iron-icon></div><div><h4 class="button-label">DELETE</h4></div></paper-button>
                     </div>
@@ -409,7 +406,6 @@
       /* for both states and relations */
       _renderAfterChange: function () {
         if(this._isType('state', this.selected)) {
-          console.log('_renderAfterChange');
           this._editAttribute(this.selected, 'size', this._computeUMLStateSize(this.selected.model.get('name'), this.selected.model.get('attributes'), this.selected.model.get('methods')));
           this.selected.render(); // render state
         }

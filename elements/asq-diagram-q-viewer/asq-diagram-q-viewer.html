@@ -170,20 +170,16 @@
         }.bind(this));
         
         relationsIds.forEach(function (id) {
+
           var relation = {
             relation : diagram._relations[id].relation,
             vertices : diagram._graph.getCell(id).get('vertices') || []
           };
 
-          if (this.type === 'uml') {
-            relation.type = diagram._relations[id].type;
-            relation.relation.source.name = diagram._states[relation.relation.source.id].state.name;
-            relation.relation.target.name = diagram._states[relation.relation.target.id].state.name;
-          } else if (this.type === 'erd') {
-            relation.labels = diagram._relations[id].labels;
-            relation.relation.source.name = diagram._states[relation.relation.source.id].label;
-            relation.relation.target.name = diagram._states[relation.relation.target.id].label;
-          }
+          if(diagram._relations[id].type) relation.type = diagram._relations[id].type;
+          if(diagram._relations[id].labels) relation.labels = diagram._relations[id].labels;
+          if(diagram._relations[id].label) relation.label = diagram._relations[id].label;
+
           relations.push(relation);
         }.bind(this));
 
