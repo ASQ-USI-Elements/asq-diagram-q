@@ -357,8 +357,8 @@
       this._paper.on('link:options', this._selectJointjsObject.bind(this));
       this._paper.on('link:pointerdown', this._deselectJointjsObj.bind(this));
       this._paper.on('blank:pointerclick', this._deselectJointjsObj.bind(this));
-      this._paper.on('blank:pointerdown', this.onDragStart.bind(this));
-      this._paper.on('cell:pointerup blank:pointerup', this.onDragEnd.bind(this));
+      // this._paper.on('blank:pointerdown', this.onDragStart.bind(this));
+      // this._paper.on('cell:pointerup blank:pointerup', this.onDragEnd.bind(this));
       this._paper.on('cell:pointerup', this._onSelectedPositionChanged.bind(this));
     },
 
@@ -380,7 +380,7 @@
       document.addEventListener('keydown',this._keyHandler.bind(this));
       document.addEventListener('keyup',this._keyHandler.bind(this));
       document.addEventListener('mouseup',this.stopDragging.bind(this));
-      this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
+      // this.$['paper-container'].addEventListener('mousemove',this.dragPaper.bind(this));
     },
 
     /** EXPAND/COLLAPSE SIDEBAR */
@@ -835,20 +835,20 @@
       }
     },
 
-    onDragStart: function(event, x, y) {
-      this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
-    },
-
-    onDragEnd: function(event, x, y) {
-      delete this.dragStartPosition;
-    },
-
-    dragPaper: function (evt) {
-      if (this.dragStartPosition){
-        this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
-        this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
-      }
-    },
+    // onDragStart: function(event, x, y) {
+    //   this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
+    // },
+    //
+    // onDragEnd: function(event, x, y) {
+    //   delete this.dragStartPosition;
+    // },
+    //
+    // dragPaper: function (evt) {
+    //   if (this.dragStartPosition){
+    //     this.$['paper-container'].scrollLeft += (this.dragStartPosition.x - evt.offsetX);
+    //     this.$['paper-container'].scrollTop += (this.dragStartPosition.y - evt.offsetY);
+    //   }
+    // },
 
     _onDisabled: function(val){
       if(val){
@@ -1029,15 +1029,24 @@
     },
 
     zoomOut: function () {
-      this._scale -= 0.05;
-      this._paper.scale(this._scale,this._scale);
-      this._scalePaper();
+      if(this._scale-0.05 > 0){
+        this._scale -= 0.05;
+        this._paper.scale(this._scale,this._scale);
+        this._scalePaper();
+      }
     },
 
     getScale: function (scale) {
-      return (Math.round(this._scale*100))+'%';
+      return (Math.round(this._scale*100));
     },
 
+    onScaleValueChanged: function (evt) {
+      if(evt.target.value && evt.target.value > 0){
+        this._scale = evt.target.value/100;
+        this._paper.scale(this._scale,this._scale);
+        this._scalePaper();
+      }
+    }
   };
 
   var diagramQBPMNBehaviour = ASQ.diagramQBPMNBehaviour = {
@@ -1427,55 +1436,6 @@
         return b;
       return a;
     },
-
-    // fixme
-    // zoomIn: function () {
-    //   if(this._api){
-    //     this._api.scale(1.01);
-    //   }
-    // },
-    //
-    // zoomOut: function () {
-    //
-    //   if(this._api){
-    //     this._api.scale(0.99);
-    //   }
-    // },
-    //
-    // onZoomInPressed: function () {
-    //   if(!this.mousePressed)
-    //     this.mousePressed = setInterval(
-    //       function(){
-    //         this.zoomIn()
-    //       }.bind(this), 25);
-    // },
-    //
-    // onZoomOutPressed: function () {
-    //   if(!this.mousePressed)
-    //     this.mousePressed = setInterval(
-    //       function(){
-    //         this.zoomOut()
-    //       }.bind(this), 25);
-    // },
-    //
-    // onZoomReleased: function () {
-    //   if(this.mousePressed) {
-    //     clearInterval(this.mousePressed);
-    //     this.mousePressed = undefined;
-    //   }
-    // },
-    //
-    // scale: function (value) {
-    //   var s = Math.round((this._scale*value)* 1000)/1000;
-    //   if(s>=this._minScale){
-    //     this._scale=s;
-    //     this._paper.scale(s, s);
-    //     this.height*=value;
-    //     this.width*=value;
-    //   } else {
-    //     this._resetSize();
-    //   }
-    // },
 
     _resetSize: function () {
       this._scale=1;

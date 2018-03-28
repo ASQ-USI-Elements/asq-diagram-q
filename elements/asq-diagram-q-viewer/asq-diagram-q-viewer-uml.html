@@ -169,10 +169,10 @@
               </div>
             </div>
           </template>
-          <div id="zoom">
-            <paper-icon-button icon="zoom-in" on-click="zoomIn"></paper-icon-button>
-            <p id="scale-label">{{getScale(_scale)}}</p>
-            <paper-icon-button icon="zoom-out" on-click="zoomOut"></paper-icon-button>
+          <div id="misc">
+            <paper-icon-button icon="zoom-in" on-tap="zoomIn"></paper-icon-button>
+            <paper-input id="scale-label" value="[[getScale(_scale)]]" on-input="onScaleValueChanged" allowed-pattern="[0-9]"><div suffix>&nbsp;%</div></paper-input>
+            <paper-icon-button icon="zoom-out" on-tap="zoomOut"></paper-icon-button>
           </div>
         </div>
         <div id="sidebar-button"><paper-icon-button icon="chevron-left" on-click="_expandOrCollapse"></paper-icon-button></div>

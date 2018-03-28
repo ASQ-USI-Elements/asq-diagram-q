@@ -112,7 +112,7 @@
         width:200px;
       }
 
-      #sidebar-content > #zoom {
+      #sidebar-content > #misc {
         position: absolute;
         bottom: 0;
         right: 0;
@@ -122,11 +122,12 @@
       }
 
       #scale-label {
-        width: 30px;
+        height:30px;
+        width: 50px;
         text-align: center;
       }
 
-      #zoom > * {
+      #misc > * {
         float: right;
       }
 
@@ -298,12 +299,20 @@
       .menu-element > table > tbody > tr > td > paper-input,
       .menu-element > paper-input,
       .menu-element > div > paper-input,
-      .menu-element > paper-textarea {
+      .menu-element > paper-textarea{
+        --paper-input-container-input: {
+          text-align: left;
+        };
+      }
 
+      .menu-element > table > tbody > tr > td > paper-input,
+      .menu-element > paper-input,
+      .menu-element > div > paper-input,
+      .menu-element > paper-textarea,
+      #scale-label {
         --paper-input-container-input: {
           background-color: var(--paper-blue-grey-50);
           color: var(--paper-blue-grey-900);
-          text-align: left;
           font-size:12px;
         };
         --paper-input-container-focus-color: var(--paper-blue-grey-100);
@@ -317,6 +326,7 @@
           display: none;
         };
       }
+
 
       #sub-process {
         display: flex;
