@@ -3,7 +3,6 @@
 <script type="text/javascript" src="../../../backbone/backbone.js"></script>
 <script type="text/javascript" src="../../../jointjs/dist/joint.js"></script>
 <script type="text/javascript" src="./bpmn_shapes.js"></script>
-
 <script>
 
   var ASQ = window.ASQ || {};
@@ -295,25 +294,8 @@
     },
 
     _computeUISize: function (h,w) {
-      // var observer = new MutationObserver(function() {
-      //   var style = this.$['paper-container'].style;
-      //   var height = Number(style.height.replace('px',''));
-      //   var width = Number(style.width.replace('px',''));
-      //
-      //   this.$['app-body'].style = 'height:' + style.height + '; width:' + (width+10)+'px;';
-      //   this.$['sidebar'].style.height = style.height;
-      //
-      //   this.height = height;
-      //   this.width = width;
-      //
-      // }.bind(this));
-      // observer.observe(this.$['paper-container'], { attributes : true, attributeFilter : ['style'] });
-
       this.$['app-body'].style = 'height:' + h + 'px; width:' + w+'px;';
       this.$['sidebar'].style.height = h+'px';
-
-      // this.$['paper-container'].style = 'height:' + h + 'px;' + 'width:' + (w-10) + 'px;';
-
     },
 
     _setJointJsShapes: function () {
@@ -340,9 +322,14 @@
       else if(diagramType === 'bpmn')
         return {
           states : {
-            gateway: { name: String, type : ['default', 'inclusive', 'exclusive', 'parallel'] },
-            activity: { content: String, icon : ['none', 'message', 'user'], type : ['task', 'transaction', 'event-sub-process', 'call-activity'], "sub-process": Boolean },
-            event: { name: String, type : ['start', 'end', 'intermediate'], subtype : ['none', 'cancel', 'message', 'parallel-multiple'] },
+            gateway: { name: String, type : ['default', 'inclusive', 'exclusive', 'parallel', 'event-based'] },
+            activity: { content: String, icon : ['none', 'send message', 'receive message', 'user', 'service'], type : ['task', 'transaction', 'event-sub-process', 'call-activity'], "sub-process": Boolean },
+            event: {
+              name: String,
+              type : ['start', 'end', 'intermediate'],
+              subtype : ['none', 'message', 'timer', 'error', 'cancel', 'signal', 'parallel-multiple', 'terminate'],
+              color : { property : 'subtype', subtype: { none : [], message: ['white', 'black'], timer: ['white'], error: ['white', 'black'], cancel : ['white', 'black'], signal: ['white', 'black'], 'parallel-multiple': ['white'], terminate: ['black'] } }
+            },
             annotation: { content: String },
             pool: {}
           },
@@ -395,11 +382,18 @@
     _expandSidebar: function() {
       var bar = this.$['sidebar'].className = 'open';
       var btn = this.$['sidebar-button'].firstChild.icon='chevron-left';
+      this._shiftPaper(200)
     },
 
     _collapseSidebar: function() {
       var bar = this.$['sidebar'].className = 'closed';
       var btn = this.$['sidebar-button'].firstChild.icon='chevron-right';
+      this._shiftPaper(10)
+    },
+
+    _shiftPaper: function (val) {
+      this.$['paper-container'].style.marginLeft = val+'px';
+      this.$['paper-container'].style.width = (this.width-val)+'px';
     },
 
     /** EXPAND/COLLAPSE MENU */
@@ -444,8 +438,15 @@
       var container = this.$['paper-container'];
       var paper = this.$['paper'];
 
+      console.log(this.$.sidebar.className);
       var w = this.width,
         h = this.height;
+
+        // this._getVal(transform, 'translate')
+      // var w = Number(container.style.width.replace('px','')),
+      //   h = Number(container.style.height.replace('px',''));
+      //
+      // console.log(w,h)
 
       if(w > paper.offsetWidth)
         w = paper.offsetWidth;
@@ -608,6 +609,12 @@
       var vertices;
       if((vertices = this._graph.getCell(idFrom).findView(this._paper).model.get('vertices') ))
         this._graph.getCell(idTo).findView(this._paper).model.set('vertices',vertices)
+    },
+
+    _renderAfterChange: function () {
+      this.selected.render();
+      this.selected.unhighlight(null, this.highlighter);
+      this.selected.highlight(null, this.highlighter);
     },
 
     /**
@@ -781,7 +788,7 @@
     _multiDelete: function () {
       this.selectedElements.forEach(function(el){
         this._singleDelete(el);
-      }.bind(this))
+      }.bind(this));
       this.selectedElements = [];
       this.selectedCounter = 0;
     },
@@ -945,7 +952,7 @@
     },
 
     _scalePaper: function(t) {
-      this.$['paper'].style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
+      this.$.paper.style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
     },
 
     startDragging : function(evt){
@@ -963,7 +970,8 @@
       this.width = Math.max(evt.clientX-left, 200);
 
       this.$['app-body'].style = 'height:' + this.height + 'px; width:' + this.width+'px;';
-      this.$['sidebar'].style.height = this.height+'px';
+      this.$.sidebar.style.height = this.height+'px';
+      this.$['paper-container'].style.width = (this.width - (this.$['sidebar'].className === 'open'? 200:10))+'px'
     },
 
     stopDragging : function(){
@@ -1051,6 +1059,142 @@
 
   var diagramQBPMNBehaviour = ASQ.diagramQBPMNBehaviour = {
 
+    /** STATE CREATION */
+
+    _createState: function (type, state) {
+      var s = { position : state.position };
+      var cell;
+
+      if (type === 'Gateway'){
+
+        state.name = state.name || '';
+        s.attrs = { text: { text: state.name } };
+
+        state.type = state.type || 'default';
+        s.icon = this._gatewayIconsDict(state.type);
+
+        cell = new this._shapes.Gateway(s);
+      }
+      else if (type === 'Activity'){
+
+        state.content = state.content || '';
+        s.content = state.content;
+
+        state.icon = state.icon || 'none';
+        s.icon = this._activityIconsDict(state.icon);
+
+        state.type = state.type || 'task';
+        s.activityType = state.type;
+
+        state.subProcess = state.subProcess || false;
+        s.subProcess = state.subProcess;
+
+        cell = new this._shapes.Activity(s);
+      }
+      else if (type === 'Event') {
+
+        state.name = state.name || '';
+        s.attrs = { text: { text: state.name } };
+
+        state.type = state.type || 'start';
+        s.eventType = state.type;
+
+        state.subtype = state.subtype || 'none';
+        s.icon = this._eventIconsDict(state.subtype);
+
+        var values = this._getNestedValues(type.toLowerCase(), 'color', 'subtype', state.subtype);
+        state.color = values.includes(state.color)? state.color : values[0];
+        if(state.color === 'black') s.icon = s.icon.replace('Black', '') + 'Black';
+
+        cell = new this._shapes.Event(s);
+      }
+      else if (type === 'Annotation') {
+
+        state.content = state.content || '';
+        s.content = state.content;
+
+        s.attrs = { rect: { fill: '#FFFFFF', 'fill-opacity': .5 } };
+
+        cell = new this._shapes.Annotation(s);
+      }
+
+      else if(type === 'Pool'){
+
+        state.lanes = state.lanes || {};
+        s.lanes = state.lanes;
+
+        state.attrs = state.attrs || {};
+        s.attrs = state.attrs;
+
+        cell = new this._shapes.Pool(s);
+      }
+
+      return cell;
+    },
+
+    _activityIconsDict: function (icon) {
+      var i = 'none';
+      switch (icon) {
+        case 'send message':
+          i = 'messageBlack';
+          break;
+        case 'receive message':
+          i = 'message';
+          break;
+        case "user":
+          i = 'user';
+          break;
+        case "service":
+          i = 'service';
+      }
+      return i;
+    },
+
+    _eventIconsDict: function (subtype) {
+      var icon = 'none';
+      switch (subtype) {
+        case 'cancel':
+          icon = 'cross';
+          break;
+        case 'timer':
+          icon = 'timer';
+          break;
+        case 'error':
+          icon = 'error';
+          break;
+        case 'signal':
+          icon = 'signal';
+          break;
+        case 'terminate':
+          icon = 'circleBlack';
+          break;
+        case 'message':
+          icon = 'message';
+          break;
+        case 'parallel-multiple':
+          icon = 'plus';
+      }
+      return icon;
+    },
+
+    _gatewayIconsDict: function (subtype) {
+      var icon = 'none';
+      switch (subtype) {
+        case 'exclusive':
+          icon = 'crossBlack';
+          break;
+        case 'inclusive':
+          icon = 'circle';
+          break;
+        case 'parallel':
+          icon = 'plusBlack';
+          break;
+        case 'event-based':
+          icon = 'eventBased';
+      }
+      return icon;
+    },
+
     /** RELATION CREATION */
 
     _getDefaultBPMNRelAttrs: function() {
@@ -1075,6 +1219,171 @@
     },
 
     /** STATE AND RELATION EDITING */
+
+    _getStringValue: function (cell, prop) {
+      if(cell)
+        return (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id])[prop] || '';
+    },
+
+    _onStringValueChanged: function(evt){
+
+      var value = evt.target.value;
+      var prop = Polymer.dom(evt).localTarget.closest('div[class="menu-element"]').id;
+
+      if(this._isType('state', this.selected)){
+
+        var state = this._states[this.selected.model.get('id')].state;
+
+        if(prop === "name") {
+          this.selected.model.attr('text/text', value);
+          state.name = value;
+        } else if(prop === "content") {
+          this.selected.model.set('content', value);
+          state.content = value;
+
+          state.size = this._computeBPMNStateSize(this.selected.model, state.defaultSize);
+        }
+      } else{
+        if(prop === "label") {
+          this.selected.model.set(this._createLabel(value));
+          this._relations[this.selected.model.get('id')].label = value;
+        }
+      }
+      this._hideNewLinkButton();
+      this._renderAfterChange();
+      this._showNewLinkButton(this.selected);
+    },
+
+    _getBooleanValue: function (cell, prop) {
+      if(cell)
+        return (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id])[_.camelCase(prop)] || false;
+    },
+
+    _onBooleanValueChanged: function (evt, val) {
+      var el = evt.target.closest('div[class="menu-element"]');
+
+      if(el && val.value !== undefined){
+        var cell = this._states[this.selected.model.get('id')];
+        if(cell){
+          var state = this._states[this.selected.model.get('id')].state;
+          var prop = _.camelCase(evt.target.closest('div[class="menu-element"]').id);
+
+          state[prop] = val.value;
+          this.selected.model.set(prop, val.value);
+
+          this._renderAfterChange();
+        }
+      }
+    },
+
+    _getSelectedItem: function (cell, prop) {
+      if(cell){
+        var items = this._getDropdownItems(cell, prop);
+        var item = (this._isType('state', cell)? this._states[cell.model.id].state : this._relations[cell.model.id])[prop] || '';
+
+        return items.indexOf(item);
+      }
+    },
+
+    _getNestedSelectedItem: function (cell, prop) {
+      if(cell){
+        var items = this._getDropdownItemsNestedValues(cell, prop);
+        var item = this._states[this.selected.model.id].state[prop] || '';
+        return items.indexOf(item);
+      }
+    },
+
+    _onItemsChanged: function (evt) {
+      var list = evt.target.parentElement;
+      list.selected =-1;
+      list.selected = this._getSelectedItem(this.selected, list.item);
+    },
+
+    _onNestedItemsChanged: function (evt) {
+      var list = evt.target.parentElement;
+
+      var items = this._getDropdownItemsNestedValues(this.selected, list.item);
+      if(!items) return;
+      if(!items.length){
+        this.$$('div [class=menu-content] div[id="color"]').style = 'visibility: hidden;height:0';
+      } else {
+        this.$$('div [class=menu-content] div[id="color"]').removeAttribute('style');
+        list.selected =-1;
+        list.selected = this._getNestedSelectedItem(this.selected, list.item)
+      }
+    },
+
+    _onSelectedItemChanged: function (evt, val) {
+
+      if(val.value) {
+
+        var cell = this._isType('state', this.selected)? this._states[this.selected.model.id] : this._relations[this.selected.model.id];
+
+        var prop = evt.target.closest('div[class="menu-element"]').id;
+        var newVal = val.value.toLowerCase();
+        var oldVal = (this._isType('state', this.selected)? cell.state : cell.relation)[prop];
+
+        if(newVal !== oldVal){
+          var kProp = this._getCellProp(this.selected, prop);
+
+          var kValue;
+
+          if(kProp === 'icon'){
+            if (cell.type === 'Gateway') kValue = this._gatewayIconsDict(newVal);
+            else if (cell.type === 'Activity') kValue = this._activityIconsDict(newVal);
+            else if (cell.type === 'Event') {
+              kValue = this._eventIconsDict(newVal);
+
+              var colorValues = this._getNestedValues('event', 'color', prop, newVal);
+              cell.state.color = colorValues.length > 0? colorValues[0] : '';
+              this.$$('div [class=menu-content] div[id="color"] template[id="items"]').set('items',colorValues)
+            }
+
+          } else
+            kValue = newVal;
+
+          // console.log('Prop:',prop, '=', kProp, ', OldVal:', oldVal, ', NewVal:',newVal,'=', kValue)
+
+          if(this._isType('state', this.selected)) cell.state[prop] = newVal;
+          else cell[prop] = newVal;
+
+          this.selected.model.set(kProp, kValue);
+
+          if (cell.state && cell.state.hasOwnProperty('content'))
+            cell.state.size = this._computeBPMNStateSize(this.selected.model, cell.state.defaultSize);
+
+          this._hideNewLinkButton();
+          this._renderAfterChange();
+          this._showNewLinkButton(this.selected);
+
+        }
+      }
+    },
+
+    _onNestedSelectedItemChanged: function (evt, val) {
+      if(val.value) {
+
+        var cell = this._isType('state', this.selected)? this._states[this.selected.model.id] : this._relations[this.selected.model.id];
+
+        var prop = evt.target.closest('div[class="menu-element"]').id;
+        var newVal = val.value.toLowerCase();
+        var oldVal = cell.state[prop];
+
+        if(newVal !== oldVal){
+          cell.state[prop] = newVal;
+
+          if(prop === 'color' && cell.type.toLowerCase() === 'event'){
+            var icon = this._eventIconsDict(cell.state.subtype);
+            this.selected.model.set('icon', newVal === 'black'? icon.replace('Black', '') + 'Black' : icon)
+          }
+        }
+      }
+    },
+
+    _undoChanges: function(){
+      // do nothing
+      this.selectedCopy = null;
+    },
 
     _getCellProp: function (cell, key) {
 
@@ -1102,7 +1411,74 @@
       }
     },
 
+    /** STATE SELECTION */
 
+    /* Overwrite from ASQ.diagramQBehaviour */
+    _singleSelect: function(cellView){
+      if(this.selected){
+        if(this.selected.model.id === cellView.model.get('id'))
+          return;
+        else{
+          if(cellView)
+            this._tempNextRel = cellView;
+          this._onJointjsObjDeselected();
+          if(this._tempNextRel){
+            cellView = this._tempNextRel;
+            this._tempNextRel = null;
+          }
+        }
+      }
+      if(cellView.model instanceof joint.shapes.bpmn.Pool)
+        return;
+
+      this.selected = cellView;
+      this.selectedCopy = _.cloneDeep(this.selected.model.attributes) // keep a copy in case of 'undo' operation
+      this.selected.highlight(null, this.highlighter);
+      this.selectedCounter++;
+      this._showNewLinkButton(cellView);
+      this._expandSidebar()
+    },
+
+    /** HELPER FUNCTIONS */
+
+    _isObject: function (cell, prop) {
+      if(cell) return this._isTypeOf(cell, prop, Object);
+    },
+
+    _isTypeOf: function (cell, prop, type) {
+
+      var value = this._getPropertyValue(cell, prop);
+
+      if( this._isFunction(value) )
+        return value.toString() === type.toString();
+      else if ( !this._isFunction(value) ){
+        if(type.toString() === Object.toString())
+          return value && value.property;
+        else
+          return value instanceof type && type.toString() === Array.toString();
+      }
+    },
+
+    _isFunction: function (value) {
+      return value instanceof Function
+    },
+
+    _getDropdownItemsNestedValues: function (cell, prop) {
+      if(cell){
+
+        var type = cell.model.get('type').toLowerCase().replace('bpmn.','');
+        if(type !== 'event') return;
+
+        var p_prop = this._shapesDict.states[type][prop].property;
+        var p_value = this._states[cell.model.id].state[p_prop]
+
+        return this._getNestedValues(type, prop, p_prop, p_value);
+      }
+    },
+
+    _getNestedValues: function (type, prop, p_prop, p_value) {
+      return this._shapesDict.states[type][prop][p_prop][p_value];
+    },
 
   };
 

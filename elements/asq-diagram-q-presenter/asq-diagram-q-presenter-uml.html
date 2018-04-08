@@ -203,7 +203,7 @@
         var dict = {};
 
         value.states.forEach(function(s){
-          var sid = this._addInitialState(s)
+          var sid = this._addInitialState(s);
           if(s.id) dict[s.id] = sid;
         }.bind(this));
 

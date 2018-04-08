@@ -343,12 +343,6 @@
         }.bind(this))
       },
 
-      _renderAfterChange: function () {
-        this.selected.render();
-        this.selected.unhighlight(null, this.highlighter);
-        this.selected.highlight(null, this.highlighter);
-      },
-
       _undoChanges: function(){
         var data = this._getERDModelData(this.selectedCopy, this._isType('state', this.selected));
         if(this._isType('state', this.selected)){
