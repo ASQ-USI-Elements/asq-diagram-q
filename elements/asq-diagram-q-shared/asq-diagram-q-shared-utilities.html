@@ -436,17 +436,10 @@
 
       var random = Math.random()*(25 - (-25) + (-25));
       var container = this.$['paper-container'];
-      var paper = this.$['paper'];
+      var paper = this.$.paper;
 
-      console.log(this.$.sidebar.className);
-      var w = this.width,
+      var w = this.$.sidebar.className === 'open'? this.width-200 : this.width,
         h = this.height;
-
-        // this._getVal(transform, 'translate')
-      // var w = Number(container.style.width.replace('px','')),
-      //   h = Number(container.style.height.replace('px',''));
-      //
-      // console.log(w,h)
 
       if(w > paper.offsetWidth)
         w = paper.offsetWidth;
@@ -842,6 +835,7 @@
       }
     },
 
+    // fixme
     // onDragStart: function(event, x, y) {
     //   this.dragStartPosition = { x: x*this._scale, y: y*this._scale};
     // },
@@ -951,7 +945,7 @@
       }
     },
 
-    _scalePaper: function(t) {
+    _scalePaper: function() {
       this.$.paper.style = 'height:' + (1920*this._scale) + 'px;' + 'width:' + (1920*this._scale) + 'px;';
     },
 
@@ -1742,7 +1736,7 @@
       this._clear();
       if(newVal){
         this._fillGraph(this.value.diagram);
-        this._cropAndScaleGraph();
+        this._centerGraph();
       }
     },
 
@@ -1752,7 +1746,7 @@
       this.value = null;
     },
 
-    _cropAndScaleGraph: function () {
+    _centerGraph: function () {
 
       var coord = {
         x0: -1,
@@ -1761,7 +1755,9 @@
         y1: -1
       };
 
-      var h = this.height, w = this.width-10;
+      var h = this.height,
+        w = this.$.sidebar.className === 'open'? this.width-200 : this.width-10;
+
 
       var bbox;
       this._graph.getCells().forEach(function (cell) {
@@ -1771,6 +1767,7 @@
         coord.x1 = this._getMax(coord.x1, (bbox.x + bbox.width) );
         coord.y0 = this._getMin(coord.y0, bbox.y);
         coord.y1 = this._getMax(coord.y1, (bbox.y + bbox.height) );
+
       }.bind(this));
 
       var pWidth = (coord.x1 - coord.x0)+40;
