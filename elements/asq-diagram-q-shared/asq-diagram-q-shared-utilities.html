@@ -1051,6 +1051,109 @@
     }
   };
 
+  var diagramQPresenterBehaviour = ASQ.diagramQPresenterBehaviour = {
+
+    properties: {
+      value: {
+        type: Object,
+        notify: true,
+        observer: '_valueChanged'
+      }
+    },
+
+    /** PRESENTER INIT GRAPH */
+    _valueChanged: function (newVal,oldVal) {
+      this._clear();
+      if(newVal){
+        this._fillGraph(this.value.diagram);
+        this._centerGraph();
+      }
+    },
+
+    /** Helper functions */
+
+    _onClearBtnTap: function () {
+      this.value = null;
+    },
+
+    _centerGraph: function () {
+
+      var coord = {
+        x0: -1,
+        x1: -1,
+        y0: -1,
+        y1: -1
+      };
+
+      var h = this.height,
+        w = this.$.sidebar.className === 'open'? this.width-200 : this.width-10;
+
+
+      var bbox;
+      this._graph.getCells().forEach(function (cell) {
+        bbox = cell.findView(this._paper).getBBox();
+
+        coord.x0 = this._getMin(coord.x0, bbox.x);
+        coord.x1 = this._getMax(coord.x1, (bbox.x + bbox.width) );
+        coord.y0 = this._getMin(coord.y0, bbox.y);
+        coord.y1 = this._getMax(coord.y1, (bbox.y + bbox.height) );
+
+      }.bind(this));
+
+      var pWidth = (coord.x1 - coord.x0)+40;
+      var pHeight = (coord.y1 - coord.y0)+40;
+
+      if(this._paper){
+
+        var hRatio = h/pHeight;
+        var wRatio = w/pWidth;
+        var s, yScroll, xScroll;
+
+        if(hRatio <= wRatio){
+          s = hRatio;
+          yScroll = (coord.y0-20)*s;
+          xScroll = (coord.x0-20)*s - ((w-(pWidth*s))/2);
+
+        } else if(hRatio > wRatio){
+          s = wRatio;
+          yScroll = (coord.y0-20)*s - ((h-(pHeight*s))/2);
+          xScroll = (coord.x0-20)*s;
+        }
+
+        this._paper.scale(s, s);
+        this._scale = s;
+
+        this.$['paper-container'].scrollLeft = xScroll;
+        this.$['paper-container'].scrollTop = yScroll;
+      }
+    },
+
+    _getMax: function(a,b) {
+      if(a === -1 || (a !== -1 && a < b) )
+        return b;
+      return a;
+    },
+
+    _getMin: function(a,b) {
+      if(a === -1 || (a !== -1 && a > b) )
+        return b;
+      return a;
+    },
+
+    _resetSize: function () {
+      this._scale=1;
+      this._scalePaper();
+      this._paper.scale(this._scale, this._scale);
+    },
+
+    _clear: function(){
+      this._resetSize();
+      this._graph.clear();
+      this._states = {};
+      this._relations = {};
+    },
+  };
+
   var diagramQBPMNBehaviour = ASQ.diagramQBPMNBehaviour = {
 
     /** STATE CREATION */
@@ -1721,116 +1824,13 @@
 
   };
 
-  var diagramQPresenterBehaviour = ASQ.diagramQPresenterBehaviour = {
-
-    properties: {
-      value: {
-        type: Object,
-        notify: true,
-        observer: '_valueChanged'
-      }
-    },
-
-    /** PRESENTER INIT GRAPH */
-    _valueChanged: function (newVal,oldVal) {
-      this._clear();
-      if(newVal){
-        this._fillGraph(this.value.diagram);
-        this._centerGraph();
-      }
-    },
-
-    /** Helper functions */
-
-    _onClearBtnTap: function () {
-      this.value = null;
-    },
-
-    _centerGraph: function () {
-
-      var coord = {
-        x0: -1,
-        x1: -1,
-        y0: -1,
-        y1: -1
-      };
-
-      var h = this.height,
-        w = this.$.sidebar.className === 'open'? this.width-200 : this.width-10;
-
-
-      var bbox;
-      this._graph.getCells().forEach(function (cell) {
-        bbox = cell.findView(this._paper).getBBox();
-
-        coord.x0 = this._getMin(coord.x0, bbox.x);
-        coord.x1 = this._getMax(coord.x1, (bbox.x + bbox.width) );
-        coord.y0 = this._getMin(coord.y0, bbox.y);
-        coord.y1 = this._getMax(coord.y1, (bbox.y + bbox.height) );
-
-      }.bind(this));
-
-      var pWidth = (coord.x1 - coord.x0)+40;
-      var pHeight = (coord.y1 - coord.y0)+40;
-
-      if(this._paper){
-
-        var hRatio = h/pHeight;
-        var wRatio = w/pWidth;
-        var s, yScroll, xScroll;
-
-        if(hRatio <= wRatio){
-          s = hRatio;
-          yScroll = (coord.y0-20)*s;
-          xScroll = (coord.x0-20)*s - ((w-(pWidth*s))/2);
-
-        } else if(hRatio > wRatio){
-          s = wRatio;
-          yScroll = (coord.y0-20)*s - ((h-(pHeight*s))/2);
-          xScroll = (coord.x0-20)*s;
-        }
-
-        this._paper.scale(s, s);
-        this._scale = s;
-
-        this.$['paper-container'].scrollLeft = xScroll;
-        this.$['paper-container'].scrollTop = yScroll;
-      }
-    },
-
-    _getMax: function(a,b) {
-      if(a === -1 || (a !== -1 && a < b) )
-        return b;
-      return a;
-    },
-
-    _getMin: function(a,b) {
-      if(a === -1 || (a !== -1 && a > b) )
-        return b;
-      return a;
-    },
-
-    _resetSize: function () {
-      this._scale=1;
-      this._scalePaper();
-      this._paper.scale(this._scale, this._scale);
-    },
-
-    _clear: function(){
-      this._resetSize();
-      this._graph.clear();
-      this._states = {};
-      this._relations = {};
-    },
-  };
-
   ASQ.diagramQBehavior = [
     diagramQGlobalBehaviour,
     diagramQCommonUIBehaviour,
+    diagramQPresenterBehaviour,
     diagramQBPMNBehaviour,
     diagramQUMLBehaviour,
-    diagramQERDBehaviour,
-    diagramQPresenterBehaviour
+    diagramQERDBehaviour
   ]
 
 </script>

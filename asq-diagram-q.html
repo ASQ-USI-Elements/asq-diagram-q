@@ -8,7 +8,44 @@
 <link rel="import" href="elements/asq-diagram-q-presenter/asq-diagram-q-presenter.html">
 
 <!--
-`asq-diagram-q`is used to allow the user to draw diagrams like UML's or ER's.
+`asq-diagram-q`is used to allow the user to draw diagrams. The supported diagram types are `uml` (default one), `erd` and `bpmn`, to change this option the user has to set the `type` attribute.
+
+`width` and `height` attributes are used to set the size of the paper element, by default it is 500x500 pixels.
+
+`asq-diagram-q`'s elements inherit several behaviours, the following is the complete list:
+
+  - `ASQ.asqQuestionElementBehavior` and `ASQ.diagramQGlobalBehaviour`, inherited by all elements,
+
+  - `ASQ.diagramQCommonUIBehaviour`, inherited by all actual diagram elements (e.g. element's name ending with `-bpmn.html`, `-uml.html`, etc.),
+
+  - `ASQ.diagramQPresenterBehaviour`, inherited by all presenter elements (excluding the presenter's root `asq-diagram-q-presenter.html`).
+
+In addition, for each diagram type there's a relative behaviour that implements the interface for that specific type (e.g. `asq-diagram-q-viewer-bpmn.html` uses `ASQ.diagramQBPMNBehaviour`).
+
+Example 1:
+
+    <asq-diagram-q id="bpmn-demo"  name="bpmnDiagram" type="bpmn" width="650" height="500">
+      <asq-stem>This is a demo of bpmn diagram</asq-stem>
+    </asq-diagram-q>
+
+Using the `value` attribute it is possible to set a starting diagram value.
+
+Example 2:
+
+    <asq-diagram-q id="bpmn-demo-2"  name="bpmnDiagram2" type="bpmn" width="800" height="600">
+      <asq-stem>This is a demo of bpmn diagram with a starting value</asq-stem>
+    </asq-diagram-q>
+
+    <script>
+      document.addEventListener('WebComponentsReady', function (evt) {
+        var bpmn_demo_2 = document.getElementById('bpmn-demo-2');
+        bpmn_demo_2.value = {
+          states: [...],
+          relations: [...],
+          type: 'bpmn'
+        };
+      });
+    </script>
 
 @element asq-diagram-q
 @demo demo/index.html
