@@ -63,6 +63,9 @@
 
       properties: {
 
+        /**
+         * List of supported diagram types
+         */
         _supported_types : {
           type: Array,
           value: ['uml', 'erd', 'bpmn']
@@ -72,7 +75,6 @@
          * Type of diagram (default is uml)
          * options = 'uml', 'erd', 'bpmn'
          */
-
         type: {
           type: String,
           value: 'uml',
@@ -82,7 +84,7 @@
         },
 
         /**
-         * An optional initial set of states/relations.
+         * An optional starting set of states/relations.
          */
         value: {
           type: Object,
@@ -105,16 +107,14 @@
       },
 
       /**
-       * Collect answers from inner `asq-option`s and orgnize them
-       * into an object.
+       * Collect answers from inner `asq-option`s and
+       * organize them into an object.
        *
-
-       {
-         uid: this.uid,
-         timestamp: new Date(),
-         options: options
-       }
-
+       *  {
+       *    uid: this.uid,
+       *    timestamp: new Date(),
+       *    options: options
+       *   }
        */
       submit: function () {
         if (this.role == this.roles.VIEWER) {
